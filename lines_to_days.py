@@ -5,28 +5,9 @@
 # python: 3.5
 
 
+import datetime
+import re
 import sys
-
-
-class Line:
-    def __init__(self, cells):
-        self.cells = cells
-
-
-class DayItem:
-    def __init__(self, action, wall_time, elapsed):
-        self.action = action
-        self.wall_time = wall_time
-        self.elapsed = elapsed
-
-
-class Day:
-    def __init__(self, date):
-        self.date = date
-        self.day_items = []
-
-    def add_day_item(self, day_item):
-        self.day_items.append(day_item)
 
 
 class LinesToDays:
@@ -34,21 +15,34 @@ class LinesToDays:
         self.infile = infile
         self.days = []
         self.sunday_date = None
-        self.week_offset = None
+        self.today_offset = 0
 
     def convert(self):
         pass
 
-    def readLines(self):
+    def read_lines(self):
         for line in self.infile:
-            with_commas = line
-            no_commas = with_commas.split(',')
+            no_commas = line.split(',')
             if not any(no_commas):
                 continue
-            if self.is_date(no_commas[0]):  # self.is_date() -- N.Y.I.
-                sun_date_string = no_commas[0]
-                sun_date_list = sun_date_string.split('/')
-                sun_date_obj = date(
+            if self.is_date(no_commas[0]):
+                self.sunday_date = self.date_str_to_obj(no_commas[0])
+                print(str(self.sunday_date))  # TODO: debug line
 
-            else:
-                self.week_offset += 1
+    def is_date(self, s):
+        m = re.match(r'\d{1,2}/\d{1,2}/\d{4}', s)
+        return m
+
+    def date_str_to_obj(self, s):
+        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
+        # group(3) is the year, group(1) is the month, group(2) is the day
+        d = [int(m.group(x)) for x in (3, 1, 2)]
+        d_obj = datetime.date(d[0], d[1], d[2])
+        return d_obj
+
+
+if __name__ == '__main__':
+    filename = len(sys.argv) > 1 and sys.argv[1] or 'sheet_001.csv'
+    with open(filename, 'r') as infile:
+        l_t_d = LinesToDays(infile)
+        l_t_d.read_lines()
