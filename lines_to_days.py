@@ -10,6 +10,25 @@ import re
 import sys
 
 
+class Day:
+    week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+            'Saturday')
+
+    def __init__(self, segment, a_day, wkday_offset):
+        assert(len(segment) == 3)
+        self.my_day = a_day
+        self.my_wkday = Day.week[wkday_offset]
+        self.action = segment[0]
+        self.mil_time = segment[1]
+        self.hours = segment[2]
+
+    def __str__(self):
+        ret = '{}, {}, action: {}, time: {}, hours: {}'.format(
+                self.my_weekday, self.my_day, self.action, self.mil_time,
+                self.hours)
+        return ret
+
+
 class LinesToDays:
     def __init__(self, infile):
         self.infile = infile
@@ -28,7 +47,7 @@ class LinesToDays:
             if self.is_date(no_commas[0]):
                 self.sunday_date = self.date_str_to_obj(no_commas[0])
                 print(str(self.sunday_date))  # TODO: debug line
-
+            
     def is_date(self, s):
         m = re.match(r'\d{1,2}/\d{1,2}/\d{4}', s)
         return m
