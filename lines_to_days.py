@@ -10,23 +10,55 @@ import re
 import sys
 
 
-class Day:
-    week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
-            'Saturday')
-
-    def __init__(self, segment, a_day, wkday_offset):
-        assert(len(segment) == 3)
-        self.my_day = a_day
-        self.my_wkday = Day.week[wkday_offset]
+class Event:
+    """
+    Each Event belongs to a Day, and is an item in that Day's list
+    of Events.
+    """
+    def __init__(self, segment):
+        assert len(segment) == 3
         self.action = segment[0]
         self.mil_time = segment[1]
         self.hours = segment[2]
 
     def __str__(self):
-        ret = '{}, {}, action: {}, time: {}, hours: {}'.format(
-                self.my_weekday, self.my_day, self.action, self.mil_time,
-                self.hours)
+        return 'action: {}, time: {}, hours: {}\n'.format(self.action,
+                self.mil_time, self.hours)
+
+
+class DayLabel:
+    """
+    A DayLabel consists of a day of the week, coupled with a
+    datetime.date structure.
+    """
+    week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+            'Saturday')
+
+    def __init__(self, weekday_indicator, date):
+        self.weekday = DayLabel.week[weekday_indicator]
+        self.date = date
+
+    def __str__(self):
+        return '{} {}-{}-{}'.format(self.weekday, self.date.year,
+                self.date.month, self.date.day)
+    
+
+class Day:
+    """
+    A Day consists of a DayLabel, and a list of Events.
+    """
+    def __init__(self, a_date, wkday_ind):
+        self.day_label = DayLabel(wkday_ind, a_date)
+        self.events = []
+
+    def __str__(self):
+        ret = '{}\n'.format(self.day_label.__str__())
+        for item in self.events:
+            ret += item.__str__()
         return ret
+
+    def add_event(self, an_event):
+        self.events.append(an_event)
 
 
 class LinesToDays:
