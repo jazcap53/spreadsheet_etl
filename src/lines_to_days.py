@@ -22,7 +22,7 @@ class Event:
         self.hours = segment[2]
 
     def __str__(self):
-        return 'action: {}, time: {}, hours: {}\n'.format(self.action,
+        return 'action: {}, time: {}, hours: {:.2f}\n'.format(self.action,
                 self.mil_time, self.hours)
 
 
@@ -35,6 +35,7 @@ class DayLabel:
             'Saturday')
 
     def __init__(self, weekday_indicator, date):
+        assert 0 <= weekday_indicator <= 6
         self.weekday = DayLabel.week[weekday_indicator]
         self.date = date
 
