@@ -17,7 +17,6 @@ class Event:
     of Events.
     """
     def __init__(self, segment):
-        assert len(segment) == 3
         self.action = segment[0].strip()[0]
         self.mil_time = segment[1]
         self.hours = segment[2]
@@ -36,7 +35,6 @@ class DayLabel:
             'Saturday')
 
     def __init__(self, weekday_indicator, dt_date):
-        assert 0 <= weekday_indicator <= 6
         self.weekday = DayLabel.week[weekday_indicator]
         self.dt_date = dt_date
 
@@ -60,8 +58,6 @@ class Day:
         return ret
 
     def add_event(self, an_event):
-        # assert type(an_event) == Event
-        assert isinstance(an_event, Event)
         self.events.append(an_event)
 
 
@@ -89,7 +85,7 @@ class LinesToDays:
         return m
 
     def date_str_to_obj(self, s):
-        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
+        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)  # TODO: change to call to is_date()
         # group(3) is the year, group(1) is the month, group(2) is the day
         d = [int(m.group(x)) for x in (3, 1, 2)]
         d_obj = datetime.date(d[0], d[1], d[2])

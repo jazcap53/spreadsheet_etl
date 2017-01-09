@@ -97,8 +97,3 @@ class TestDay(TestCase):
     def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
         self.my_day.add_event(Event(['s', '23:45', 1.00]))
         self.assertEqual(len(self.my_day.events), 1)
-
-
-
-
-
