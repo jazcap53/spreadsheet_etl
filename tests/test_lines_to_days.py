@@ -9,7 +9,7 @@ from datetime import date
 import unittest
 from unittest import TestCase
 
-from lines_to_days import Event, DayLabel
+from lines_to_days import Event, DayLabel, Day
 
 
 class TestEvent(TestCase):
@@ -71,6 +71,32 @@ class TestDayLabel(TestCase):
         self.assertEqual(my_day_label.__str__(), 'Wednesday 2017-01-04')
 
 
+class TestDay(TestCase):
+
+    def setUp(self):
+        self.my_day = Day(date(2017, 1, 9), 1)
+
+    def test_Day_member_day_label_is_an_instance_of_DayLabel(self):
+        self.assertIsInstance(self.my_day.day_label, DayLabel)
+
+    def test_Day_member_day_label_has_a_string_weekday_and_a_datetime_date(self):
+        self.assertIsInstance(self.my_day.day_label.weekday, str)
+        self.assertIsInstance(self.my_day.day_label.dt_date, date)
+
+    def test_Day_member_day_label_dot_weekday_is_a_valid_week_day_string(self):
+        self.assertIn(self.my_day.day_label.weekday, DayLabel.week)
+
+    def test_Day_member_events_is_an_empty_list(self):
+        self.assertIsInstance(self.my_day.events, list)
+        self.assertEqual(len(self.my_day.events), 0)
+
+    def test_calling_add_event_with_non_event_argument_raises_AssertionError(self):
+        with self.assertRaises(AssertionError):
+            self.my_day.add_event([1, 2, 3])
+
+    def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
+        self.my_day.add_event(Event(['s', '23:45', 1.00]))
+        self.assertEqual(len(self.my_day.events), 1)
 
 
 

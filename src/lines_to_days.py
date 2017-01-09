@@ -49,8 +49,8 @@ class Day:
     """
     A Day consists of a DayLabel, and a list of Events.
     """
-    def __init__(self, a_date, wkday_ind):
-        self.day_label = DayLabel(wkday_ind, a_date)
+    def __init__(self, dt_date, wkday_ind):
+        self.day_label = DayLabel(wkday_ind, dt_date)
         self.events = []
 
     def __str__(self):
@@ -60,6 +60,8 @@ class Day:
         return ret
 
     def add_event(self, an_event):
+        # assert type(an_event) == Event
+        assert isinstance(an_event, Event)
         self.events.append(an_event)
 
 
