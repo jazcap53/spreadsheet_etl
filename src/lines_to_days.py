@@ -6,6 +6,7 @@
 
 
 import datetime
+from datetime import date
 import re
 import sys
 
@@ -17,7 +18,7 @@ class Event:
     """
     def __init__(self, segment):
         assert len(segment) == 3
-        self.action = segment[0]
+        self.action = segment[0].strip()[0]
         self.mil_time = segment[1]
         self.hours = segment[2]
 
@@ -34,14 +35,14 @@ class DayLabel:
     week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
             'Saturday')
 
-    def __init__(self, weekday_indicator, date):
+    def __init__(self, weekday_indicator, dt_date):
         assert 0 <= weekday_indicator <= 6
         self.weekday = DayLabel.week[weekday_indicator]
-        self.date = date
+        self.dt_date = dt_date
 
     def __str__(self):
-        return '{} {}-{}-{}'.format(self.weekday, self.date.year,
-                self.date.month, self.date.day)
+        return '{} {}-{:02}-{:02}'.format(self.weekday, self.dt_date.year,
+                self.dt_date.month, self.dt_date.day)
     
 
 class Day:
