@@ -17,6 +17,8 @@ class Event:
     of Events.
     """
     def __init__(self, segment):
+        if not len(segment) == 3:
+            raise ValueError
         self.action = segment[0].strip()[0]
         self.mil_time = segment[1]
         self.hours = segment[2]
@@ -35,6 +37,8 @@ class DayLabel:
             'Saturday')
 
     def __init__(self, weekday_indicator, dt_date):
+        if not 0 <= weekday_indicator <= 6:
+            raise ValueError
         self.weekday = DayLabel.week[weekday_indicator]
         self.dt_date = dt_date
 
@@ -58,6 +62,8 @@ class Day:
         return ret
 
     def add_event(self, an_event):
+        if not isinstance(an_event, Event):
+            raise TypeError
         self.events.append(an_event)
 
 

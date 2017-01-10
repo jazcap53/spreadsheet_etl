@@ -14,14 +14,14 @@ from lines_to_days import Event, DayLabel, Day
 
 class TestEvent(TestCase):
 
-    def test___init___raises_AssertionError_if_segment_len_gt_3(self):
+    def test___init___raises_ValueError_if_segment_len_gt_3(self):
         segment = ['w', '12:45', 3.75, 'bongo']
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             my_event = Event(segment)
 
-    def test___init___raises_AssertionError_if_segment_len_lt_3(self):
+    def test___init___raises_ValueError_if_segment_len_lt_3(self):
         segment = ['s', '23:30']
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             my_event = Event(segment)
 
     def test___init___creates_valid_Event_with_valid_input_segment(self):
@@ -53,12 +53,12 @@ class TestEvent(TestCase):
 
 class TestDayLabel(TestCase):
 
-    def test___init___raises_AssertionError_on_weekday_input_lt_0(self):
-        with self.assertRaises(AssertionError):
+    def test___init___raises_ValueError_on_weekday_input_lt_0(self):
+        with self.assertRaises(ValueError):
             my_day_label = DayLabel(-1, date.today())
 
-    def test___init___raises_AssertionError_on_weekday_input_gt_6(self):
-        with self.assertRaises(AssertionError):
+    def test___init___raises_ValueError_on_weekday_input_gt_6(self):
+        with self.assertRaises(ValueError):
             my_day_label = DayLabel(7, date.today())
 
     def test___init___creates_valid_DayLabel_on_valid_input(self):
@@ -90,8 +90,8 @@ class TestDay(TestCase):
         self.assertIsInstance(self.my_day.events, list)
         self.assertEqual(len(self.my_day.events), 0)
 
-    def test_calling_add_event_with_non_event_argument_raises_AssertionError(self):
-        with self.assertRaises(AssertionError):
+    def test_calling_add_event_with_non_event_argument_raises_TypeError(self):
+        with self.assertRaises(TypeError):
             self.my_day.add_event([1, 2, 3])
 
     def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
