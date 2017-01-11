@@ -78,31 +78,44 @@ class Day:
         self.events.append(an_event)
 
 
-class LinesToDays:
+class ReadWeeks:
+    """
+
+    """
     def __init__(self, infile):
         self.infile = infile
-        self.days = []
+        self.weeks = []
         self.sunday_date = None
-        self.today_offset = 0
-
-    def convert(self):
-        pass
 
     def read_lines(self):
+        """
+        Ignore header lines, which are non-blank lines with certain characteristics.
+        Blank lines mean 'go to the next week'.
+        """
         for line in self.infile:
-            no_commas = line.split(',')
-            if not any(no_commas):
+            no_commas = line.strip().split(',')
+            if self.is_header(no_commas):
                 continue
-            if self.is_date(no_commas[0]):
-                self.sunday_date = self.date_str_to_obj(no_commas[0])
-                print(str(self.sunday_date))  # TODO: debug line
+            if not any(no_commas):
+                self.reset_week()
+                continue
+            if not self.sunday_date:
+                date_match = self.check_for_date(no_commas[0])
+                if date_match:
+                    self.sunday_date = self.match_to_date_obj(date_match)
+                    print(str(self.sunday_date))  # TODO: debug line
             
-    def is_date(self, s):
-        m = re.match(r'\d{1,2}/\d{1,2}/\d{4}', s)
-        return m
+    def is_header(self, l):
+        return l[1] == 'Sun'  # TODO: this is just a placeholder
 
-    def date_str_to_obj(self, s):
-        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)  # TODO: change to call to is_date()
+    def reset_week(self):
+        self.sunday_date = None
+
+    def check_for_date(self, s):
+        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
+        return m if m else None
+
+    def match_to_date_obj(self, m):
         # group(3) is the year, group(1) is the month, group(2) is the day
         d = [int(m.group(x)) for x in (3, 1, 2)]
         d_obj = datetime.date(d[0], d[1], d[2])
@@ -112,5 +125,5 @@ class LinesToDays:
 if __name__ == '__main__':
     filename = len(sys.argv) > 1 and sys.argv[1] or 'sheet_001.csv'
     with open(filename, 'r') as infile:
-        l_t_d = LinesToDays(infile)
-        l_t_d.read_lines()
+        r_w = ReadWeeks(infile)
+        r_w.read_lines()
