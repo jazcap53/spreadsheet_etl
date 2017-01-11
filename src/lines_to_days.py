@@ -30,44 +30,31 @@ class Event:
                 self.mil_time, self.hours)
 
 
-class DayLabel:
-    """
-    A DayLabel consists of a day of the week, coupled with a
-    datetime.date structure.
-    """
-    week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
-            'Saturday')
-
-    def __init__(self, dt_date, weekday_ind=0):
-        if not 0 <= weekday_ind <= 6:
-            raise ValueError
-        self.dt_date = dt_date
-        self.weekday = DayLabel.week[weekday_ind]
-
-    def __str__(self):
-        return '{} {}-{:02}-{:02}'.format(self.weekday, self.dt_date.year,
-                self.dt_date.month, self.dt_date.day)
-    
-
 class Week:
     """
     A Week is a list of seven Days, each beginning at 0:00 (midnight),
-    with the first Day being a Sunday
+    with the first Day being a Sunday.
     """
     def __init__(self, dt_date):
-        self.day_list = []
+        if dt_date.weekday() != 6:  # a Sunday
+            raise ValueError
+        self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
+
+    def __str__(self):
+        ret = '\n\t' + '\n\t'.join([x.__str__() for x in self.day_list])
+        return ret
 
 
 class Day:
     """
-    A Day consists of a DayLabel, and a list of Events.
+    A Day consists of a datetime.date, and a list of Events.
     """
-    def __init__(self, dt_date, wkday_ind):
-        self.day_label = DayLabel(dt_date, wkday_ind)
+    def __init__(self, dt_date):
+        self.dt_date = dt_date
         self.events = []
 
     def __str__(self):
-        ret = '{}\n'.format(self.day_label.__str__())
+        ret = '{}'.format(self.dt_date)
         for item in self.events:
             ret += item.__str__()
         return ret
@@ -96,14 +83,17 @@ class ReadWeeks:
             no_commas = line.strip().split(',')
             if self.is_header(no_commas):
                 continue
-            if not any(no_commas):
+            if not any(no_commas):  # a blank line in spreadsheet
                 self.reset_week()
                 continue
             if not self.sunday_date:
                 date_match = self.check_for_date(no_commas[0])
                 if date_match:
                     self.sunday_date = self.match_to_date_obj(date_match)
-                    print(str(self.sunday_date))  # TODO: debug line
+                    print('\n' + str(self.sunday_date))  # TODO: debug line
+                    new_week = Week(self.sunday_date)
+                    self.weeks.append(new_week)
+                    print(new_week)  # TODO: debug line
             
     def is_header(self, l):
         return l[1] == 'Sun'  # TODO: this is just a placeholder
