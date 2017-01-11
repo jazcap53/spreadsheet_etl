@@ -55,19 +55,19 @@ class TestDayLabel(TestCase):
 
     def test___init___raises_ValueError_on_weekday_input_lt_0(self):
         with self.assertRaises(ValueError):
-            my_day_label = DayLabel(-1, date.today())
+            my_day_label = DayLabel(date.today(), -1)
 
     def test___init___raises_ValueError_on_weekday_input_gt_6(self):
         with self.assertRaises(ValueError):
-            my_day_label = DayLabel(7, date.today())
+            my_day_label = DayLabel(date.today(), 7)
 
     def test___init___creates_valid_DayLabel_on_valid_input(self):
-        my_day_label = DayLabel(1, date(2017, 1, 9))
+        my_day_label = DayLabel(date(2017, 1, 9), 1)
         self.assertEqual(my_day_label.weekday, 'Monday')
         self.assertEqual(my_day_label.dt_date, date(2017, 1, 9))
 
     def test___str___returns_correct_string(self):
-        my_day_label = DayLabel(3, date(2017, 1, 4))
+        my_day_label = DayLabel(date(2017, 1, 4), 3)
         self.assertEqual(my_day_label.__str__(), 'Wednesday 2017-01-04')
 
 

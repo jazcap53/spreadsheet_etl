@@ -2,8 +2,10 @@
 # andrew jarcho
 # 2017-01-05
 
-# python: 3.5
+# python: 2.7, 3.5
 
+
+from __future__ import print_function
 
 import datetime
 from datetime import date
@@ -36,23 +38,32 @@ class DayLabel:
     week = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
             'Saturday')
 
-    def __init__(self, weekday_indicator, dt_date):
-        if not 0 <= weekday_indicator <= 6:
+    def __init__(self, dt_date, weekday_ind=0):
+        if not 0 <= weekday_ind <= 6:
             raise ValueError
-        self.weekday = DayLabel.week[weekday_indicator]
         self.dt_date = dt_date
+        self.weekday = DayLabel.week[weekday_ind]
 
     def __str__(self):
         return '{} {}-{:02}-{:02}'.format(self.weekday, self.dt_date.year,
                 self.dt_date.month, self.dt_date.day)
     
 
+class Week:
+    """
+    A Week is a list of seven Days, each beginning at 0:00 (midnight),
+    with the first Day being a Sunday
+    """
+    def __init__(self, dt_date):
+        self.day_list = []
+
+
 class Day:
     """
     A Day consists of a DayLabel, and a list of Events.
     """
     def __init__(self, dt_date, wkday_ind):
-        self.day_label = DayLabel(wkday_ind, dt_date)
+        self.day_label = DayLabel(dt_date, wkday_ind)
         self.events = []
 
     def __str__(self):
