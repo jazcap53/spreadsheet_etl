@@ -9,7 +9,7 @@ from datetime import date
 import unittest
 from unittest import TestCase
 
-from lines_to_days import Event, Day
+from lines_to_days import Event, Day, Week
 
 
 class TestEvent(TestCase):
@@ -70,3 +70,37 @@ class TestDay(TestCase):
     def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
         self.my_day.add_event(Event(['s', '23:45', 1.00]))
         self.assertEqual(len(self.my_day.events), 1)
+
+
+class TestWeek(TestCase):
+
+    def setUp(self):
+        self.my_week = Week(date(2017, 1, 15))
+
+    def test_calling___init___with_non_Sunday_date_raises_ValueError(self):
+        with self.assertRaises(ValueError):
+            self.my_other_week = Week(date(2017, 1, 14))
+
+    def test_first_day_of_Week_is_Sunday(self):
+        self.assertEqual(self.my_week.day_list[0].dt_date.weekday(), 6)
+
+    def test_a_Week_has_seven_Days(self):
+        self.assertEqual(len(self.my_week.day_list), 7)
+
+    def test_days_two_thru_seven_of_Week_have_no_Sunday(self):
+        # f checks that day x is a Sunday
+        f = lambda x: self.my_week.day_list[x].dt_date.weekday() == 6
+        self.assertFalse(any(f(x) for x in range(1, 7)))
+
+
+
+
+
+
+
+
+
+
+
+
+

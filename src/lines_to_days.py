@@ -30,21 +30,6 @@ class Event:
                 self.mil_time, self.hours)
 
 
-class Week:
-    """
-    A Week is a list of seven Days, each beginning at 0:00 (midnight),
-    with the first Day being a Sunday.
-    """
-    def __init__(self, dt_date):
-        if dt_date.weekday() != 6:  # a Sunday
-            raise ValueError
-        self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
-
-    def __str__(self):
-        ret = '\n\t' + '\n\t'.join([x.__str__() for x in self.day_list])
-        return ret
-
-
 class Day:
     """
     A Day consists of a datetime.date, and a list of Events.
@@ -63,6 +48,21 @@ class Day:
         if not isinstance(an_event, Event):
             raise TypeError
         self.events.append(an_event)
+
+
+class Week:
+    """
+    A Week is a list of seven Days, each beginning at 0:00 (midnight),
+    with the first Day being a Sunday.
+    """
+    def __init__(self, dt_date):
+        if dt_date.weekday() != 6:  # a Sunday
+            raise ValueError
+        self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
+
+    def __str__(self):
+        ret = '\n\t' + '\n\t'.join([x.__str__() for x in self.day_list])
+        return ret
 
 
 class ReadWeeks:
