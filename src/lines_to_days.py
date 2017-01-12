@@ -110,9 +110,8 @@ class ReadWeeks:
                 print('\n' + str(self.sunday_date))  # TODO: debug line
                 self.new_week = Week(self.sunday_date)
                 print(self.new_week)  # TODO: debug line
-            else:
-                if any(no_commas[1:]):
-                    self.load_line(no_commas[1:])
+            if any(no_commas[1:]):
+                self.load_line(no_commas[1:])
 
     def is_header(self, l):
         return l[1] == 'Sun'  # TODO: this is just a placeholder
@@ -140,9 +139,9 @@ class ReadWeeks:
         for ix in range(7):
             a_event = Event(line[3*ix: 3*ix + 3])
             if a_event.action:
-                print('a_event is {} on {}, {}\n'.format(a_event, 
+                print('{} on {}, {}'.format(a_event, 
                         self.to_my_day(ix),
-                        self.new_week.day_list[ix]))  # TODO: debug line
+                        self.new_week.day_list[ix].dt_date))  # TODO: debug line
                 self.new_week.day_list[ix].add_event(a_event)
                 self.have_unstored_event = True
 
