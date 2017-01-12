@@ -20,14 +20,20 @@ class Event:
     """
     def __init__(self, segment):
         if not len(segment) == 3:
-            raise ValueError
+            raise ValueError('Bad segment length')
+        if segment[0] not in 'bsw' or\
+                segment[0] == 'w' and segment[2] == '' or\
+                segment[2] == '0:00':  # TODO: replace with regex
+            raise ValueError('Bad segment values')
         self.action = segment[0].strip()[0]
         self.mil_time = segment[1]
-        self.hours = segment[2]
+        self.hours = segment[2] if segment[2] else None
 
     def __str__(self):
-        return 'action: {}, time: {}, hours: {:.2f}\n'.format(self.action,
-                self.mil_time, self.hours)
+        ret = 'action: {}, time: {}'.format(self.action, self.mil_time)
+        if self.hours:
+            ret += ', hours: {:.2f}'.format(self.hours)
+        return ret
 
 
 class Day:
