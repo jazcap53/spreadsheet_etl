@@ -21,18 +21,24 @@ class Event:
     def __init__(self, segment):
         if not len(segment) == 3:
             raise ValueError('Bad segment length')
-        if segment[0] not in 'bsw' or\
-                segment[0] == 'w' and segment[2] == '' or\
-                segment[2] == '0:00':  # TODO: replace with regex
+        if any(segment) and not segment[0] or\
+                len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or\
+                len(segment[0]) > 2 and segment[0][0] == 'w' and not segment[2] or\
+                len(segment[0]) > 2 and segment[2] == '0:00':  # TODO: replace with regex
             raise ValueError('Bad segment values')
-        self.action = segment[0].strip()[0]
-        self.mil_time = segment[1]
-        self.hours = segment[2] if segment[2] else None
+        if any(segment):
+            self.action = segment[0][0]
+            self.mil_time = segment[1]
+            self.hours = segment[2] if segment[2] else None
+        else:
+            self.action = None
+            self.mil_time = None
+            self.hours = None
 
     def __str__(self):
         ret = 'action: {}, time: {}'.format(self.action, self.mil_time)
         if self.hours:
-            ret += ', hours: {:.2f}'.format(self.hours)
+            ret += ', hours: {:.2f}'.format(float(self.hours))
         return ret
 
 
@@ -75,6 +81,8 @@ class ReadWeeks:
     """
 
     """
+    my_weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
     def __init__(self, infile):
         self.infile = infile
         self.weeks = []
@@ -101,12 +109,10 @@ class ReadWeeks:
                 self.sunday_date = self.match_to_date_obj(date_match)
                 print('\n' + str(self.sunday_date))  # TODO: debug line
                 self.new_week = Week(self.sunday_date)
-                #### self.weeks.append(self.new_week)
                 print(self.new_week)  # TODO: debug line
             else:
                 if any(no_commas[1:]):
                     self.load_line(no_commas[1:])
-                    self.have_unstored_event = True
 
     def is_header(self, l):
         return l[1] == 'Sun'  # TODO: this is just a placeholder
@@ -130,7 +136,18 @@ class ReadWeeks:
         return d_obj
 
     def load_line(self, line):
-        pass  # TODO: N.Y.I.  IMPLEMENT THIS NEXT (AFTER SOME TESTS)
+        event_ct = 0
+        for ix in range(7):
+            a_event = Event(line[3*ix: 3*ix + 3])
+            if a_event.action:
+                print('a_event is {} on {}, {}\n'.format(a_event, 
+                        self.to_my_day(ix),
+                        self.new_week.day_list[ix]))  # TODO: debug line
+                self.new_week.day_list[ix].add_event(a_event)
+                self.have_unstored_event = True
+
+    def to_my_day(self, ix):
+        return self.my_weekdays[ix]
 
 
 if __name__ == '__main__':
