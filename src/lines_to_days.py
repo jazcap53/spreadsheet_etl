@@ -73,6 +73,8 @@ class ReadWeeks:
         self.infile = infile
         self.weeks = []
         self.sunday_date = None
+        self.have_unstored_event = False
+        self.new_week = None
 
     def read_lines(self):
         """
@@ -81,25 +83,35 @@ class ReadWeeks:
         """
         for line in self.infile:
             no_commas = line.strip().split(',')
-            if self.is_header(no_commas):
+            if self.is_header(no_commas):  # TODO: needs further definition
                 continue
             if not any(no_commas):  # a blank line in spreadsheet
                 self.reset_week()
                 continue
             if not self.sunday_date:
                 date_match = self.check_for_date(no_commas[0])
-                if date_match:
-                    self.sunday_date = self.match_to_date_obj(date_match)
-                    print('\n' + str(self.sunday_date))  # TODO: debug line
-                    new_week = Week(self.sunday_date)
-                    self.weeks.append(new_week)
-                    print(new_week)  # TODO: debug line
-            
+                if not date_match:
+                    continue
+                self.sunday_date = self.match_to_date_obj(date_match)
+                print('\n' + str(self.sunday_date))  # TODO: debug line
+                self.new_week = Week(self.sunday_date)
+                #### self.weeks.append(self.new_week)
+                print(self.new_week)  # TODO: debug line
+            else:
+                if any(no_commas[1:]):
+                    self.load_line(no_commas[1:])
+                    self.have_unstored_event = True
+
     def is_header(self, l):
         return l[1] == 'Sun'  # TODO: this is just a placeholder
 
     def reset_week(self):
+        if self.sunday_date and self.new_week and self.have_unstored_event:
+            print('storing week for {}'.format(self.sunday_date))  # TODO: debug line
+            self.weeks.append(self.new_week)
         self.sunday_date = None
+        self.new_week = None
+        self.have_unstored_event = False
 
     def check_for_date(self, s):
         m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
@@ -110,6 +122,9 @@ class ReadWeeks:
         d = [int(m.group(x)) for x in (3, 1, 2)]
         d_obj = datetime.date(d[0], d[1], d[2])
         return d_obj
+
+    def load_line(self, line):
+        pass  # TODO: N.Y.I.  IMPLEMENT THIS NEXT (AFTER SOME TESTS)
 
 
 if __name__ == '__main__':
