@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2016-01-08
 
-# python: 3.5
+# python: 2.7, 3.5
 
 
 from datetime import date
