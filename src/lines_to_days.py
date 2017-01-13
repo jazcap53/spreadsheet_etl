@@ -51,9 +51,9 @@ class Day:
         self.events = []
 
     def __str__(self):
-        ret = '{}'.format(self.dt_date)
+        ret = '{}\n'.format(self.dt_date)
         for item in self.events:
-            ret += item.__str__()
+            ret += item.__str__() + '\n'
         return ret
 
     def add_event(self, an_event):
@@ -73,7 +73,11 @@ class Week:
         self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
 
     def __str__(self):
-        ret = '\n\t' + '\n\t'.join([x.__str__() for x in self.day_list])
+        ret = '\nWeek of Sunday, {}:\n'.format(self.day_list[0].dt_date)
+        underscores = '=' * (len(ret) - 2)
+        ret += underscores + '\n'
+        for i in range(7):
+            ret += '    ' + self.day_list[i].__str__()
         return ret
 
 
@@ -107,18 +111,18 @@ class ReadWeeks:
                 if not date_match:
                     continue
                 self.sunday_date = self.match_to_date_obj(date_match)
-                print('\n' + str(self.sunday_date))  # TODO: debug line
                 self.new_week = Week(self.sunday_date)
-                print(self.new_week)  # TODO: debug line
             if any(no_commas[1:]):
                 self.load_line(no_commas[1:])
+        self.reset_week()  # save any unstored data
+        for i in range(len(self.weeks)):
+            print(self.weeks[i])
 
     def is_header(self, l):
         return l[1] == 'Sun'  # TODO: this is just a placeholder
 
     def reset_week(self):
         if self.sunday_date and self.new_week and self.have_unstored_event:
-            print('storing week for {}'.format(self.sunday_date))  # TODO: debug line
             self.weeks.append(self.new_week)
         self.sunday_date = None
         self.new_week = None
@@ -139,9 +143,6 @@ class ReadWeeks:
         for ix in range(7):
             a_event = Event(line[3*ix: 3*ix + 3])
             if a_event.action:
-                print('{} on {}, {}'.format(a_event, 
-                        self.to_my_day(ix),
-                        self.new_week.day_list[ix].dt_date))  # TODO: debug line
                 self.new_week.day_list[ix].add_event(a_event)
                 self.have_unstored_event = True
 
