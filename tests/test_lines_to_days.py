@@ -9,7 +9,7 @@ from datetime import date
 import unittest
 from unittest import TestCase
 
-from lines_to_days import Event, Day, Week
+from lines_to_days import validate_segment, Event, Day, Week
 
 
 class TestEvent(TestCase):
@@ -25,11 +25,11 @@ class TestEvent(TestCase):
             my_event = Event(segment)
 
     def test___init___creates_valid_Event_with_valid_input_segment(self):
-        segment = ['b', '0:00', 7.50]
+        segment = ['b', '0:00', '7.50']
         my_event = Event(segment)
         self.assertEqual(my_event.action, 'b')
         self.assertEqual(my_event.mil_time, '0:00')
-        self.assertEqual(my_event.hours, 7.50)
+        self.assertEqual(my_event.hours, '7.50')
 
     def test___init___creates_valid_Event_with_valid_hours_empty_input_segment(self):
         segment = ['s', '13:15', '']
@@ -39,7 +39,7 @@ class TestEvent(TestCase):
         self.assertIsNone(my_event.hours)
 
     def test___str___returns_valid_string_on_valid_input_segment(self):
-        segment = ['b', '0:45', 6.30]
+        segment = ['b', '0:45', '6.30']
         my_event = Event(segment)
         my_string = my_event.__str__()
         self.assertEqual(my_string, 'action: b, time: 0:45, hours: 6.30')
@@ -68,7 +68,7 @@ class TestDay(TestCase):
             self.my_day.add_event([1, 2, 3])
 
     def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
-        self.my_day.add_event(Event(['s', '23:45', 1.00]))
+        self.my_day.add_event(Event(['s', '23:45', '1.00']))
         self.assertEqual(len(self.my_day.events), 1)
 
 
@@ -91,16 +91,3 @@ class TestWeek(TestCase):
         # f checks that day x is a Sunday
         f = lambda x: self.my_week.day_list[x].dt_date.weekday() == 6
         self.assertFalse(any(f(x) for x in range(1, 7)))
-
-
-
-
-
-
-
-
-
-
-
-
-

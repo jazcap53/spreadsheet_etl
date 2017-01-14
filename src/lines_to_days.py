@@ -111,20 +111,20 @@ class ReadWeeks:
         Blank lines mean 'go to the next week'.
         """
         for line in self.infile:
-            no_commas = line.strip().split(',')
-            if self.is_header(no_commas):  # TODO: needs further definition
+            line = line.strip().split(',')
+            if self.is_header(line):  # TODO: needs further definition
                 continue
-            if not any(no_commas):  # a blank line in spreadsheet
+            if not any(line):  # a blank line in spreadsheet
                 self.reset_week()
                 continue
             if not self.sunday_date:
-                my_match = self.check_for_date(no_commas[0])
+                my_match = self.check_for_date(line[0])
                 if not my_match:
                     continue
                 self.sunday_date = self.match_to_date_obj(my_match)
                 self.new_week = Week(self.sunday_date)
-            if any(no_commas[1:]):
-                self.load_line(no_commas[1:])
+            if any(line[1:]):
+                self.load_line(line[1:])
         self.reset_week()  # save any unstored data
         for i in range(len(self.weeks)):
             print(self.weeks[i])
