@@ -15,8 +15,8 @@ import sys
 
 def validate_segment(segment):
     """
-    valid segments: 'b', 'time', <'float'>
-                    's', 'time', <'float'>
+    valid segments: 'b', 'time', ['float']
+                    's', 'time', ['float']
                     'w', 'time', 'float'
     """
     if any(segment) and not segment[0] or \
