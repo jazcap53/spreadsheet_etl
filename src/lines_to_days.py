@@ -16,11 +16,12 @@ import sys
 def validate_segment(segment):
     """
     valid segments: 'b', 'time'[, 'float']
-                    's', 'time'[, 'float']
+                    's', 'time'
                     'w', 'time', 'float'
     """
-    if any(segment) and not segment[0] or \
+    if any(segment) and (not segment[0] or not segment[1]) or \
             len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
+            len(segment[0]) and segment[0][0] == 's' and segment[2] or \
             len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
             segment[2] != '' and not re.match(r'[1,2]?\d\.\d{2}', segment[2]):
         return False

@@ -12,6 +12,27 @@ from unittest import TestCase
 from lines_to_days import validate_segment, Event, Day, Week
 
 
+class TestValidateSegment(TestCase):
+
+    def test_non_null_segment_and_not_item_0_returns_false(self, seg=['', '4:15', '']):
+        self.assertFalse(validate_segment(seg))
+
+    def test_first_char_of_item_0_is_not_valid_returns_false(self, seg=['x', '11:30', '2.50']):
+        self.assertFalse(validate_segment(seg))
+
+    def test_extra_space_in_item_0_returns_true(self, seg=['b ', '22:45', '7.50']):
+        self.assertTrue(validate_segment(seg))
+
+    def test_item_0_is_s_and_item_2_is_not_blank_returns_false(self, seg=['s', '10:00', '1.00']):
+        self.assertFalse(validate_segment(seg))
+
+    def test_item_0_is_w_and_item_2_is_blank_returns_false(self, seg=['w', '0:00', '']):
+        self.assertFalse(validate_segment(seg))
+
+    def test_item_2_is_not_blank_and_does_not_match_regex_returns_false(self, seg=['w', '1:00', '1.a5']):
+        self.assertFalse(validate_segment(seg))
+
+
 class TestEvent(TestCase):
 
     def test___init___raises_ValueError_if_segment_len_gt_3(self):
@@ -68,7 +89,7 @@ class TestDay(TestCase):
             self.my_day.add_event([1, 2, 3])
 
     def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
-        self.my_day.add_event(Event(['s', '23:45', '1.00']))
+        self.my_day.add_event(Event(['s', '23:45', '']))
         self.assertEqual(len(self.my_day.events), 1)
 
 
