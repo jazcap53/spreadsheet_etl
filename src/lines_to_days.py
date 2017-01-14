@@ -19,12 +19,17 @@ class Event:
     of Events.
     """
     def __init__(self, segment):
+        """
+        valid segments: 'b', 'time', <'float'>
+                        's', 'time', <'float'>
+                        'w', 'time', 'float'
+        """
         if not len(segment) == 3:
             raise ValueError('Bad segment length')
-        if any(segment) and not segment[0] or\
-                len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or\
-                len(segment[0]) > 2 and segment[0][0] == 'w' and not segment[2] or\
-                len(segment[0]) > 2 and segment[2] == '0:00':  # TODO: replace with regex
+        if any(segment) and not segment[0] or \
+                len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
+                len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
+                len(segment[0]) and segment[2] == '0:00':  # TODO: replace with regex
             raise ValueError('Bad segment values')
         if any(segment):
             self.action = segment[0][0]
@@ -68,7 +73,7 @@ class Week:
     with the first Day being a Sunday.
     """
     def __init__(self, dt_date):
-        if dt_date.weekday() != 6:  # a Sunday
+        if dt_date.weekday() != 6:  # a Sunday, per datetime.date.weekday()
             raise ValueError
         self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
 
@@ -107,10 +112,10 @@ class ReadWeeks:
                 self.reset_week()
                 continue
             if not self.sunday_date:
-                date_match = self.check_for_date(no_commas[0])
-                if not date_match:
+                my_match = self.check_for_date(no_commas[0])
+                if not my_match:
                     continue
-                self.sunday_date = self.match_to_date_obj(date_match)
+                self.sunday_date = self.match_to_date_obj(my_match)
                 self.new_week = Week(self.sunday_date)
             if any(no_commas[1:]):
                 self.load_line(no_commas[1:])
@@ -139,7 +144,6 @@ class ReadWeeks:
         return d_obj
 
     def load_line(self, line):
-        event_ct = 0
         for ix in range(7):
             a_event = Event(line[3*ix: 3*ix + 3])
             if a_event.action:
