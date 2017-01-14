@@ -13,24 +13,30 @@ import re
 import sys
 
 
+def validate_segment(segment):
+    """
+    valid segments: 'b', 'time', <'float'>
+                    's', 'time', <'float'>
+                    'w', 'time', 'float'
+    """
+    if any(segment) and not segment[0] or \
+            len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
+            len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
+            segment[2] != '' and not re.match(r'[1,2]?\d\.\d{2}', segment[2]):
+        return False
+    return True
+
+
 class Event:
     """
     Each Event belongs to a Day, and is an item in that Day's list
     of Events.
     """
     def __init__(self, segment):
-        """
-        valid segments: 'b', 'time', <'float'>
-                        's', 'time', <'float'>
-                        'w', 'time', 'float'
-        """
         if not len(segment) == 3:
             raise ValueError('Bad segment length')
-        if any(segment) and not segment[0] or \
-                len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
-                len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
-                len(segment[0]) and segment[2] == '0:00':  # TODO: replace with regex
-            raise ValueError('Bad segment values')
+        if not validate_segment(segment):
+            raise ValueError('Bad segment value')
         if any(segment):
             self.action = segment[0][0]
             self.mil_time = segment[1]
