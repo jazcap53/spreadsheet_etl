@@ -82,7 +82,8 @@ class Week:
     def __init__(self, dt_date):
         if dt_date.weekday() != 6:  # a Sunday, per datetime.date.weekday()
             raise ValueError
-        self.day_list = [Day(dt_date + datetime.timedelta(days=x)) for x in range(7)]
+        self.day_list = [Day(dt_date + datetime.timedelta(days=x))
+                for x in range(7)]
 
     def __str__(self):
         ret = '\nWeek of Sunday, {}:\n'.format(self.day_list[0].dt_date)
@@ -95,47 +96,49 @@ class Week:
 
 class ReadWeeks:
     """
-
+    Read data from stream into Weeks, Days, and Events.
     """
-    my_weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
     def __init__(self, infile):
         self.infile = infile
         self.weeks = []
-        self.sunday_date = None
+        self.sunday_date = None  # the first day of each Week is a Sunday
         self.have_unstored_event = False
         self.new_week = None
 
     def read_lines(self):
         """
-        Ignore header lines, which are non-blank lines with certain characteristics.
-        Blank lines mean 'go to the next week'.
+        Skip header lines.
+        One or more blank lines mean 'this week has ended'.
         """
         for line in self.infile:
             line = line.strip().split(',')
-            if self.is_header(line):  # TODO: needs further definition
+            if self.is_header(line):
                 continue
-            if not any(line):  # a blank line in spreadsheet
+            if not any(line):  # we had a blank row in the spreadsheet
+                self.store_week()
                 self.reset_week()
                 continue
             if not self.sunday_date:
-                my_match = self.check_for_date(line[0])
-                if not my_match:
+                found_match = self.check_for_date(line[0])
+                if not found_match:  # we are not at the start of a week
                     continue
-                self.sunday_date = self.match_to_date_obj(my_match)
+                self.sunday_date = self.match_to_date_obj(found_match)
                 self.new_week = Week(self.sunday_date)
             if any(line[1:]):
                 self.load_line(line[1:])
-        self.reset_week()  # save any unstored data
+        self.store_week()  # saves any left-over unstored data
+        self.reset_week()  # for consistency
         for i in range(len(self.weeks)):
             print(self.weeks[i])
 
     def is_header(self, l):
-        return l[1] == 'Sun'  # TODO: this is just a placeholder
+        return l[1] == 'Sun'
 
-    def reset_week(self):
+    def store_week(self):
         if self.sunday_date and self.new_week and self.have_unstored_event:
             self.weeks.append(self.new_week)
+
+    def reset_week(self):
         self.sunday_date = None
         self.new_week = None
         self.have_unstored_event = False
@@ -156,9 +159,6 @@ class ReadWeeks:
             if a_event.action:
                 self.new_week.day_list[ix].add_event(a_event)
                 self.have_unstored_event = True
-
-    def to_my_day(self, ix):
-        return self.my_weekdays[ix]
 
 
 if __name__ == '__main__':
