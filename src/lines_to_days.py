@@ -105,6 +105,12 @@ class ReadWeeks:
         self.have_unstored_event = False
         self.new_week = None
 
+    def __str__(self):
+        ret = ''
+        for i in range(len(self.weeks)):
+            ret += self.weeks[i].__str__() + '\n'
+        return ret
+
     def read_lines(self):
         """
         Skip header lines.
@@ -128,8 +134,8 @@ class ReadWeeks:
                 self.load_line(line[1:])
         self.store_week()  # saves any left-over unstored data
         self.reset_week()  # for consistency
-        for i in range(len(self.weeks)):
-            print(self.weeks[i])
+        # for i in range(len(self.weeks)):
+        #     print(self.weeks[i])
 
     def is_header(self, l):
         return l[1] == 'Sun'
@@ -160,9 +166,42 @@ class ReadWeeks:
                 self.new_week.day_list[ix].add_event(a_event)
                 self.have_unstored_event = True
 
+    def purge_incomplete_data(self):
+        self.purge_tail()
+
+    def purge_tail(self):
+        week_ix = len(self.weeks) - 1
+        day_ix = 6
+        while week_ix > -1:
+            while day_ix > -1:
+                if not self.day_is_empty(week_ix, day_ix):
+                    break
+                day_ix -= 1
+            if day_ix > -1:
+                break
+            week_ix -= 1
+        if week_ix == -1 or day_ix == -1:
+            return
+        print(self.weeks[week_ix].day_list[day_ix].events[-1])
+
+
+    def day_is_empty(self, week_ix, day_ix):
+        return not len(self.weeks[week_ix].day_list[day_ix].events)
+
+    def get_final_event(self):
+        pass 
+
+    def pop_final_event(self):
+        pass
+
+    def purge_inner(self):
+        pass
+
 
 if __name__ == '__main__':
     filename = len(sys.argv) > 1 and sys.argv[1] or 'sheet_001.csv'
     with open(filename, 'r') as infile:
         r_w = ReadWeeks(infile)
         r_w.read_lines()
+        print(r_w)
+        r_w.purge_tail()
