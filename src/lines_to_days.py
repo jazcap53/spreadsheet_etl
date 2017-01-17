@@ -171,17 +171,15 @@ class ReadWeeks:
         week_ix = len(self.weeks) - 1
         day_ix = 6
         done = False
-        while week_ix > -1:
-            while day_ix > -1:
+        while not done and week_ix > -1:
+            while not done and day_ix > -1:
                 while not done and not self.day_is_empty(week_ix, day_ix):
                     if self.event_is_extra(self.weeks[week_ix].day_list[day_ix].events[-1]):
-                        print('popping {}'.format(self.weeks[week_ix].day_list[day_ix].events[-1]))
+                        # print('popping {}'.format(self.weeks[week_ix].day_list[day_ix].events[-1]))
                         self.weeks[week_ix].day_list[day_ix].events.pop()
                     else:
                         done = True
                 day_ix -= 1
-            if day_ix > -1:
-                break
             week_ix -= 1
 
     def day_is_empty(self, week_ix, day_ix):
