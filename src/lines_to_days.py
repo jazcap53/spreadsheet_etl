@@ -172,27 +172,25 @@ class ReadWeeks:
     def purge_tail(self):
         week_ix = len(self.weeks) - 1
         day_ix = 6
+        done = False
         while week_ix > -1:
             while day_ix > -1:
-                if not self.day_is_empty(week_ix, day_ix):
-                    break
+                while not done and not self.day_is_empty(week_ix, day_ix):
+                    if self.event_is_extra(self.weeks[week_ix].day_list[day_ix].events[-1]):
+                        print('popping {}'.format(self.weeks[week_ix].day_list[day_ix].events[-1]))
+                        self.weeks[week_ix].day_list[day_ix].events.pop()
+                    else:
+                        done = True
                 day_ix -= 1
             if day_ix > -1:
                 break
             week_ix -= 1
-        if week_ix == -1 or day_ix == -1:
-            return
-        print(self.weeks[week_ix].day_list[day_ix].events[-1])
-
 
     def day_is_empty(self, week_ix, day_ix):
         return not len(self.weeks[week_ix].day_list[day_ix].events)
 
-    def get_final_event(self):
-        pass 
-
-    def pop_final_event(self):
-        pass
+    def event_is_extra(self, event):
+        return event.action != 'b'
 
     def purge_inner(self):
         pass
@@ -203,5 +201,6 @@ if __name__ == '__main__':
     with open(filename, 'r') as infile:
         r_w = ReadWeeks(infile)
         r_w.read_lines()
-        print(r_w)
+        # print(r_w)
         r_w.purge_tail()
+        print(r_w)
