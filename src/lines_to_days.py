@@ -134,8 +134,6 @@ class ReadWeeks:
                 self.load_line(line[1:])
         self.store_week()  # saves any left-over unstored data
         self.reset_week()  # for consistency
-        # for i in range(len(self.weeks)):
-        #     print(self.weeks[i])
 
     def is_header(self, l):
         return l[1] == 'Sun'
