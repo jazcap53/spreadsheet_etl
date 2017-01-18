@@ -114,7 +114,8 @@ class ReadWeeks:
     def read_lines(self):
         """
         Skip header lines.
-        One or more blank lines mean 'this week has ended'.
+        Read and store Events a Week at a time.
+        One or more blank lines mean 'this Week has ended'.
         """
         for line in self.infile:
             line = line.strip().split(',')
@@ -189,7 +190,7 @@ class ReadWeeks:
         return event.action != 'b'
 
     def purge_inner(self):
-        pass
+        pass  # N.Y.I.
 
 
 if __name__ == '__main__':
