@@ -183,6 +183,9 @@ class ReadWeeks:
                 day_ix -= 1
             week_ix -= 1
 
+    def week_is_empty(self, week_ix):
+        return all([self.day_is_empty(week_ix, d) for d in range(7)])
+
     def day_is_empty(self, week_ix, day_ix):
         return not len(self.weeks[week_ix].day_list[day_ix].events)
 
@@ -205,14 +208,65 @@ class ReadWeeks:
                 while not done and not self.day_is_empty(week_ix, day_ix):
                     event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
                     this_event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
-                    if self.event_is_extra(this_event):
-                        print('popping {}'.format(this_event))
-                        self.weeks[week_ix].day_list[day_ix].events.pop(event_ix)
+                    if purging:
+                        if self.event_is_extra(this_event):
+                            print('popping {}'.format(this_event))
+                            self.weeks[week_ix].day_list[day_ix].events.pop(event_ix)
+                        else:
+                            # done = True
+                            purging = False
                     else:
-                        done = True
-                        purging = False
+                        if self.restarts_purge(this_event):
+                            purging = True
+                            # print('popping {}'.format(this_event))
+                            # self.weeks[week_ix].day_list[day_ix].events.pop(event_ix)
+                # TODO: INFINITE LOOP HERE!!!
                 day_ix -= 1
             week_ix -= 1
+
+    def get_final_event(self):
+        week_ix = self.get_final_nonempty_week()
+        if week_ix is not None:
+            day_ix = self.get_final_nonempty_day(week_ix)
+            event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
+            event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
+            return (week_ix, day_ix, event_ix, event)
+        return None
+
+    def get_previous_event(self, week_ix, day_ix, event_ix):
+        if event_ix:
+            event_ix -= 1
+        else:
+            if day_ix:
+                day_ix -= 1
+                event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
+            else:
+                if week_ix:
+                    week_ix -= 1
+                    day_ix = 6
+                    event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
+                else:
+                    return None
+        return (week_ix, day_ix, event_ix, event)
+
+
+    def get_final_nonempty_week(self):
+        week_ix = len(self.weeks) - 1
+        while week_ix > -1 and self.week_is_empty(week_ix):
+            week_ix -= 1
+        return None if week_ix == -1 else week_ix
+
+    def get_final_nonempty_day(self, week_ix):
+        """
+        param: week_ix is a non-None return value from self.get_final_nonempty_week()
+        returns: integer between 0 and 6 inclusive
+        """
+        day_ix = 6
+        while day_ix and self.day_is_empty(week_ix, day_ix):
+            day_ix -= 1
+        return day_ix
+
+
 
 
 
@@ -226,5 +280,9 @@ if __name__ == '__main__':
         r_w.read_lines()
         print(r_w)
         # r_w.purge_tail()
-        r_w.purge()
-        print(r_w)
+        # r_w.purge()
+        week_ix, day_ix, event_ix, event = r_w.get_final_event()
+        print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
+        for _ in range(15):
+            week_ix, day_ix, event_ix, event = r_w.get_previous_event(week_ix, day_ix, event_ix)
+            print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
