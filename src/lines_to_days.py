@@ -178,12 +178,17 @@ class ReadWeeks:
         return event.action == 'b' and (not event.mil_time or not event.hours)
 
     def stops_purge(self, event):
+        if event is None:
+            return True
         return event.action == 'b' and event.mil_time and event.hours
 
     def purge(self):
         purging = True
-        week_ix, day_ix, event_ix, event = self.get_final_event()  #### TODO: multiple None's
-        while event:  # event is None if there is no final event
+        event = None
+        final_event = self.get_final_event()
+        if final_event:
+            week_ix, day_ix, event_ix, event = final_event
+        while event:
             if purging:
                 if self.stops_purge(event):
                     purging = False
@@ -195,7 +200,11 @@ class ReadWeeks:
                     purging = True
                 else:
                     print('keeping {}'.format(event))
-            week_ix, day_ix, event_ix, event = self.get_previous_event(week_ix, day_ix, event_ix)  #### TODO: multiple None's
+            previous_event = self.get_previous_event(week_ix, day_ix, event_ix)
+            if previous_event:
+                week_ix, day_ix, event_ix, event = previous_event
+            else:
+                event = None
 
     def get_final_event(self):
         week_ix = self.get_final_nonempty_week()
@@ -204,13 +213,13 @@ class ReadWeeks:
             event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
             return (week_ix, day_ix, event_ix, event)
-        return (None, None, None, None)  #### TODO: multiple None's
+        return None
 
     def get_previous_event(self, week_ix, day_ix, event_ix):
         """
         pre: week_ix, day_ix, event_ix are not None
         """
-        ret_val = (None, None, None, None)  #### TODO: multiple None's
+        ret_val = None
         if event_ix:
             event_ix -= 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
