@@ -165,24 +165,6 @@ class ReadWeeks:
                 self.new_week.day_list[ix].add_event(a_event)
                 self.have_unstored_event = True
 
-    def purge_incomplete_data(self):
-        self.purge_tail()
-
-    def purge_tail(self):
-        week_ix = len(self.weeks) - 1
-        day_ix = 6
-        done = False
-        while not done and week_ix > -1:
-            while not done and day_ix > -1:
-                while not done and not self.day_is_empty(week_ix, day_ix):
-                    if self.event_is_extra(self.weeks[week_ix].day_list[day_ix].events[-1]):
-                        # print('popping {}'.format(self.weeks[week_ix].day_list[day_ix].events[-1]))
-                        self.weeks[week_ix].day_list[day_ix].events.pop()
-                    else:
-                        done = True
-                day_ix -= 1
-            week_ix -= 1
-
     def week_is_empty(self, week_ix):
         return all([self.day_is_empty(week_ix, d) for d in range(7)])
 
@@ -198,7 +180,8 @@ class ReadWeeks:
     def stops_purge(self, event):
         return event.action == 'b' and event.mil_time and event.hours
 
-    def purge_new(self):
+    # TODO: rename
+    def purge(self):
         purging = True
         week_ix, day_ix, event_ix, event = self.get_final_event()
         while event:
@@ -279,12 +262,5 @@ if __name__ == '__main__':
         print(r_w)
         # r_w.purge_tail()
         # r_w.purge()
-        r_w.purge_new()
-        '''
-        week_ix, day_ix, event_ix, event = r_w.get_final_event()
-        print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
-        for _ in range(15):
-            week_ix, day_ix, event_ix, event = r_w.get_previous_event(week_ix, day_ix, event_ix)
-            print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
-        '''
+        r_w.purge()
         print(r_w)
