@@ -180,11 +180,10 @@ class ReadWeeks:
     def stops_purge(self, event):
         return event.action == 'b' and event.mil_time and event.hours
 
-    # TODO: rename
     def purge(self):
         purging = True
         week_ix, day_ix, event_ix, event = self.get_final_event()
-        while event:
+        while event:  # event is None if there is no final event
             if purging:
                 if self.stops_purge(event):
                     purging = False
@@ -207,19 +206,24 @@ class ReadWeeks:
             return (week_ix, day_ix, event_ix, event)
         return (None, None, None, None)
 
-    # TODO: THIS NEEDS MAJOR REWRITE
     def get_previous_event(self, week_ix, day_ix, event_ix):
+        """
+        pre: week_ix, day_ix, event_ix are not None
+        """
         if event_ix:
             event_ix -= 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
         else:
             week_ix, day_ix = self.get_previous_nonempty_day(week_ix, day_ix)
-            if week_ix is not None and day_ix is not None:
+            if week_ix is not None:  # there was a previous nonempty day
                 event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
                 print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
                 event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
-        return (None, None, None, None) if week_ix is None else \
-                (week_ix, day_ix, event_ix, event)
+            else:
+                return (None, None, None, None)
+        if week_ix is not None:
+            return (week_ix, day_ix, event_ix, event)
+        return (None, None, None, None)
 
     def get_final_nonempty_week(self):
         week_ix = len(self.weeks) - 1
