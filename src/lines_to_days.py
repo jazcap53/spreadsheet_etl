@@ -210,6 +210,7 @@ class ReadWeeks:
         """
         pre: week_ix, day_ix, event_ix are not None
         """
+        ret_val = (None, None, None, None)
         if event_ix:
             event_ix -= 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
@@ -219,11 +220,9 @@ class ReadWeeks:
                 event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
                 print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
                 event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
-            else:
-                return (None, None, None, None)
         if week_ix is not None:
-            return (week_ix, day_ix, event_ix, event)
-        return (None, None, None, None)
+            ret_val = (week_ix, day_ix, event_ix, event)
+        return ret_val
 
     def get_final_nonempty_week(self):
         week_ix = len(self.weeks) - 1
