@@ -196,13 +196,15 @@ class ReadWeeks:
                 if self.stops_purge(event):
                     purging = False
                 else:
-                    print('popping {}'.format(event))
+                    if __debug__:
+                        print('popping {}'.format(event))
                     self.weeks[week_ix].day_list[day_ix].events.pop(event_ix)
             else:
                 if self.restarts_purge(event):
                     purging = True
                 else:
-                    print('keeping {}'.format(event))
+                    if __debug__:
+                        print('keeping {}'.format(event))
             previous_event = self.get_previous_event(week_ix, day_ix, event_ix)
             if previous_event:  # None or a 4-tuple
                 week_ix, day_ix, event_ix, event = previous_event
@@ -230,7 +232,8 @@ class ReadWeeks:
             week_ix, day_ix = self.get_previous_nonempty_day(week_ix, day_ix)
             if week_ix is not None:  # there was a previous nonempty day
                 event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
-                print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
+                if __debug__:
+                    print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
                 event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
         if week_ix is not None:
             ret_val = (week_ix, day_ix, event_ix, event)
@@ -274,8 +277,7 @@ if __name__ == '__main__':
     with open(filename, 'r') as infile:
         r_w = ReadWeeks(infile)
         r_w.read_lines()
-        print(r_w)
-        # r_w.purge_tail()
-        # r_w.purge()
+        if __debug__:
+            print(r_w)
         r_w.purge()
         print(r_w)
