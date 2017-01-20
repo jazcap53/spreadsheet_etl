@@ -182,7 +182,7 @@ class ReadWeeks:
 
     def purge(self):
         purging = True
-        week_ix, day_ix, event_ix, event = self.get_final_event()
+        week_ix, day_ix, event_ix, event = self.get_final_event()  #### TODO: multiple None's
         while event:  # event is None if there is no final event
             if purging:
                 if self.stops_purge(event):
@@ -195,7 +195,7 @@ class ReadWeeks:
                     purging = True
                 else:
                     print('keeping {}'.format(event))
-            week_ix, day_ix, event_ix, event = self.get_previous_event(week_ix, day_ix, event_ix)
+            week_ix, day_ix, event_ix, event = self.get_previous_event(week_ix, day_ix, event_ix)  #### TODO: multiple None's
 
     def get_final_event(self):
         week_ix = self.get_final_nonempty_week()
@@ -204,18 +204,18 @@ class ReadWeeks:
             event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
             return (week_ix, day_ix, event_ix, event)
-        return (None, None, None, None)
+        return (None, None, None, None)  #### TODO: multiple None's
 
     def get_previous_event(self, week_ix, day_ix, event_ix):
         """
         pre: week_ix, day_ix, event_ix are not None
         """
-        ret_val = (None, None, None, None)
+        ret_val = (None, None, None, None)  #### TODO: multiple None's
         if event_ix:
             event_ix -= 1
             event = self.weeks[week_ix].day_list[day_ix].events[event_ix]
         else:
-            week_ix, day_ix = self.get_previous_nonempty_day(week_ix, day_ix)
+            week_ix, day_ix = self.get_previous_nonempty_day(week_ix, day_ix)  #### TODO: multiple None's
             if week_ix is not None:  # there was a previous nonempty day
                 event_ix = len(self.weeks[week_ix].day_list[day_ix].events) - 1
                 print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
@@ -248,13 +248,13 @@ class ReadWeeks:
                 week_ix -= 1
                 day_ix = 6
             else:  # we were already on day 0 of week 0
-                return (None, None)
+                return (None, None)  #### TODO: multiple None's
         return week_ix, day_ix
 
     def get_previous_nonempty_day(self, week_ix, day_ix):
         week_ix, day_ix = self.get_previous_day(week_ix, day_ix)
         while week_ix is not None and self.day_is_empty(week_ix, day_ix):
-            week_ix, day_ix = self.get_previous_day(week_ix, day_ix)
+            week_ix, day_ix = self.get_previous_day(week_ix, day_ix)  #### TODO: multiple None's
         return (week_ix, day_ix)
 
 if __name__ == '__main__':
