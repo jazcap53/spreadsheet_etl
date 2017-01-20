@@ -186,7 +186,7 @@ class ReadWeeks:
         purging = True
         event = None
         final_event = self.get_final_event()
-        if final_event:
+        if final_event:  # None or a 4-tuple
             week_ix, day_ix, event_ix, event = final_event
         while event:
             if purging:
@@ -201,7 +201,7 @@ class ReadWeeks:
                 else:
                     print('keeping {}'.format(event))
             previous_event = self.get_previous_event(week_ix, day_ix, event_ix)
-            if previous_event:
+            if previous_event:  # None or a 4-tuple
                 week_ix, day_ix, event_ix, event = previous_event
             else:
                 event = None
