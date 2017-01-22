@@ -9,7 +9,7 @@ from datetime import date
 import unittest
 from unittest import TestCase
 
-from lines_to_days import validate_segment, Event, Day, Week
+from container_objs import validate_segment, Event, Day, Week
 
 
 class TestValidateSegment(TestCase):
