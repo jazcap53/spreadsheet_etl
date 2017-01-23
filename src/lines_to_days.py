@@ -26,16 +26,6 @@ class ReadAndPurge:
         sys.exit(0)
 
     weeks = []
-    # r = Read()
-    # p = Purge()
-
-    def __init__(self):
-        # self.infile = infile
-        # self.weeks = []
-        # self.sunday_date = None  # the first day of each Week is a Sunday
-        # self.have_unstored_event = False
-        # self.new_week = None
-        pass
 
     def __str__(self):
         ret = ''
@@ -47,7 +37,6 @@ class ReadAndPurge:
     class Read:
 
         def __init__(self):
-            #### nonlocal infile, weeks
             self.infile = ReadAndPurge.infile
             self.weeks = ReadAndPurge.weeks
             self.sunday_date = None  # the first day of each Week is a Sunday
