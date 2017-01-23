@@ -12,12 +12,13 @@ from datetime import date
 import re
 import sys
 
-from container_objs import validate_segment, Event, Day, Week
+from container_objs import Event, Week
+from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
 class ReadAndPurge:
     """
-    Read data from stream into Weeks, Days, and Events.
+    Read data from stream into Weeks and Events.
     """
     try:
         infile = open(sys.argv[1])
