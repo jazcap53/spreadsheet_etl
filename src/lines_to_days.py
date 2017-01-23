@@ -20,6 +20,8 @@ class ReadAndPurge:
     """
     Read data from stream into Weeks and Events.
     """
+
+    '''
     try:
         infile = open(sys.argv[1])
     except IndexError:
@@ -27,6 +29,12 @@ class ReadAndPurge:
         sys.exit(0)
 
     weeks = []
+    '''
+
+    def __init__(self, file_read_wrapper):  # file_read_wrapper is replaced by a fake during testing
+        self.file_read_wrapper = file_read_wrapper
+        self.infile = self.file_read_wrapper.open()
+        self.weeks = []
 
     def __str__(self):
         ret = ''
@@ -34,18 +42,30 @@ class ReadAndPurge:
             ret += self.weeks[i].__str__() + '\n'
         return ret
 
+    def createRead(self):
+        return ReadAndPurge.Read(self)
+
+    def createPurge(self):
+        return ReadAndPurge.Purge(self)
 
     class Read:
 
-        def __init__(self):
-            self.infile = ReadAndPurge.infile
-            self.weeks = ReadAndPurge.weeks
+        def __init__(self, read_and_purge_instance):
+
+            self.infile = read_and_purge_instance.infile
+            self.weeks = read_and_purge_instance.weeks
+            # self.weeks = weeks
+            # self.infile = ReadAndPurge.infile
+            # self.weeks = ReadAndPurge.weeks
             self.sunday_date = None  # the first day of each Week is a Sunday
             self.have_unstored_event = False
             self.new_week = None
 
         def __str__(self):
-            return('Read.__str__() called\n')
+            ret = ''
+            for i in range(len(self.weeks)):
+                ret += self.weeks[i].__str__() + '\n'
+            return ret
 
         def read_lines(self):
             """
@@ -104,12 +124,15 @@ class ReadAndPurge:
 
     class Purge:
 
-        def __init__(self):
+        def __init__(self, read_and_purge_instance):
             # nonlocal weeks
-            self.weeks = ReadAndPurge.weeks
+            self.weeks = read_and_purge_instance.weeks
 
         def __str__(self):
-            return('Purge.__str__() called\n')
+            ret = ''
+            for i in range(len(self.weeks)):
+                ret += self.weeks[i].__str__() + '\n'
+            return ret
 
         def week_is_empty(self, week_ix):
             return all([self.day_is_empty(week_ix, d) for d in range(7)])
