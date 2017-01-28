@@ -16,6 +16,7 @@ infile = None
 def print_out(weeks):
     for week in weeks:
         print(week)
+    print()
 
 def open_file(file_read_wrapper):
     return file_read_wrapper.open()
