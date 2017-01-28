@@ -7,9 +7,6 @@ import sys
 from container_objs import Week, Event
 
 
-# sunday_date = None
-# have_unstored_event = False
-# new_week = None
 infile = None
 
 
@@ -22,16 +19,13 @@ def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
 def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False, new_week=None):
-    line_count = 0
     for line in infile:
-        line_count += 1
         line = line.strip().split(',')
         if is_header(line):
             continue
         if not any(line):  # we had a blank row in the spreadsheet
             weeks, sunday_date, have_unstored_event, new_week = store_week(
                     weeks, sunday_date, have_unstored_event, new_week)
-            sunday_date, have_unstored_event, new_week = reset_week(sunday_date, have_unstored_event, new_week)
             continue
         if not sunday_date:
             found_match = check_for_date(line[0])
@@ -56,12 +50,6 @@ def store_week(weeks, sunday_date, have_unstored_event, new_week):
         return weeks, None, False, None
     return weeks, sunday_date, have_unstored_event, new_week
 
-def reset_week(sunday_date, have_unstored_event, new_week):
-    return None, False, None
-    # sunday_date = None
-    # have_unstored_event = False
-    # new_week = None
-
 def check_for_date(s):
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
     return m if m else None
@@ -79,4 +67,3 @@ def load_line(line, new_week):
             new_week.day_list[ix].add_event(a_event)
             have_unstored_event = True
     return have_unstored_event, new_week
-
