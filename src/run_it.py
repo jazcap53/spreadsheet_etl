@@ -4,17 +4,17 @@
 
 
 import sys
-from lines_to_days import ReadAndPurge
+from lines_to_days import Read, Purge
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
+weeks = []
+
 if __name__ == '__main__':
-    r_a_p = ReadAndPurge(FileReadAccessWrapper(sys.argv[1]))
-    r = r_a_p.createRead()
+    r = Read(weeks, FileReadAccessWrapper(sys.argv[1]))
+    r.open_file()
     r.read_lines()
-    # print(r_a_p)
     print(r)
-    p = r_a_p.createPurge()
+    p = Purge(weeks)
     p.purge()
-    # print(r_a_p)
     print(p)
