@@ -24,7 +24,7 @@ class Read:
         self.sunday_date = None  # the first day of each Week is a Sunday
         self.have_unstored_event = False
         self.new_week = None
-        self.input_file_name = None
+        self.infile = None
 
     def __str__(self):
         ret = ''
@@ -33,7 +33,7 @@ class Read:
         return ret
 
     def open_file(self):
-        self.input_file_name = self.file_read_wrapper.open()
+        self.infile = self.file_read_wrapper.open()
 
     def read_lines(self):
         """
@@ -41,7 +41,7 @@ class Read:
         Read and store Events a Week at a time.
         One or more blank lines mean 'this Week has ended'.
         """
-        for line in self.input_file_name:
+        for line in self.infile:
             line = line.strip().split(',')
             if self.is_header(line):
                 continue
