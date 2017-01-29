@@ -64,8 +64,8 @@ def match_to_date_obj(m):
 
 def load_line(line, new_week):
     for ix in range(7):
-        a_event = Event(line[3*ix: 3*ix + 3])
-        if new_week and a_event.action:
-            new_week.day_list[ix].add_event(a_event)
+        an_event = Event(line[3*ix: 3*ix + 3])
+        if new_week and an_event.action:
+            new_week.day_list[ix].add_event(an_event)
             have_unstored_event = True
     return have_unstored_event, new_week
