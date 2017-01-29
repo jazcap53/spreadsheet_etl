@@ -1,3 +1,8 @@
+# file: src/read_funs.py
+# andrew jarcho
+# 2017-01-25
+
+
 from __future__ import print_function
 
 import re
