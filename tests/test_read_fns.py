@@ -1,4 +1,4 @@
-# file: tests/test_read_funs.py
+# file: tests/test_read_fns.py
 # andrew jarcho
 # 2017-01-28
 
@@ -11,10 +11,10 @@ import unittest
 from unittest import TestCase
 
 from tests.file_access_wrappers import FakeFileWrapper
-from src.read_funs import open_file, read_lines, is_header
+from src.read_fns import open_file, read_lines, is_header
 
 
-class TestReadFuns(TestCase):
+class TestReadFns(TestCase):
 
     def setUp(self):
         self.file_wrapper = FakeFileWrapper(

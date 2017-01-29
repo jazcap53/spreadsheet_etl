@@ -1,4 +1,4 @@
-# file: src/read_funs.py
+# file: src/read_fns.py
 # andrew jarcho
 # 2017-01-25
 
