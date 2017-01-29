@@ -2,12 +2,8 @@ from __future__ import print_function
 
 import re
 import datetime
-import sys
 
 from container_objs import Week, Event
-
-
-infile = None
 
 
 def print_out(weeks):
@@ -15,10 +11,13 @@ def print_out(weeks):
         print(week)
     print()
 
+
 def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
-def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False, new_week=None):
+
+def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
+        new_week=None):
     for line in infile:
         line = line.strip().split(',')
         if is_header(line):
@@ -34,15 +33,15 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False, new_w
             sunday_date = match_to_date_obj(found_match)
             new_week = Week(sunday_date)
         if any(line[1:]):
-            if type(new_week) == type(True):
-                print("new_week is {}".format(new_week))
-                sys.exit(1)
             have_unstored_event, new_week = load_line(line[1:], new_week)
-    store_week(weeks, sunday_date, have_unstored_event, new_week)  # saves any left-over unstored data
+    # save any left-over unstored data
+    store_week(weeks, sunday_date, have_unstored_event, new_week)
     return weeks
+
 
 def is_header(l):
     return l[1] == 'Sun'
+
 
 def store_week(weeks, sunday_date, have_unstored_event, new_week):
     if sunday_date  and have_unstored_event and new_week:
@@ -50,15 +49,18 @@ def store_week(weeks, sunday_date, have_unstored_event, new_week):
         return weeks, None, False, None
     return weeks, sunday_date, have_unstored_event, new_week
 
+
 def check_for_date(s):
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
     return m if m else None
+
 
 def match_to_date_obj(m):
     # group(3) is the year, group(1) is the month, group(2) is the day
     d = [int(m.group(x)) for x in (3, 1, 2)]
     d_obj = datetime.date(d[0], d[1], d[2])
     return d_obj
+
 
 def load_line(line, new_week):
     for ix in range(7):
