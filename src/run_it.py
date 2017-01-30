@@ -1,12 +1,15 @@
-# file: run_it.py
+# file: src/run_it.py
 # andrew jarcho
 # 2017-01-21
 
+# python: 2.7, 3.5
+
+
+from __future__ import print_function
 
 import sys
 import read_fns
 import purge_fns
-# from lines_to_days import Read, Purge
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
@@ -20,9 +23,8 @@ def print_out(weeks):
 if __name__ == '__main__':
     infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
     weeks = read_fns.read_lines(infile, weeks)
-    print_out(weeks)
+    if __debug__:
+        print_out(weeks)
     weeks = purge_fns.purge(weeks)
-    print_out(weeks)
-    # p = Purge(weeks)
-    # p.purge()
-    # print(p)
+    if __debug__:
+        print_out(weeks)
