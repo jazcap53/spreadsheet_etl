@@ -16,25 +16,10 @@ from container_objs import Event, Week
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
-def week_is_empty(weeks, week_ix):
-    return all([day_is_empty(weeks, week_ix, d) for d in range(7)])
-
-
-def day_is_empty(weeks, week_ix, day_ix):
-    return not len(weeks[week_ix].day_list[day_ix].events)
-
-
-def restarts_purge(event):
-    return event.action == 'b' and (not event.mil_time or not event.hours)
-
-
-def stops_purge(event):
-    if event is None:
-        return True
-    return event.action == 'b' and event.mil_time and event.hours
-
-
 def purge(weeks):
+    """
+    Called by: client code
+    """
     purging = True
     event = None
     final_event = get_final_event(weeks)
@@ -63,6 +48,9 @@ def purge(weeks):
 
 
 def get_final_event(weeks):
+    """
+    Called by: purge()
+    """
     week_ix = get_final_nonempty_week(weeks)
     if week_ix is not None:
         day_ix = get_final_nonempty_day(weeks, week_ix)
@@ -72,8 +60,47 @@ def get_final_event(weeks):
     return None
 
 
+def get_final_nonempty_week(weeks):
+    """
+    Called by: get_final_event()
+    """
+    week_ix = len(weeks) - 1
+    while week_ix > -1 and week_is_empty(weeks, week_ix):
+        week_ix -= 1
+    return None if week_ix == -1 else week_ix
+
+
+def get_final_nonempty_day(weeks, week_ix):
+    """
+    Called by: get_final_event()
+    param: week_ix is a non-None return value from get_final_nonempty_week()
+    returns: integer between 0 and 6 inclusive
+    """
+    day_ix = 6
+    while day_ix and day_is_empty(weeks, week_ix, day_ix):
+        day_ix -= 1
+    return day_ix
+
+
+def stops_purge(event):
+    """
+    Called by: purge()
+    """
+    if event is None:
+        return True
+    return event.action == 'b' and event.mil_time and event.hours
+
+
+def restarts_purge(event):
+    """
+    Called by: purge()
+    """
+    return event.action == 'b' and (not event.mil_time or not event.hours)
+
+
 def get_previous_event(weeks, week_ix, day_ix, event_ix):
     """
+    Called by: purge()
     pre: week_ix, day_ix, event_ix are not None
     """
     ret_val = None
@@ -92,22 +119,19 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix):
     return ret_val
 
 
-def get_final_nonempty_week(weeks):
-    week_ix = len(weeks) - 1
-    while week_ix > -1 and week_is_empty(weeks, week_ix):
-        week_ix -= 1
-    return None if week_ix == -1 else week_ix
+def week_is_empty(weeks, week_ix):
+    """
+    Called by: get_final_nonempty_week()
+    """
+    return all([day_is_empty(weeks, week_ix, d) for d in range(7)])
 
 
-def get_final_nonempty_day(weeks, week_ix):
+def day_is_empty(weeks, week_ix, day_ix):
     """
-    param: week_ix is a non-None return value from get_final_nonempty_week()
-    returns: integer between 0 and 6 inclusive
+    Called by: week_is_empty(), get_final_nonempty_day(),
+               get_previous_nonempty_day()
     """
-    day_ix = 6
-    while day_ix and day_is_empty(weeks, week_ix, day_ix):
-        day_ix -= 1
-    return day_ix
+    return not len(weeks[week_ix].day_list[day_ix].events)
 
 
 def get_previous_day(week_ix, day_ix):

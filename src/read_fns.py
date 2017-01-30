@@ -12,11 +12,17 @@ from container_objs import Week, Event
 
 
 def open_file(file_read_wrapper):
+    """
+    Called by: client code
+    """
     return file_read_wrapper.open()
 
 
 def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
         new_week=None):
+    """
+    Called by: client code
+    """
     for line in infile:
         line = line.strip().split(',')
         if is_header(line):
@@ -39,22 +45,34 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
 
 
 def is_header(l):
+    """
+    Called by: read_lines()
+    """
     return l[1] == 'Sun'
 
 
 def store_week(weeks, sunday_date, have_unstored_event, new_week):
-    if sunday_date  and have_unstored_event and new_week:
+    """
+    Called by: read_lines()
+    """
+    if sunday_date and have_unstored_event and new_week:
         weeks.append(new_week)
         return weeks, None, False, None
     return weeks, sunday_date, have_unstored_event, new_week
 
 
 def check_for_date(s):
+    """
+    Called by: read_lines()
+    """
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
     return m if m else None
 
 
 def match_to_date_obj(m):
+    """
+    Called by: read_lines()
+    """
     # group(3) is the year, group(1) is the month, group(2) is the day
     d = [int(m.group(x)) for x in (3, 1, 2)]
     d_obj = datetime.date(d[0], d[1], d[2])
@@ -62,6 +80,9 @@ def match_to_date_obj(m):
 
 
 def load_line(line, new_week):
+    """
+    Called by: read_lines()
+    """
     for ix in range(7):
         an_event = Event(line[3*ix: 3*ix + 3])
         if new_week and an_event.action:
