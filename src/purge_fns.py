@@ -70,6 +70,21 @@ def get_final_nonempty_week(weeks):
     return None if week_ix == -1 else week_ix
 
 
+def week_is_empty(weeks, week_ix):
+    """
+    Called by: get_final_nonempty_week()
+    """
+    return all([day_is_empty(weeks, week_ix, d) for d in range(7)])
+
+
+def day_is_empty(weeks, week_ix, day_ix):
+    """
+    Called by: week_is_empty(), get_final_nonempty_day(),
+               get_previous_nonempty_day()
+    """
+    return not len(weeks[week_ix].day_list[day_ix].events)
+
+
 def get_final_nonempty_day(weeks, week_ix):
     """
     Called by: get_final_event()
@@ -89,13 +104,6 @@ def stops_purge(event):
     if event is None:
         return True
     return event.action == 'b' and event.mil_time and event.hours
-
-
-def restarts_purge(event):
-    """
-    Called by: purge()
-    """
-    return event.action == 'b' and (not event.mil_time or not event.hours)
 
 
 def get_previous_event(weeks, week_ix, day_ix, event_ix):
@@ -119,22 +127,17 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix):
     return ret_val
 
 
-def week_is_empty(weeks, week_ix):
+def restarts_purge(event):
     """
-    Called by: get_final_nonempty_week()
+    Called by: purge()
     """
-    return all([day_is_empty(weeks, week_ix, d) for d in range(7)])
-
-
-def day_is_empty(weeks, week_ix, day_ix):
-    """
-    Called by: week_is_empty(), get_final_nonempty_day(),
-               get_previous_nonempty_day()
-    """
-    return not len(weeks[week_ix].day_list[day_ix].events)
+    return event.action == 'b' and (not event.mil_time or not event.hours)
 
 
 def get_previous_day(week_ix, day_ix):
+    """
+    Called by: get_previous_nonempty_day()
+    """
     if day_ix:
         day_ix -= 1
     else:
@@ -147,6 +150,9 @@ def get_previous_day(week_ix, day_ix):
 
 
 def get_previous_nonempty_day(weeks, week_ix, day_ix):
+    """
+    Called by: get_previous_event()
+    """
     week_ix, day_ix = get_previous_day(week_ix, day_ix)
     while week_ix is not None and day_is_empty(weeks, week_ix, day_ix):
         week_ix, day_ix = get_previous_day(week_ix, day_ix)
