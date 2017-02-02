@@ -6,12 +6,14 @@
 
 import io
 
-from datetime import date
+import datetime
 import unittest
 from unittest import TestCase
 
 from tests.file_access_wrappers import FakeFileWrapper
-from src.read_fns import open_file, read_lines, is_header
+from src.read_fns import open_file, read_lines, is_header, store_week
+from src.read_fns import check_for_date
+from src.container_objs import Week
 
 
 class TestReadFns(TestCase):
@@ -53,3 +55,28 @@ class TestReadFns(TestCase):
         line = self.infile.readline().strip().split(',')
         line = self.infile.readline().strip().split(',')
         self.assertFalse(is_header(line))
+
+    def test_store_week_appends_week_to_week_list(self):
+        sunday_date = datetime.date(2016, 12, 4)
+        have_unstored_event = True
+        old_weeks = self.weeks[:]
+        new_week = Week(sunday_date)
+        self.weeks, sunday_date, have_unstored_event, new_week = store_week(
+                self.weeks, sunday_date, have_unstored_event, new_week)
+        self.assertEqual(len(self.weeks), len(old_weeks) + 1)
+
+    def test_check_for_date_matches_date_in_correct_format(self):
+        date_string = '12/34/5678'
+        good_match = check_for_date(date_string)
+        self.assertTrue(good_match)
+
+    def test_check_for_date_rejects_date_with_hyphens(self):
+        date_string = '12-34-5678'
+        good_match = check_for_date(date_string)
+        self.assertFalse(good_match)
+
+    def test_check_for_date_rejects_date_with_alpha(self):
+        date_string = 'a2/34/5678'
+        good_match = check_for_date(date_string)
+        self.assertFalse(good_match)
+

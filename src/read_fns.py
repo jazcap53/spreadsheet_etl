@@ -65,6 +65,7 @@ def check_for_date(s):
     """
     Called by: read_lines()
     """
+    # TODO: replace with more sophisticated test?
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
     return m if m else None
 
@@ -75,7 +76,7 @@ def match_to_date_obj(m):
     """
     # group(3) is the year, group(1) is the month, group(2) is the day
     d = [int(m.group(x)) for x in (3, 1, 2)]
-    d_obj = datetime.date(d[0], d[1], d[2])
+    d_obj = datetime.date(d[0], d[1], d[2])  # year, month, day
     return d_obj
 
 
