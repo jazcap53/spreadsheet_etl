@@ -12,7 +12,7 @@ from datetime import date
 import re
 import sys
 
-from container_objs import Event, Week
+from container_objs import print_event
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
@@ -31,14 +31,18 @@ def purge(weeks):
                 purging = False
             else:
                 if __debug__:
-                    print('popping {}'.format(event))
+                    print('popping ', end='')
+                    print_event(event)
+                    # print('popping {}'.format(event))
                 weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if restarts_purge(event):
                 purging = True
             else:
                 if __debug__:
-                    print('keeping {}'.format(event))
+                    print('keeping ', end='')
+                    print_event(event)
+                    # print('keeping {}'.format(event))
         previous_event = get_previous_event(weeks, week_ix, day_ix, event_ix)
         if previous_event:  # None or a 4-tuple
             week_ix, day_ix, event_ix, event = previous_event

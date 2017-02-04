@@ -19,7 +19,7 @@ weeks = []
 def print_out(weeks):
     for week in weeks:
         container_objs.print_week(week)
-    # print()
+    print()
 
 if __name__ == '__main__':
     infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
