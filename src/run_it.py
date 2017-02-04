@@ -10,6 +10,7 @@ from __future__ import print_function
 import sys
 import read_fns
 import purge_fns
+import container_objs
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
@@ -17,8 +18,8 @@ weeks = []
 
 def print_out(weeks):
     for week in weeks:
-        print(week)
-    print()
+        container_objs.print_week(week)
+    # print()
 
 if __name__ == '__main__':
     infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))

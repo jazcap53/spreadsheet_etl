@@ -32,7 +32,7 @@ def purge(weeks):
             else:
                 if __debug__:
                     print('popping {}'.format(event))
-                weeks[week_ix].day_list[day_ix].events.pop(event_ix)
+                weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if restarts_purge(event):
                 purging = True
@@ -54,8 +54,8 @@ def get_final_event(weeks):
     week_ix = get_final_nonempty_week(weeks)
     if week_ix is not None:
         day_ix = get_final_nonempty_day(weeks, week_ix)
-        event_ix = len(weeks[week_ix].day_list[day_ix].events) - 1
-        event = weeks[week_ix].day_list[day_ix].events[event_ix]
+        event_ix = len(weeks[week_ix][day_ix].events) - 1
+        event = weeks[week_ix][day_ix].events[event_ix]
         return (week_ix, day_ix, event_ix, event)
     return None
 
@@ -82,7 +82,7 @@ def day_is_empty(weeks, week_ix, day_ix):
     Called by: week_is_empty(), get_final_nonempty_day(),
                get_previous_nonempty_day()
     """
-    return not len(weeks[week_ix].day_list[day_ix].events)
+    return not len(weeks[week_ix][day_ix].events)
 
 
 def get_final_nonempty_day(weeks, week_ix):
@@ -114,14 +114,14 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix):
     ret_val = None
     if event_ix:
         event_ix -= 1
-        event = weeks[week_ix].day_list[day_ix].events[event_ix]
+        event = weeks[week_ix][day_ix].events[event_ix]
     else:
         week_ix, day_ix = get_previous_nonempty_day(weeks, week_ix, day_ix)
         if week_ix is not None:  # there was a previous nonempty day
-            event_ix = len(weeks[week_ix].day_list[day_ix].events) - 1
+            event_ix = len(weeks[week_ix][day_ix].events) - 1
             if __debug__:
                 print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
-            event = weeks[week_ix].day_list[day_ix].events[event_ix]
+            event = weeks[week_ix][day_ix].events[event_ix]
     if week_ix is not None:
         ret_val = week_ix, day_ix, event_ix, event
     return ret_val

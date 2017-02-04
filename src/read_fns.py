@@ -8,7 +8,7 @@ from __future__ import print_function
 import re
 import datetime
 
-from container_objs import Week, Event
+from container_objs import Week, Day, Event
 
 
 def open_file(file_read_wrapper):
@@ -27,7 +27,8 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
         line = line.strip().split(',')
         if is_header(line):
             continue
-        if not any(line):  # we had a blank row in the spreadsheet
+        if not any(line):  # if we had a blank row in the spreadsheet
+            # store previous week, if any
             weeks, sunday_date, have_unstored_event, new_week = store_week(
                     weeks, sunday_date, have_unstored_event, new_week)
             continue
@@ -36,7 +37,12 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
             if not found_match:  # we are not at the start of a week
                 continue
             sunday_date = match_to_date_obj(found_match)
-            new_week = Week(sunday_date)
+            day_list = []
+            for x in range(7):
+                day_list.append(Day(sunday_date + datetime.timedelta(days=x), []))
+            # new_week = Week(day_list[0], day_list[1], day_list[2], day_list[3],
+            #         day_list[4], day_list[5], day_list[6])
+            new_week = Week(*day_list)
         if any(line[1:]):
             have_unstored_event, new_week = load_line(line[1:], new_week)
     # save any left-over unstored data
@@ -84,9 +90,10 @@ def load_line(line, new_week):
     """
     Called by: read_lines()
     """
+    have_unstored_event = False
     for ix in range(7):
-        an_event = Event(line[3*ix: 3*ix + 3])
+        an_event = Event(*line[3*ix: 3*ix + 3])
         if new_week and an_event.action:
-            new_week.day_list[ix].add_event(an_event)
+            new_week[ix].events.append(an_event)
             have_unstored_event = True
     return have_unstored_event, new_week

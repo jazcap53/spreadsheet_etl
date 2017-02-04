@@ -11,6 +11,7 @@ import datetime
 from datetime import date
 import re
 import sys
+from collections import namedtuple
 
 
 def validate_segment(segment):
@@ -28,6 +29,33 @@ def validate_segment(segment):
     return True
 
 
+Event = namedtuple('Event', 'action, mil_time, hours')
+Day = namedtuple('Day', 'dt_date, events')
+Week = namedtuple('Week',
+        'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')
+
+def print_event(e):
+    out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
+    if e.hours:
+        out_str += ', hours: {:.2f}'.format(float(e.hours))
+    print(out_str)
+
+def print_day(d):
+    print('{}\n'.format(d.dt_date), end='')
+    for item in d.events:
+        print_event(item)
+    # print()
+
+def print_week(w):
+    header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
+    underscores = '=' * (len(header) - 2) + '\n'
+    print(header + underscores, end='')
+    for d in w:
+        print('    ', end='')
+        print_day(d)
+    print()
+
+'''
 class Event:
     """
     Each Event belongs to a Day, and is an item in that Day's list
@@ -92,3 +120,4 @@ class Week:
         for i in range(7):
             ret += '    ' + self.day_list[i].__str__()
         return ret
+'''
