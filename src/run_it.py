@@ -18,7 +18,7 @@ weeks = []
 
 def print_out(weeks):
     for week in weeks:
-        container_objs.print_week(week)
+        container_objs.print_week(week, out=sys.stdout)
     print()
 
 if __name__ == '__main__':
@@ -26,6 +26,6 @@ if __name__ == '__main__':
     weeks = read_fns.read_lines(infile, weeks)
     if __debug__:
         print_out(weeks)
-    weeks = purge_fns.purge(weeks)
+    weeks = purge_fns.purge(weeks, out=sys.stdout)  # TODO: eliminate out parameter?
     if __debug__:
         print_out(weeks)

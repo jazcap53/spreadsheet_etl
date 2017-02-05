@@ -16,7 +16,7 @@ class FileReadAccessWrapper:
         return open(self.filename, 'r')
 
 
-class FakeFileWrapper:
+class FakeFileReadWrapper:
     def __init__(self, text):
         self.text = text
 

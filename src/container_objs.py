@@ -29,26 +29,30 @@ def validate_segment(segment):
     return True
 
 
-def print_event(e):
+def print_event(e, out):
     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
     if e.hours:
         out_str += ', hours: {:.2f}'.format(float(e.hours))
-    print(out_str)
+    # print(out_str)
+    out.write(out_str + '\n')
 
 
-def print_day(d):
-    print('{}\n'.format(d.dt_date), end='')
+def print_day(d, out):
+    # print('{}\n'.format(d.dt_date), end='')
+    out.write('{}\n'.format(d.dt_date))
     for item in d.events:
-        print_event(item)
+        print_event(item, out)
 
 
-def print_week(w):
+def print_week(w, out):
     header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
     underscores = '=' * (len(header) - 2) + '\n'
-    print(header + underscores, end='')
+    # print(header + underscores, end='')
+    out.write(header + underscores)
     for d in w:
-        print('    ', end='')
-        print_day(d)
+        # print('    ', end='')
+        out.write('    ')
+        print_day(d, out)
     print()
 
 

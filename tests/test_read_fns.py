@@ -10,7 +10,7 @@ import datetime
 import unittest
 from unittest import TestCase
 
-from tests.file_access_wrappers import FakeFileWrapper
+from tests.file_access_wrappers import FakeFileReadWrapper
 from src.read_fns import open_file, read_lines, is_header, store_week
 from src.read_fns import check_for_date
 from src.container_objs import Week
@@ -20,7 +20,7 @@ from src.container_objs import Week
 class TestReadFns(TestCase):
 
     def setUp(self):
-        self.file_wrapper = FakeFileWrapper(
+        self.file_wrapper = FakeFileReadWrapper(
                 u''',Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,
 12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00
 ,,,,,,,,,,,,,s,4:45,,s,3:30,,w,5:15,5.25
