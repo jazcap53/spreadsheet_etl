@@ -75,7 +75,7 @@ class TestEvent(TestCase):
 class TestDay(TestCase):
 
     def setUp(self):
-        self.my_day = Day(date(2017, 1, 9))
+        self.my_day = Day(date(2017, 1, 9), [])
 
     def test_Day_has_a_datetime_dt_date_member(self):
         self.assertIsInstance(self.my_day.dt_date, date)
@@ -84,12 +84,14 @@ class TestDay(TestCase):
         self.assertIsInstance(self.my_day.events, list)
         self.assertEqual(len(self.my_day.events), 0)
 
+    '''
     def test_calling_add_event_with_non_event_argument_raises_TypeError(self):
         with self.assertRaises(TypeError):
-            self.my_day.add_event([1, 2, 3])
+            self.my_day.events.append([1, 2, 3])
+    '''
 
-    def test_calling_add_event_with_event_argument_adds_item_to_events_list(self):
-        self.my_day.add_event(Event(['s', '23:45', '']))
+    def test_appending_event_to_Day_dot_events_is_successful(self):
+        self.my_day.events.append(Event('s', '23:45', ''))
         self.assertEqual(len(self.my_day.events), 1)
 
 
