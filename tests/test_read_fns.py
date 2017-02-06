@@ -16,7 +16,9 @@ from src.read_fns import check_for_date
 from src.container_objs import Week
 
 
-# TODO: make sure all tests make sense, and pass
+# TODO: make sure all tests in this file make sense, and pass
+
+
 class TestReadFns(TestCase):
 
     def setUp(self):

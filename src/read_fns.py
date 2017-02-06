@@ -18,6 +18,7 @@ def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
 
+# TODO: make this function easier to read
 def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
         new_week=None):
     """

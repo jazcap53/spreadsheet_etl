@@ -34,7 +34,7 @@ def print_event(e, out):
     if e.hours:
         out_str += ', hours: {:.2f}'.format(float(e.hours))
     # print(out_str)
-    out.write(out_str + '\n')
+    out.write(out_str + u'\n')
 
 
 def print_day(d, out):
