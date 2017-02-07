@@ -31,20 +31,20 @@ def purge(weeks, out):
                 purging = False
             else:
                 if __debug__:
-                    # print('popping ', end='')
+                    #### print('popping ', end='')
                     out.write('popping ')
                     print_event(event, out)
-                    # print('popping {}'.format(event))
+                    #### print('popping {}'.format(event))
                 weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if restarts_purge(event):
                 purging = True
             else:
                 if __debug__:
-                    # print('keeping ', end='')
+                    #### print('keeping ', end='')
                     out.write('keeping ')
                     print_event(event, out)
-                    # print('keeping {}'.format(event))
+                    #### print('keeping {}'.format(event))
         previous_event = get_previous_event(weeks, week_ix, day_ix, event_ix, out)  # TODO: eliminate out parameter
         if previous_event:  # None or a 4-tuple
             week_ix, day_ix, event_ix, event = previous_event
@@ -126,7 +126,7 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix, out):  # TODO: eliminat
         if week_ix is not None:  # there was a previous nonempty day
             event_ix = len(weeks[week_ix][day_ix].events) - 1
             if __debug__:
-                # print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
+                #### print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
                 out.write('week: {}, day: {}, event: {}\n'.format(week_ix, day_ix, event_ix))
             event = weeks[week_ix][day_ix].events[event_ix]
     if week_ix is not None:
