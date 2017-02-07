@@ -20,7 +20,8 @@ def validate_segment(segment):
                     's', 'time'
                     'w', 'time', 'float'
     """
-    if any(segment) and (not segment[0] or not segment[1]) or \
+    if not any(segment) or \
+            any(segment) and (not segment[0] or not segment[1]) or \
             len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
             len(segment[0]) and segment[0][0] == 's' and segment[2] or \
             len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
@@ -56,7 +57,13 @@ def print_week(w, out):
     print()
 
 
-Event = namedtuple('Event', 'action, mil_time, hours')
+class Event(namedtuple('Event', 'action, mil_time, hours')):
+    __slots__ = ()
+    def __init__(self, a, m, h):
+        if not validate_segment([a, m, h]):
+            raise ValueError
+
+
 Day = namedtuple('Day', 'dt_date, events')
 Week = namedtuple('Week',
         'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')

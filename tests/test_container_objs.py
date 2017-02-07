@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2016-01-08
 
-# python: 2.7, 3.5
+# python:  TODO:
 
 
 from datetime import date
@@ -14,10 +14,10 @@ from container_objs import validate_segment, Event, Day, Week
 from container_objs import print_event
 
 
-# TODO: make sure all tests in this file make sense, and pass
-
-
 class TestValidateSegment(TestCase):
+
+    def test_empty_segment_returns_false(self, seg=['', '', '']):
+        self.assertFalse(validate_segment(seg))
 
     def test_non_null_segment_and_not_item_0_returns_false(self, seg=['', '4:15', '']):
         self.assertFalse(validate_segment(seg))
@@ -93,28 +93,20 @@ class TestDay(TestCase):
         self.assertIsInstance(self.my_day.events, list)
         self.assertEqual(len(self.my_day.events), 0)
 
-    @unittest.skip
-    def test_calling_add_event_with_non_event_argument_raises_TypeError(self):
-        with self.assertRaises(TypeError):
-            self.my_day.events.append([1, 2, 3])
-
-    @unittest.skip
     def test_appending_event_to_Day_dot_events_is_successful(self):
         self.my_day.events.append(Event('s', '23:45', ''))
         self.assertEqual(len(self.my_day.events), 1)
 
-    @unittest.skip
-    def test_appending_non_event_to_Day_dot_events_fails(self):
-        self.my_day.events.append(Event('', '', ''))
-        self.assertEqual(len(self.my_day.events), 0)
+    def test_creating_an_empty_event_raises_ValueError(self):
+        with self.assertRaises(ValueError):
+            self.my_day.events.append(Event('', '', ''))
 
-    @unittest.skip
-    def test_calling_load_line_with_good_line_succeeds(self):
-        my_line = []
-
+    def test_creating_a_bad_event_raises_ValueError(self):
+        with self.assertRaises(ValueError):
+            self.my_day.events.append(Event('x', '4:00', '1.75'))
 
 
-@unittest.skip
+@unittest.skip  # TODO: fix or replace these tests
 class TestWeek(TestCase):
 
     def setUp(self):

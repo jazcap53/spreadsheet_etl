@@ -95,7 +95,10 @@ def load_line(line, new_week):
     for ix in range(7):
         segment = line[3*ix: 3*ix + 3]
         if validate_segment(segment):
-            an_event = Event(*segment)
+            try:
+                an_event = Event(*segment)
+            except ValueError:
+                continue
             if new_week and an_event.action:
                 new_week[ix].events.append(an_event)
                 have_unstored_event = True
