@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-21
 
-# python: 2.7, 3.5
+# python: 2.7, 3.5, 3.6
 
 
 from __future__ import print_function
@@ -60,6 +60,8 @@ Event = namedtuple('Event', 'action, mil_time, hours')
 Day = namedtuple('Day', 'dt_date, events')
 Week = namedtuple('Week',
         'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')
+
+weeks = []
 
 '''
 class Event:

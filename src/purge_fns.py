@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-27
 
-# python: 2.7, 3.5
+# python: 2.7, 3.5, 3.6
 
 
 from __future__ import print_function
@@ -12,7 +12,7 @@ from datetime import date
 import re
 import sys
 
-from container_objs import print_event
+from container_objs import print_event, weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 

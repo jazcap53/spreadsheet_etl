@@ -2,13 +2,15 @@
 # andrew jarcho
 # 2017-01-25
 
+# python: 2.7, 3.5, 3.6
+
 
 from __future__ import print_function
 
 import re
 import datetime
 
-from container_objs import validate_segment, Week, Day, Event
+from container_objs import validate_segment, Week, Day, Event, weeks
 
 
 def open_file(file_read_wrapper):
