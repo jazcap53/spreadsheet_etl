@@ -5,7 +5,7 @@
 # python:  TODO:
 
 
-from datetime import date
+from datetime import date, timedelta
 import unittest
 from unittest import TestCase
 import io
@@ -106,23 +106,26 @@ class TestDay(TestCase):
             self.my_day.events.append(Event('x', '4:00', '1.75'))
 
 
-@unittest.skip  # TODO: fix or replace these tests
 class TestWeek(TestCase):
 
     def setUp(self):
-        self.my_week = Week(date(2017, 1, 15))
+        dts = [Day(date(2017, 1, 15) + timedelta(days=x), [])
+                for x in range(7)]
+        self.my_week = Week(*dts)
 
-    def test_calling___init___with_non_Sunday_date_raises_ValueError(self):
+    def test_initializing_Week_with_non_Sunday_date_raises_ValueError(self):
+        dts = [Day(date(2017, 1, 14) + timedelta(days=x), [])
+                for x in range(7)]
         with self.assertRaises(ValueError):
-            self.my_other_week = Week(date(2017, 1, 14))
+            self.my_other_week = Week(*dts)
 
     def test_first_day_of_Week_is_Sunday(self):
-        self.assertEqual(self.my_week.day_list[0].dt_date.weekday(), 6)
+        self.assertEqual(self.my_week[0].dt_date.weekday(), 6)
 
     def test_a_Week_has_seven_Days(self):
-        self.assertEqual(len(self.my_week.day_list), 7)
+        self.assertEqual(len(self.my_week), 7)
 
     def test_days_two_thru_seven_of_Week_have_no_Sunday(self):
         # f checks that day x is a Sunday
-        f = lambda x: self.my_week.day_list[x].dt_date.weekday() == 6
+        f = lambda x: self.my_week[x].dt_date.weekday() == 6
         self.assertFalse(any(f(x) for x in range(1, 7)))

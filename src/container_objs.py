@@ -66,15 +66,15 @@ class Day(namedtuple('Day', 'dt_date, events')):
             raise TypeError
 
 
-
 class Week(namedtuple('Week',
         'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')):
     __slots__ = ()
     def __init__(self, su, mo, tu, we, th, fr, sa):
         param_list = [su, mo, tu, we, th, fr, sa]
-        for p in param_list:
+        for ix, p in enumerate(param_list):
             if not isinstance(p, Day):
                 raise TypeError
-
+            elif not ix and p.dt_date.weekday() != 6:
+                raise ValueError
 
 weeks = []
