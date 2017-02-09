@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-28
 
-# python: 3.5  TODO: check this, 2.7, and nosetests
+# nosetests 1.3.7
 
 import io
 
@@ -13,10 +13,7 @@ from unittest import TestCase
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.read_fns import open_file, read_lines, is_header, store_week
 from src.read_fns import check_for_date
-from src.container_objs import Week
-
-
-# TODO: make sure all tests in this file make sense, and pass
+from src.container_objs import Week, Day
 
 
 class TestReadFns(TestCase):
@@ -59,12 +56,12 @@ class TestReadFns(TestCase):
         line = self.infile.readline().strip().split(',')
         self.assertFalse(is_header(line))
 
-    @unittest.skip
     def test_store_week_appends_week_to_week_list(self):
         sunday_date = datetime.date(2016, 12, 4)
         have_unstored_event = True
         old_weeks = self.weeks[:]
-        new_week = Week(sunday_date)
+        dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
+        new_week = Week(*dts)
         self.weeks, sunday_date, have_unstored_event, new_week = store_week(
                 self.weeks, sunday_date, have_unstored_event, new_week)
         self.assertEqual(len(self.weeks), len(old_weeks) + 1)
