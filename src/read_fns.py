@@ -24,29 +24,25 @@ def open_file(file_read_wrapper):
 def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
         new_week=None):
     """
-
     Called by: client code
     """
     for line in infile:
         line = line.strip().split(',')
-        if not any(line):  # if we had a blank row in the spreadsheet
-            # store week we just read, if any
+        if not any(line):  # we had a blank row in the spreadsheet
             weeks, sunday_date, have_unstored_event, new_week = store_week(
                     weeks, sunday_date, have_unstored_event, new_week)
-        # the date (as a mm/dd/yyyy string) is only given on Sundays
         elif not sunday_date:  # we haven't seen a Sunday yet this week
-            is_sunday = check_for_date(line[0])
-            if is_sunday:
-                sunday_date = match_to_date_obj(is_sunday)
-                day_list = []
-                for x in range(7):
-                    day_list.append(Day(sunday_date + datetime.timedelta(days=x), []))
+            date_match = check_for_date(line[0])
+            if date_match:
+                sunday_date = match_to_date_obj(date_match)
+                day_list = [Day(sunday_date + datetime.timedelta(days=x), [])
+                        for x in range(7)]
                 new_week = Week(*day_list)
             else:
                 continue
         if any(line[1:]):
             have_unstored_event, new_week = load_line(line[1:], new_week)
-    # save any left-over unstored data
+    # save any remaining unstored data
     store_week(weeks, sunday_date, have_unstored_event, new_week)
     return weeks
 
