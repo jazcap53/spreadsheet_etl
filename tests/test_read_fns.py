@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-28
 
-# python: 3.5  TODO: check this, 2.7, and nosetests
+# nosetests 1.3.7
 
 import io
 
@@ -10,16 +10,16 @@ import datetime
 import unittest
 from unittest import TestCase
 
-from tests.file_access_wrappers import FakeFileWrapper
+from tests.file_access_wrappers import FakeFileReadWrapper
 from src.read_fns import open_file, read_lines, is_header, store_week
 from src.read_fns import check_for_date
-from src.container_objs import Week
+from src.container_objs import Week, Day
 
 
 class TestReadFns(TestCase):
 
     def setUp(self):
-        self.file_wrapper = FakeFileWrapper(
+        self.file_wrapper = FakeFileReadWrapper(
                 u''',Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,
 12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00
 ,,,,,,,,,,,,,s,4:45,,s,3:30,,w,5:15,5.25
@@ -60,7 +60,8 @@ class TestReadFns(TestCase):
         sunday_date = datetime.date(2016, 12, 4)
         have_unstored_event = True
         old_weeks = self.weeks[:]
-        new_week = Week(sunday_date)
+        dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
+        new_week = Week(*dts)
         self.weeks, sunday_date, have_unstored_event, new_week = store_week(
                 self.weeks, sunday_date, have_unstored_event, new_week)
         self.assertEqual(len(self.weeks), len(old_weeks) + 1)

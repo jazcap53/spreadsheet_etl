@@ -2,7 +2,7 @@
 # author: Andrew Jarcho
 # date: 2017-01-22
 
-# python: 3.x
+# python: 3.x  nosetests 1.3.7
 
 import io
 
@@ -16,7 +16,7 @@ class FileReadAccessWrapper:
         return open(self.filename, 'r')
 
 
-class FakeFileWrapper:
+class FakeFileReadWrapper:
     def __init__(self, text):
         self.text = text
 

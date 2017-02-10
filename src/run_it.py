@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-21
 
-# python: 2.7, 3.5
+# python: 2.7, 3.5, 3.6
 
 
 from __future__ import print_function
@@ -10,14 +10,14 @@ from __future__ import print_function
 import sys
 import read_fns
 import purge_fns
+import container_objs
+from container_objs import weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
-weeks = []
-
 def print_out(weeks):
     for week in weeks:
-        print(week)
+        container_objs.print_week(week, out=sys.stdout)
     print()
 
 if __name__ == '__main__':

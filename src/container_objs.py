@@ -2,15 +2,15 @@
 # andrew jarcho
 # 2017-01-21
 
-# python: 2.7, 3.5
+# python: 2.7, 3.5, 3.6
 
 
 from __future__ import print_function
 
 import datetime
-from datetime import date
 import re
 import sys
+from collections import namedtuple
 
 
 def validate_segment(segment):
@@ -19,7 +19,8 @@ def validate_segment(segment):
                     's', 'time'
                     'w', 'time', 'float'
     """
-    if any(segment) and (not segment[0] or not segment[1]) or \
+    if not any(segment) or \
+            any(segment) and (not segment[0] or not segment[1]) or \
             len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
             len(segment[0]) and segment[0][0] == 's' and segment[2] or \
             len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
@@ -28,67 +29,55 @@ def validate_segment(segment):
     return True
 
 
-class Event:
-    """
-    Each Event belongs to a Day, and is an item in that Day's list
-    of Events.
-    """
-    def __init__(self, segment):
-        if not len(segment) == 3:
-            raise ValueError('Bad segment length')
-        if not validate_segment(segment):
-            raise ValueError('Bad segment value')
-        if any(segment):
-            self.action = segment[0][0]
-            self.mil_time = segment[1]
-            self.hours = segment[2] if segment[2] else None
-        else:
-            self.action = None
-            self.mil_time = None
-            self.hours = None
-
-    def __str__(self):
-        ret = 'action: {}, time: {}'.format(self.action, self.mil_time)
-        if self.hours:
-            ret += ', hours: {:.2f}'.format(float(self.hours))
-        return ret
-
-
-class Day:
-    """
-    A Day consists of a datetime.date, and a list of Events.
-    """
-    def __init__(self, dt_date):
-        self.dt_date = dt_date
-        self.events = []
-
-    def __str__(self):
-        ret = '{}\n'.format(self.dt_date)
-        for item in self.events:
-            ret += item.__str__() + '\n'
-        return ret
-
-    def add_event(self, an_event):
-        if not isinstance(an_event, Event):
-            raise TypeError
-        self.events.append(an_event)
-
-
-class Week:
-    """
-    A Week is a list of seven Days, each beginning at 0:00 (midnight),
-    with the first Day being a Sunday.
-    """
-    def __init__(self, dt_date):
-        if dt_date.weekday() != 6:  # a Sunday, per datetime.date.weekday()
+class Event(namedtuple('Event', 'action, mil_time, hours')):
+    __slots__ = ()
+    def __init__(self, a, m, h):
+        if not validate_segment([a, m, h]):
             raise ValueError
-        self.day_list = [Day(dt_date + datetime.timedelta(days=x))
-                for x in range(7)]
 
-    def __str__(self):
-        ret = '\nWeek of Sunday, {}:\n'.format(self.day_list[0].dt_date)
-        underscores = '=' * (len(ret) - 2)
-        ret += underscores + '\n'
-        for i in range(7):
-            ret += '    ' + self.day_list[i].__str__()
-        return ret
+
+class Day(namedtuple('Day', 'dt_date, events')):
+    __slots__ = ()
+    def __init__(self, d, e):
+        if not isinstance(d, datetime.date):
+            raise TypeError
+
+
+class Week(namedtuple('Week',
+        'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')):
+    __slots__ = ()
+    def __init__(self, su, mo, tu, we, th, fr, sa):
+        param_list = [su, mo, tu, we, th, fr, sa]
+        for ix, p in enumerate(param_list):
+            if not isinstance(p, Day):
+                raise TypeError
+            elif not ix and p.dt_date.weekday() != 6:
+                raise ValueError
+
+weeks = []
+
+
+# Code below this line is normally called in debug mode only.
+#==============================================================================
+
+def print_event(e, out):
+    out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
+    if e.hours:
+        out_str += ', hours: {:.2f}'.format(float(e.hours))
+    out.write(out_str + u'\n')
+
+
+def print_day(d, out):
+    out.write('{}\n'.format(d.dt_date))
+    for item in d.events:
+        print_event(item, out)
+
+
+def print_week(w, out):
+    header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
+    underscores = '=' * (len(header) - 2) + '\n'
+    out.write(header + underscores)
+    for d in w:
+        out.write('    ')
+        print_day(d, out)
+    print()
