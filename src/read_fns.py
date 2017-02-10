@@ -31,15 +31,16 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
         if is_header(line):
             continue
         if not any(line):  # if we had a blank row in the spreadsheet
-            # store previous week, if any
+            # store week we just read, if any
             weeks, sunday_date, have_unstored_event, new_week = store_week(
                     weeks, sunday_date, have_unstored_event, new_week)
             continue
-        if not sunday_date:
-            found_match = check_for_date(line[0])
-            if not found_match:  # we are not at the start of a week
+        # the date (as a mm/dd/yyyy string) is only given on Sundays
+        if not sunday_date:  # we haven't seen a Sunday yet this week
+            is_sunday = check_for_date(line[0])
+            if not is_sunday:
                 continue
-            sunday_date = match_to_date_obj(found_match)
+            sunday_date = match_to_date_obj(is_sunday)
             day_list = []
             for x in range(7):
                 day_list.append(Day(sunday_date + datetime.timedelta(days=x), []))
