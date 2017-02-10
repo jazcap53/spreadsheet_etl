@@ -16,7 +16,7 @@ from container_objs import print_event, weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
-def purge(weeks, out):
+def purge(weeks, out=sys.stdout):
     """
     Called by: client code
     """
@@ -31,21 +31,17 @@ def purge(weeks, out):
                 purging = False
             else:
                 if __debug__:
-                    #### print('popping ', end='')
                     out.write('popping ')
                     print_event(event, out)
-                    #### print('popping {}'.format(event))
                 weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if restarts_purge(event):
                 purging = True
             else:
                 if __debug__:
-                    #### print('keeping ', end='')
                     out.write('keeping ')
                     print_event(event, out)
-                    #### print('keeping {}'.format(event))
-        previous_event = get_previous_event(weeks, week_ix, day_ix, event_ix, out)  # TODO: eliminate out parameter
+        previous_event = get_previous_event(weeks, week_ix, day_ix, event_ix, out)
         if previous_event:  # None or a 4-tuple
             week_ix, day_ix, event_ix, event = previous_event
         else:
@@ -112,7 +108,7 @@ def stops_purge(event):
     return event.action == 'b' and event.mil_time and event.hours
 
 
-def get_previous_event(weeks, week_ix, day_ix, event_ix, out):  # TODO: eliminate out parameter
+def get_previous_event(weeks, week_ix, day_ix, event_ix, out):
     """
     Called by: purge()
     pre: week_ix, day_ix, event_ix are not None
@@ -126,7 +122,6 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix, out):  # TODO: eliminat
         if week_ix is not None:  # there was a previous nonempty day
             event_ix = len(weeks[week_ix][day_ix].events) - 1
             if __debug__:
-                #### print('week: {}, day: {}, event: {}'.format(week_ix, day_ix, event_ix))
                 out.write('week: {}, day: {}, event: {}\n'.format(week_ix, day_ix, event_ix))
             event = weeks[week_ix][day_ix].events[event_ix]
     if week_ix is not None:

@@ -29,29 +29,6 @@ def validate_segment(segment):
     return True
 
 
-def print_event(e, out):
-    out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
-    if e.hours:
-        out_str += ', hours: {:.2f}'.format(float(e.hours))
-    out.write(out_str + u'\n')
-
-
-def print_day(d, out):
-    out.write('{}\n'.format(d.dt_date))
-    for item in d.events:
-        print_event(item, out)
-
-
-def print_week(w, out):
-    header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
-    underscores = '=' * (len(header) - 2) + '\n'
-    out.write(header + underscores)
-    for d in w:
-        out.write('    ')
-        print_day(d, out)
-    print()
-
-
 class Event(namedtuple('Event', 'action, mil_time, hours')):
     __slots__ = ()
     def __init__(self, a, m, h):
@@ -78,3 +55,29 @@ class Week(namedtuple('Week',
                 raise ValueError
 
 weeks = []
+
+
+# Code below this line is normally called in debug mode only.
+#==============================================================================
+
+def print_event(e, out):
+    out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
+    if e.hours:
+        out_str += ', hours: {:.2f}'.format(float(e.hours))
+    out.write(out_str + u'\n')
+
+
+def print_day(d, out):
+    out.write('{}\n'.format(d.dt_date))
+    for item in d.events:
+        print_event(item, out)
+
+
+def print_week(w, out):
+    header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
+    underscores = '=' * (len(header) - 2) + '\n'
+    out.write(header + underscores)
+    for d in w:
+        out.write('    ')
+        print_day(d, out)
+    print()

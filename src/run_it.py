@@ -25,6 +25,6 @@ if __name__ == '__main__':
     weeks = read_fns.read_lines(infile, weeks)
     if __debug__:
         print_out(weeks)
-    weeks = purge_fns.purge(weeks, out=sys.stdout)  # TODO: eliminate out parameter?
+    weeks = purge_fns.purge(weeks)
     if __debug__:
         print_out(weeks)
