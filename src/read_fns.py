@@ -29,32 +29,34 @@ def read_lines(infile, weeks, sunday_date=None, have_unstored_event=False,
     for line in infile:
         line = line.strip().split(',')
         if not any(line):  # we had a blank row in the spreadsheet
-            weeks, sunday_date, have_unstored_event, new_week = store_week(
+            weeks, sunday_date, have_unstored_event, new_week = _store_week(
                     weeks, sunday_date, have_unstored_event, new_week)
         elif not sunday_date:  # we haven't seen a Sunday yet this week
-            date_match = check_for_date(line[0])
+            date_match = _check_for_date(line[0])
             if date_match:
-                sunday_date = match_to_date_obj(date_match)
+                sunday_date = _match_to_date_obj(date_match)
                 day_list = [Day(sunday_date + datetime.timedelta(days=x), [])
                         for x in range(7)]
                 new_week = Week(*day_list)
             else:
                 continue
+        elif _is_header(line):
+            continue
         if any(line[1:]):
-            have_unstored_event, new_week = load_line(line[1:], new_week)
+            have_unstored_event, new_week = _load_line(line[1:], new_week)
     # save any remaining unstored data
-    store_week(weeks, sunday_date, have_unstored_event, new_week)
+    _store_week(weeks, sunday_date, have_unstored_event, new_week)
     return weeks
 
 
-def is_header(l):
+def _is_header(l):
     """
     Called by: read_lines()
     """
     return l[1] == 'Sun'
 
 
-def store_week(weeks, sunday_date, have_unstored_event, new_week):
+def _store_week(weeks, sunday_date, have_unstored_event, new_week):
     """
     Called by: read_lines()
     """
@@ -64,7 +66,7 @@ def store_week(weeks, sunday_date, have_unstored_event, new_week):
     return weeks, sunday_date, have_unstored_event, new_week
 
 
-def check_for_date(s):
+def _check_for_date(s):
     """
     Called by: read_lines()
     """
@@ -73,7 +75,7 @@ def check_for_date(s):
     return m if m else None
 
 
-def match_to_date_obj(m):
+def _match_to_date_obj(m):
     """
     Called by: read_lines()
     """
@@ -83,7 +85,7 @@ def match_to_date_obj(m):
     return d_obj
 
 
-def load_line(line, new_week):
+def _load_line(line, new_week):
     """
     Called by: read_lines()
     """
