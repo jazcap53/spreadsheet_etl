@@ -22,12 +22,12 @@ def purge(weeks, out=sys.stdout):
     """
     purging = True
     event = None
-    final_event = get_final_event(weeks)
+    final_event = _get_final_event(weeks)
     if final_event:  # None or a 4-tuple
         week_ix, day_ix, event_ix, event = final_event
     while event:
         if purging:
-            if stops_purge(event):
+            if _stops_purge(event):
                 purging = False
             else:
                 if __debug__:
@@ -35,13 +35,13 @@ def purge(weeks, out=sys.stdout):
                     print_event(event, out)
                 weeks[week_ix][day_ix].events.pop(event_ix)
         else:
-            if restarts_purge(event):
+            if _restarts_purge(event):
                 purging = True
             else:
                 if __debug__:
                     out.write('keeping ')
                     print_event(event, out)
-        previous_event = get_previous_event(weeks, week_ix, day_ix, event_ix, out)
+        previous_event = _get_previous_event(weeks, week_ix, day_ix, event_ix, out)
         if previous_event:  # None or a 4-tuple
             week_ix, day_ix, event_ix, event = previous_event
         else:
@@ -49,57 +49,57 @@ def purge(weeks, out=sys.stdout):
     return weeks
 
 
-def get_final_event(weeks):
+def _get_final_event(weeks):
     """
     Called by: purge()
     """
-    week_ix = get_final_nonempty_week(weeks)
+    week_ix = _get_final_nonempty_week(weeks)
     if week_ix is not None:
-        day_ix = get_final_nonempty_day(weeks, week_ix)
+        day_ix = _get_final_nonempty_day(weeks, week_ix)
         event_ix = len(weeks[week_ix][day_ix].events) - 1
         event = weeks[week_ix][day_ix].events[event_ix]
         return (week_ix, day_ix, event_ix, event)
     return None
 
 
-def get_final_nonempty_week(weeks):
+def _get_final_nonempty_week(weeks):
     """
-    Called by: get_final_event()
+    Called by: _get_final_event()
     """
     week_ix = len(weeks) - 1
-    while week_ix > -1 and week_is_empty(weeks, week_ix):
+    while week_ix > -1 and _week_is_empty(weeks, week_ix):
         week_ix -= 1
     return None if week_ix == -1 else week_ix
 
 
-def week_is_empty(weeks, week_ix):
+def _week_is_empty(weeks, week_ix):
     """
-    Called by: get_final_nonempty_week()
+    Called by: _get_final_nonempty_week()
     """
-    return all([day_is_empty(weeks, week_ix, d) for d in range(7)])
+    return all([_day_is_empty(weeks, week_ix, d) for d in range(7)])
 
 
-def day_is_empty(weeks, week_ix, day_ix):
+def _day_is_empty(weeks, week_ix, day_ix):
     """
-    Called by: week_is_empty(), get_final_nonempty_day(),
-               get_previous_nonempty_day()
+    Called by: _week_is_empty(), _get_final_nonempty_day(),
+               _get_previous_nonempty_day()
     """
     return not len(weeks[week_ix][day_ix].events)
 
 
-def get_final_nonempty_day(weeks, week_ix):
+def _get_final_nonempty_day(weeks, week_ix):
     """
-    Called by: get_final_event()
-    param: week_ix is a non-None return value from get_final_nonempty_week()
+    Called by: _get_final_event()
+    param: week_ix is a non-None return value from _get_final_nonempty_week()
     returns: integer between 0 and 6 inclusive
     """
     day_ix = 6
-    while day_ix and day_is_empty(weeks, week_ix, day_ix):
+    while day_ix and _day_is_empty(weeks, week_ix, day_ix):
         day_ix -= 1
     return day_ix
 
 
-def stops_purge(event):
+def _stops_purge(event):
     """
     Called by: purge()
     """
@@ -108,7 +108,7 @@ def stops_purge(event):
     return event.action == 'b' and event.mil_time and event.hours
 
 
-def get_previous_event(weeks, week_ix, day_ix, event_ix, out):
+def _get_previous_event(weeks, week_ix, day_ix, event_ix, out):
     """
     Called by: purge()
     pre: week_ix, day_ix, event_ix are not None
@@ -118,7 +118,7 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix, out):
         event_ix -= 1
         event = weeks[week_ix][day_ix].events[event_ix]
     else:
-        week_ix, day_ix = get_previous_nonempty_day(weeks, week_ix, day_ix)
+        week_ix, day_ix = _get_previous_nonempty_day(weeks, week_ix, day_ix)
         if week_ix is not None:  # there was a previous nonempty day
             event_ix = len(weeks[week_ix][day_ix].events) - 1
             if __debug__:
@@ -129,16 +129,16 @@ def get_previous_event(weeks, week_ix, day_ix, event_ix, out):
     return ret_val
 
 
-def restarts_purge(event):
+def _restarts_purge(event):
     """
     Called by: purge()
     """
     return event.action == 'b' and (not event.mil_time or not event.hours)
 
 
-def get_previous_day(week_ix, day_ix):
+def _get_previous_day(week_ix, day_ix):
     """
-    Called by: get_previous_nonempty_day()
+    Called by: _get_previous_nonempty_day()
     """
     if day_ix:
         day_ix -= 1
@@ -151,11 +151,11 @@ def get_previous_day(week_ix, day_ix):
     return week_ix, day_ix
 
 
-def get_previous_nonempty_day(weeks, week_ix, day_ix):
+def _get_previous_nonempty_day(weeks, week_ix, day_ix):
     """
-    Called by: get_previous_event()
+    Called by: _get_previous_event()
     """
-    week_ix, day_ix = get_previous_day(week_ix, day_ix)
-    while week_ix is not None and day_is_empty(weeks, week_ix, day_ix):
-        week_ix, day_ix = get_previous_day(week_ix, day_ix)
+    week_ix, day_ix = _get_previous_day(week_ix, day_ix)
+    while week_ix is not None and _day_is_empty(weeks, week_ix, day_ix):
+        week_ix, day_ix = _get_previous_day(week_ix, day_ix)
     return week_ix, day_ix
