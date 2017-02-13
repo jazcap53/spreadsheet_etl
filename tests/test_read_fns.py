@@ -11,7 +11,7 @@ import unittest
 from unittest import TestCase
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.read_fns import open_file, read_lines, _is_header, _store_week
+from src.read_fns import open_file, read_lines, _is_header, _append_week
 from src.read_fns import _check_for_date
 from src.container_objs import Week, Day
 
@@ -56,13 +56,13 @@ class TestReadFns(TestCase):
         line = self.infile.readline().strip().split(',')
         self.assertFalse(_is_header(line))
 
-    def test__store_week_appends_week_to_week_list(self):
+    def test__append_week_appends_week_to_week_list(self):
         sunday_date = datetime.date(2016, 12, 4)
         have_unstored_event = True
         old_weeks = self.weeks[:]
         dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
         new_week = Week(*dts)
-        self.weeks, sunday_date, have_unstored_event, new_week = _store_week(
+        self.weeks, sunday_date, have_unstored_event, new_week = _append_week(
                 self.weeks, sunday_date, have_unstored_event, new_week)
         self.assertEqual(len(self.weeks), len(old_weeks) + 1)
 
