@@ -21,6 +21,7 @@ def open_file(file_read_wrapper):
 
 
 # TODO: make this function easier to read
+# TODO: get rid of do_append_week? sunday_date? new_week?
 def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
         new_week=None):
     """

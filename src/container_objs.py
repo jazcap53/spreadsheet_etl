@@ -13,11 +13,13 @@ import sys
 from collections import namedtuple
 
 
+# TODO: add further validation for segment[1] ?
 def validate_segment(segment):
     """
-    valid segments: 'b', 'time'[, 'float']
-                    's', 'time'
-                    'w', 'time', 'float'
+    valid segments: 'b', time, ''
+                    'b', time, str(float)
+                    's', time, ''
+                    'w', time, str(float)
     """
     if not any(segment) or \
             any(segment) and (not segment[0] or not segment[1]) or \
@@ -31,14 +33,27 @@ def validate_segment(segment):
 
 class Event(namedtuple('Event', 'action, mil_time, hours')):
     __slots__ = ()
+    """
+    Each Event tuple holds:
+        action -- a character from the set {'b', 's', 'w'}
+        mil_time -- a 24-hour time string as 'H:MM' or 'HH:MM'
+        hours -- a time interval expressed as str(float))
+                 The float may have one or two digits before the
+                 decimal point, and will have exactly two digits
+                 after. Its value may not be zero (0.00), but it
+                 may be the empty string.
+    """
     def __init__(self, a, m, h):
+        """ Ctor used just to filter input """
         if not validate_segment([a, m, h]):
             raise ValueError
 
 
 class Day(namedtuple('Day', 'dt_date, events')):
     __slots__ = ()
+    """ Each Day tuple holds a datetime.date and a list of Events """
     def __init__(self, d, e):
+        """ Ctor used just to filter input """
         if not isinstance(d, datetime.date):
             raise TypeError
 
@@ -46,7 +61,9 @@ class Day(namedtuple('Day', 'dt_date, events')):
 class Week(namedtuple('Week',
         'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')):
     __slots__ = ()
+    """ Each Week tuple holds seven named Day tuples """
     def __init__(self, su, mo, tu, we, th, fr, sa):
+        """ Ctor used just to filter input """
         param_list = [su, mo, tu, we, th, fr, sa]
         for ix, p in enumerate(param_list):
             if not isinstance(p, Day):
