@@ -32,7 +32,6 @@ def validate_segment(segment):
 
 
 class Event(namedtuple('Event', 'action, mil_time, hours')):
-    __slots__ = ()
     """
     Each Event tuple holds:
         action -- a character from the set {'b', 's', 'w'}
@@ -43,6 +42,7 @@ class Event(namedtuple('Event', 'action, mil_time, hours')):
                  after. Its value may not be zero (0.00), but it
                  may be the empty string.
     """
+    __slots__ = ()
     def __init__(self, a, m, h):
         """ Ctor used just to filter input """
         if not validate_segment([a, m, h]):
@@ -50,8 +50,11 @@ class Event(namedtuple('Event', 'action, mil_time, hours')):
 
 
 class Day(namedtuple('Day', 'dt_date, events')):
+    """
+    Each Day tuple holds a datetime.date and a (possibly empty)
+    list of Events
+    """
     __slots__ = ()
-    """ Each Day tuple holds a datetime.date and a list of Events """
     def __init__(self, d, e):
         """ Ctor used just to filter input """
         if not isinstance(d, datetime.date):
@@ -60,8 +63,8 @@ class Day(namedtuple('Day', 'dt_date, events')):
 
 class Week(namedtuple('Week',
         'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')):
-    __slots__ = ()
     """ Each Week tuple holds seven named Day tuples """
+    __slots__ = ()
     def __init__(self, su, mo, tu, we, th, fr, sa):
         """ Ctor used just to filter input """
         param_list = [su, mo, tu, we, th, fr, sa]
