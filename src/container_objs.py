@@ -14,6 +14,7 @@ from collections import namedtuple
 
 
 # TODO: add further validation for segment[1] ?
+# TODO: reorganize to prevent repeated tests of same condition
 def validate_segment(segment):
     """
     valid segments: 'b', time, ''
