@@ -10,7 +10,7 @@ CREATE TABLE sl_night (
 DROP TABLE IF EXISTS sl_nap;
 
 CREATE TABLE sl_nap (
-    start_time time NOT NULL UNIQUE, -- serves as a primary key
+    start_time time NOT NULL UNIQUE,
     duration interval NOT NULL,
     night_id INTEGER,
     PRIMARY KEY (start_time),
