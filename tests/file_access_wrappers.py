@@ -2,7 +2,7 @@
 # author: Andrew Jarcho
 # date: 2017-01-22
 
-# python: 3.x  nosetests 1.3.7
+# python: 3.5  nosetests 1.3.7
 
 import io
 
