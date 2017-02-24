@@ -1,8 +1,9 @@
+#!/usr/bin/python3.5
+
+
 # file: src/run_it.py
 # andrew jarcho
 # 2017-01-21
-
-# python: 2.7, 3.5
 
 
 from __future__ import print_function
