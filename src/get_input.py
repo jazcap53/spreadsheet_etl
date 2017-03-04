@@ -1,7 +1,7 @@
 #!/usr/bin/python3.5
 
 
-# file: get_input.py
+# file: src/get_input.py
 # andrew jarcho
 # 2017-02-22
 

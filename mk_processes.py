@@ -18,7 +18,7 @@ inp = subprocess.Popen(
         stdin=outp.stdout,
 )
 
-time.sleep(1)
+time.sleep(0.1)
 
 outp.terminate()
 inp.terminate()
