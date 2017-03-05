@@ -24,8 +24,8 @@ def print_out(weeks):
 if __name__ == '__main__':
     infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
     weeks = read_fns.read_lines(infile, weeks)
-    if __debug__:
-        print_out(weeks)
+    # if __debug__:
+    #     print_out(weeks)
     weeks = purge_fns.purge(weeks)
     if __debug__:
         print_out(weeks)
