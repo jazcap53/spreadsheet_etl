@@ -10,12 +10,12 @@ from __future__ import print_function
 import psycopg2
 from config import config
 
-from src.container_objs import Event, Day, Week
+from src.extract.container_objs import Event, Day, Week
 
 def connect():
     """
     Connect to the PostgreSQL database server
-    and execute a simple query
+    and execute a simple query.
     """
     conn = None
     try:

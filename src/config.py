@@ -9,11 +9,10 @@ from configparser import ConfigParser
 
 
 def config(filename='src/database.ini', section='postgresql'):
-    """ Read the configuration file for the db connection. """
+    """Read the configuration file for the db connection."""
     parser = ConfigParser()
     parser.read(filename)
     db = {}
-    # TODO: change from LBYL to EAFP?
     if parser.has_section(section):
         params = parser.items(section)
         for param in params:

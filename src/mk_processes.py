@@ -12,7 +12,6 @@ outp = subprocess.Popen(
         stdout=subprocess.PIPE,
 )
 
-
 inp = subprocess.Popen(
         ['./src/transform/get_input.py'],
         stdin=outp.stdout,
