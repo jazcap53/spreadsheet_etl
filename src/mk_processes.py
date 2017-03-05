@@ -1,4 +1,4 @@
-# file: mk_processes.py
+# file: src/mk_processes.py
 # andrew jarcho
 # 2017-02-24
 
@@ -8,13 +8,13 @@ import time
 
 
 outp = subprocess.Popen(
-        ['./src/run_it.py', './sheet_004.csv'],
+        ['./src/extract/run_it.py', './sheet_004.csv'],
         stdout=subprocess.PIPE,
 )
 
 
 inp = subprocess.Popen(
-        ['./src/get_input.py'],
+        ['./src/transform/get_input.py'],
         stdin=outp.stdout,
 )
 
