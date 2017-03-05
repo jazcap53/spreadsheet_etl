@@ -10,8 +10,8 @@ import unittest
 from unittest import TestCase
 import io
 
-from container_objs import validate_segment, Event, Day, Week
-from container_objs import print_event
+from extract.container_objs import validate_segment, Event, Day, Week
+from extract.container_objs import print_event
 
 
 class TestValidateSegment(TestCase):

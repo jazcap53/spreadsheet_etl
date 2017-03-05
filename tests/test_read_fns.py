@@ -11,9 +11,9 @@ import unittest
 from unittest import TestCase
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.read_fns import open_file, read_lines, _is_header, _append_week
-from src.read_fns import _check_for_date
-from src.container_objs import Week, Day
+from src.extract.read_fns import open_file, read_lines, _is_header, _append_week
+from src.extract.read_fns import _check_for_date
+from src.extract.container_objs import Week, Day
 
 
 class TestReadFns(TestCase):
