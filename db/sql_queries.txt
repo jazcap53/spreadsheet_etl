@@ -1,0 +1,29 @@
+SAMPLE QUERIES
+
+Number of hours sleep in a given night between 10pm and 6am the next morning.
+Number of hours sleep in a given night.
+Average time and average duration of the first sleep of each night.
+Average number of sleeps/naps per Night.
+
+    Distinguish between sleeps (at bedtime) and naps (any sleep after the first)?
+
+Total sleep in a given Night.
+Total sleep between any two datetimes.
+Average length of a sleep/nap over a given period.
+
+    Store beginnings and ends of each nap/sleep as datetimes. Store whether a period is a nap or a sleep as a boolean ("is_first").
+
+What bedtime has resulted in the longest max sleep (average) per night?  ***
+    
+    Might need:
+        a "night" table with a 'night_id', a 'start_date', a 'start_time' and [(possibly) a 'duration' interval PROBABLY NOT]
+            -- how to calculate 'duration' ? 
+        a "nap" table with a 'start_time' and a 'duration' interval AND a
+            'night_id' foreign key referencing 'night.night_id'
+        
+    Q: store the ttl hrs slept in the previous night in the db or calculate it in db or calculate it in app ?
+        I think calculate it in the db as (something like) ? 
+            SELECT night.night_id, SUM(sleep.duration)
+            FROM night INNER JOIN sleep ON sleep.night_id = night.night_id
+            
+What bedtime has resulted in the longest average first sleep?

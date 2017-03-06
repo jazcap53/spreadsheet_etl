@@ -1,4 +1,4 @@
-# file: src/load.py
+# file: src/load/load.py
 # andrew jarcho
 # 2017-02-20
 
@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import psycopg2
-from config import config
+from spreadsheet_etl.db.config import config
 
 from src.extract.container_objs import Event, Day, Week
 

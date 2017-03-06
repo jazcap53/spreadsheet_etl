@@ -1,7 +1,7 @@
 #!/usr/bin/python3.5
 
 
-# file: src/run_it.py
+# file: src/extract/run_it.py
 # andrew jarcho
 # 2017-01-21
 

@@ -1,4 +1,4 @@
-# file: src/config.py
+# file: db/config.py
 # andrew jarcho
 # 2017-02-22
 
@@ -8,7 +8,7 @@
 from configparser import ConfigParser
 
 
-def config(filename='src/database.ini', section='postgresql'):
+def config(filename='db/database.ini', section='postgresql'):
     """Read the configuration file for the db connection."""
     parser = ConfigParser()
     parser.read(filename)

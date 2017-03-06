@@ -1,3 +1,7 @@
+-- file: db/create_tables.sql
+-- andrew jarcho
+-- 2017-02-16
+
 DROP TABLE IF EXISTS sl_night CASCADE;
 
 CREATE TABLE sl_night (

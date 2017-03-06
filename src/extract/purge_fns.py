@@ -1,4 +1,4 @@
-# file: src/purge_fns.py
+# file: src/extract/purge_fns.py
 # andrew jarcho
 # 2017-01-27
 

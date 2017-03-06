@@ -1,0 +1,4 @@
+import csv
+use csv.reader to read each line into 7 Events ?
+Subclass namedtuple classes for Day, Week in src/container_objs.py    DONE
+Have producer thread/process run read_fns, consumer thread/process run purge_fns?
