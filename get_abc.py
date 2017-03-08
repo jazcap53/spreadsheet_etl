@@ -7,20 +7,41 @@
 # quick and dirty
 
 
+from collections import defaultdict
+
+
+triples = defaultdict(int)
+
 
 def make_output_line(l_1, l_2 = None, l_3 = None):
     input_line = [l_1, l_2, l_3]
     output_line = []
+    abc_line = ''
+    global triples
     for item in input_line:
         if item == '':
             output_line.append('blank')
+            abc_line += 'A'
         elif item is None:
             output_line.append('None ')
-        elif item[:5] in ['Week ', '=====', '    2', 'actio']:
-            output_line.append(item[:5])
+            abc_line += 'F'
+        elif item[: 5] == 'Week ':
+            output_line.append('Week ')
+            abc_line += 'B'
+        elif item[: 5] == '=====':
+            output_line.append('=====')
+            abc_line += 'C'
+        elif item[: 5] == '    2':
+            output_line.append('    2')
+            abc_line += 'D'
+        elif item[: 5] == 'actio':
+            output_line.append('actio')
+            abc_line += 'E'
         else:
             output_line.append(item)  # TODO: raise exception here
-    print(output_line)
+            abc_line = 'BONGO'
+    print('{} --- {}'.format(output_line, abc_line))
+    triples[abc_line] += 1
 
 
 def read_input():
@@ -45,3 +66,6 @@ def read_input():
 
 if __name__ == '__main__':
     read_input()
+    global triples
+    for k in sorted(triples.keys()):
+        print('{}: {}'.format(k, triples[k]))
