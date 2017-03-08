@@ -7,7 +7,13 @@
 
 
 def process_curr(cur_l, nxt_l = None):
-    print(cur_l)
+    out_val = None
+    if cur_l[:5] == '    2' and nxt_l is not None and nxt_l[:5] == 'actio':
+        out_val = cur_l
+    elif cur_l[:5] == 'actio':
+        out_val = cur_l
+    if out_val is not None:
+        print(out_val)
 
 
 def read_each_line():
