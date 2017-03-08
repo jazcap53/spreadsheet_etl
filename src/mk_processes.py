@@ -13,7 +13,8 @@ outp = subprocess.Popen(
 )
 
 inp = subprocess.Popen(
-        ['./src/transform/get_input.py'],
+        # ['./src/transform/get_input.py'],
+        ['./get_abc.py'],
         stdin=outp.stdout,
 )
 
