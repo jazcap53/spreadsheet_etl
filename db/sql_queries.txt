@@ -27,3 +27,4 @@ What bedtime has resulted in the longest max sleep (average) per night?  ***
             FROM night INNER JOIN sleep ON sleep.night_id = night.night_id
             
 What bedtime has resulted in the longest average first sleep?
+Get the longest sleep of the night for a range of nights
