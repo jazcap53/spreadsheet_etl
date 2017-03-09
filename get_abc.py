@@ -35,8 +35,10 @@ def make_output_line(l_1, l_2 = None, l_3 = None):
             output_line.append('    2')
             abc_line += 'D'
         elif item[: 5] == 'actio':
-            output_line.append('actio')
-            abc_line += 'E'
+            action_type = item[8]
+            string_to_append = 'act=' + action_type
+            output_line.append(string_to_append)
+            abc_line += action_type
         else:
             output_line.append(item)  # TODO: raise exception here
             abc_line = 'BONGO'
@@ -66,6 +68,5 @@ def read_input():
 
 if __name__ == '__main__':
     read_input()
-    global triples
     for k in sorted(triples.keys()):
         print('{}: {}'.format(k, triples[k]))
