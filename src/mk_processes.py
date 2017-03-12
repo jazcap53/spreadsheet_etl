@@ -14,7 +14,8 @@ outp = subprocess.Popen(
 
 inp = subprocess.Popen(
         # ['./src/transform/get_input.py'],
-        ['./get_abc.py'],
+        # ['./get_abc.py'],
+        ['./src/transform/do_transform.py'],
         stdin=outp.stdout,
 )
 
