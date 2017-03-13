@@ -29,11 +29,11 @@ def purge(weeks, out=sys.stdout):
         if purging:
             if _stops_purge(event):
                 purging = False
-            else:
+            # else:  TODO: NEW CHANGE
                 # if __debug__:
                 #     out.write('popping ')
                 #     print_event(event, out)
-                weeks[week_ix][day_ix].events.pop(event_ix)
+            weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if _restarts_purge(event):
                 purging = True

@@ -7,7 +7,6 @@
 
 
 def process_curr():
-    # print('in process_cur, cur_l is {}'.format(cur_l))
     out_val = None
     last_date = ''
     last_sleep_time = ''
@@ -63,17 +62,9 @@ def read_each_line():  # from outp.stdout, which has been set to PIPE
     while True:
         try:
             curr_line = input()
-        # while True:
-        #     try:
-        #         next_line = input()
-        #         process_curr(curr_line, next_line)
             line_processor(curr_line)
-        #         curr_line = next_line
         except EOFError:
             break
-        # process_curr(curr_line)
-    # except EOFError:
-    #     pass
 
 
 if __name__ == '__main__':
