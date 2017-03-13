@@ -23,27 +23,20 @@ def purge(weeks, out=sys.stdout):
     purging = True
     event = None
     final_event = _get_final_event(weeks)
-    if final_event:  # None or a 4-tuple
+    if final_event:  # final_event is None or a 4-tuple
         week_ix, day_ix, event_ix, event = final_event
     while event:
         if purging:
             if _stops_purge(event):
                 purging = False
-            # else:  TODO: NEW CHANGE
-                # if __debug__:
-                #     out.write('popping ')
-                #     print_event(event, out)
             weeks[week_ix][day_ix].events.pop(event_ix)
         else:
             if _restarts_purge(event):
                 purging = True
             else:
-                # if __debug__:
-                #     out.write('keeping ')
-                #     print_event(event, out)
                 pass
         previous_event = _get_previous_event(weeks, week_ix, day_ix, event_ix, out)
-        if previous_event:  # None or a 4-tuple
+        if previous_event:  # final_event is None or a 4-tuple
             week_ix, day_ix, event_ix, event = previous_event
         else:
             event = None

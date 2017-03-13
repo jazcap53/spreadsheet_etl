@@ -14,7 +14,7 @@ def process_curr():
 
 
     def get_last_sleep(cur_l):
-        """ 'time: ' part of cur_l may be 'h:mm' or 'hh:mm' """
+        """ The 'time: ' part of cur_l may be 'h:mm' or 'hh:mm' """
         end_pos = cur_l.rfind(', hours: ')
         if end_pos != -1:
             sleep_time = cur_l[17: end_pos]
