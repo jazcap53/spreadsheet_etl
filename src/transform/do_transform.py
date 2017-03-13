@@ -13,19 +13,39 @@ def process_curr():
     multiplier = 0
 
 
-    def get_last_sleep(cur_l):
-        """ The 'time: ' part of cur_l may be 'h:mm' or 'hh:mm' """
+    def get_wake_or_last_sleep(cur_l):
+        """The 'time: ' part of cur_l may be 'h:mm' or 'hh:mm'"""
         end_pos = cur_l.rfind(', hours: ')
-        if end_pos != -1:
-            sleep_time = cur_l[17: end_pos]
-        else:
-            sleep_time = cur_l[17: ]
-        return sleep_time
+        out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
+        return out_time
+
+
+    def get_duration(w_time, s_time):
+        """Return the difference between two times"""
+        w_time_list = list(map(int, w_time.split(':')))
+        s_time_list = list(map(int, s_time.split(':')))
+        if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
+            w_time_list[0] += 24
+        if w_time_list[1] < s_time_list[1]:  # wake minit < sleep minit
+            w_time_list[1] += 60
+        dur_list = [(w_time_list[x] - s_time_list[x]) for x in range(len(w_time_list))]
+        duration = str(dur_list[0])
+        if len(duration) == 1:
+            duration = '0' + duration
+        if dur_list[1] == 15:
+            duration += '.25'
+        elif dur_list[1] == 30:
+            duration += '.50'
+        elif dur_list[1] == 45:
+            duration += '.75'
+        elif dur_list[1] == 0:
+            duration += '.00'
+        return duration
 
 
     def inner_process_curr(cur_l):
         nonlocal out_val, last_date, last_sleep_time, multiplier
-        nonlocal get_last_sleep
+        nonlocal get_wake_or_last_sleep, get_duration
         try:
             if cur_l == '':
                 pass
@@ -36,18 +56,14 @@ def process_curr():
             elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
                 last_date = cur_l[4: ]
             elif cur_l[: 9] == 'action: b':
-                last_sleep_time = get_last_sleep(cur_l)
+                last_sleep_time = get_wake_or_last_sleep(cur_l)
                 out_val = 'NIGHT, {}, {}'.format(last_date, last_sleep_time)
             elif cur_l[: 9] == 'action: s':
-                last_sleep_time = get_last_sleep(cur_l)
+                last_sleep_time = get_wake_or_last_sleep(cur_l)
             elif cur_l[: 9] == 'action: w':
-                w_action_time = cur_l[17: ]
-                if w_action_time < last_sleep_time:
-                    multiplier = 1
-                else:
-                    multiplier = 0
-                # TODO: stuff goes here to calculate interval output
-                out_val = 'NAP, something, something<, something>'
+                wake_time = get_wake_or_last_sleep(cur_l)
+                duration = get_duration(wake_time, last_sleep_time)
+                out_val = 'NAP, {}, {}'.format(wake_time, duration)
         except IndexError:
             print('BAD VALUE {} in input'.format(cur_l))
         else:
