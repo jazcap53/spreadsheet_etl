@@ -12,8 +12,21 @@ def process_curr():
     last_date = ''
     last_sleep_time = ''
     multiplier = 0
+
+
+    def get_last_sleep(cur_l):
+        """ 'time: ' part of cur_l may be 'h:mm' or 'hh:mm' """
+        end_pos = cur_l.rfind(', hours: ')
+        if end_pos != -1:
+            sleep_time = cur_l[17: end_pos]
+        else:
+            sleep_time = cur_l[17: ]
+        return sleep_time
+
+
     def inner_process_curr(cur_l):
         nonlocal out_val, last_date, last_sleep_time, multiplier
+        nonlocal get_last_sleep
         try:
             if cur_l == '':
                 pass
@@ -24,23 +37,10 @@ def process_curr():
             elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
                 last_date = cur_l[4: ]
             elif cur_l[: 9] == 'action: b':
-                # next 5 lines: needed because 'time: ' part of cur_l may
-                # be 'h:mm' or 'hh:mm'
-                end_pos = cur_l.rfind(', hours: ')
-                if end_pos != -1:
-                    last_sleep_time = cur_l[17: end_pos]
-                else:
-                    last_sleep_time = cur_l[17: ]
+                last_sleep_time = get_last_sleep(cur_l)
                 out_val = 'NIGHT, {}, {}'.format(last_date, last_sleep_time)
             elif cur_l[: 9] == 'action: s':
-                # last_sleep_time = cur_l[17: ]
-                # next 5 lines: needed because 'time: ' part of cur_l may
-                # be 'h:mm' or 'hh:mm'
-                end_pos = cur_l.rfind(', hours: ')
-                if end_pos != -1:
-                    last_sleep_time = cur_l[17: end_pos]
-                else:
-                    last_sleep_time = cur_l[17: ]
+                last_sleep_time = get_last_sleep(cur_l)
             elif cur_l[: 9] == 'action: w':
                 w_action_time = cur_l[17: ]
                 if w_action_time < last_sleep_time:
