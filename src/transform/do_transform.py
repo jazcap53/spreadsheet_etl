@@ -7,6 +7,10 @@
 
 
 def process_curr():
+    """
+    Called by: read_each_line()
+    Returns: inner_process_curr()
+    """
     out_val = None
     last_date = ''
     last_sleep_time = ''
@@ -14,23 +18,35 @@ def process_curr():
 
 
     def get_wake_or_last_sleep(cur_l):
-        """The 'time: ' part of cur_l may be 'h:mm' or 'hh:mm'"""
+        """
+        Called by: inner_process_curr().
+        Returns: the 'time' part of cur_l which may be in 'h:mm' or
+                 'hh:mm' format.
+        """
         end_pos = cur_l.rfind(', hours: ')
         out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
+        if len(out_time) == 4:
+            out_time = '0' + out_time
         return out_time
 
 
     def get_duration(w_time, s_time):
-        """Return the difference between two times"""
-        w_time_list = list(map(int, w_time.split(':')))
-        s_time_list = list(map(int, s_time.split(':')))
-        if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
-            w_time_list[0] += 24
+        """
+        Called by: inner_process_curr()
+        Returns: the difference between the wake and sleep times,
+                 expressed as a string in decimal format, e.g.,
+                 04.25 for 4 1/4 hours.
+        """
+        w_time_list = list(map(int, w_time.split(':')))  # w: wake
+        s_time_list = list(map(int, s_time.split(':')))  # s: sleep
         if w_time_list[1] < s_time_list[1]:  # wake minit < sleep minit
             w_time_list[1] += 60
+            w_time_list[0] -= 1
+        if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
+            w_time_list[0] += 24
         dur_list = [(w_time_list[x] - s_time_list[x]) for x in range(len(w_time_list))]
         duration = str(dur_list[0])
-        if len(duration) == 1:
+        if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
         if dur_list[1] == 15:
             duration += '.25'
@@ -44,6 +60,13 @@ def process_curr():
 
 
     def inner_process_curr(cur_l):
+        """
+        Called by: inner_process()
+        Returns: None
+        Prints argument to stdout as a string in format:
+               NIGHT, date, time  or
+               NAP, time, duration
+        """
         nonlocal out_val, last_date, last_sleep_time, multiplier
         nonlocal get_wake_or_last_sleep, get_duration
         try:
@@ -70,10 +93,14 @@ def process_curr():
             if out_val is not None:
                 print(out_val)
             out_val = None
+
     return inner_process_curr
 
 
 def read_each_line():  # from outp.stdout, which has been set to PIPE
+    """
+    Called by: __main__()
+    """
     line_processor = process_curr()
     while True:
         try:
