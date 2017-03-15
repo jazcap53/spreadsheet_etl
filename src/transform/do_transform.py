@@ -6,6 +6,14 @@
 # 2017-03-12
 
 
+"""
+Read lines from stdin, transform to a db-friendly format, and write to stdout.
+
+process_curr() returns a closure: inner_process_curr. inner_process_curr()
+takes a string as an argument, and prints a corresponding command to stdout
+that may be used to load data from the argument string into the db.
+"""
+
 def process_curr():
     """
     Called by: read_each_line()
@@ -20,7 +28,7 @@ def process_curr():
     def get_wake_or_last_sleep(cur_l):
         """
         Called by: inner_process_curr().
-        Returns: the 'time' part of cur_l which may be in 'h:mm' or
+        Returns: the 'time' part of cur_l, which it receives in 'h:mm' or
                  'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
@@ -37,8 +45,8 @@ def process_curr():
                  expressed as a string in decimal format, e.g.,
                  04.25 for 4 1/4 hours.
         """
-        w_time_list = list(map(int, w_time.split(':')))  # w: wake
-        s_time_list = list(map(int, s_time.split(':')))  # s: sleep
+        w_time_list = list(map(int, w_time.split(':')))
+        s_time_list = list(map(int, s_time.split(':')))
         if w_time_list[1] < s_time_list[1]:  # wake minit < sleep minit
             w_time_list[1] += 60
             w_time_list[0] -= 1
@@ -64,17 +72,17 @@ def process_curr():
         Called by: inner_process()
         Returns: None
         Prints argument to stdout as a string in format:
-               NIGHT, date, time  or
-               NAP, time, duration
+               'NIGHT, date, time'  or
+               'NAP, time, duration'
         """
         nonlocal out_val, last_date, last_sleep_time, multiplier
         nonlocal get_wake_or_last_sleep, get_duration
         try:
             if cur_l == '':
                 pass
-            elif cur_l[0] == 'W':
+            elif cur_l[0] == 'W':  # 'Week of ...'
                 pass
-            elif cur_l[0] == '=':
+            elif cur_l[0] == '=':  # '========...'
                 pass
             elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
                 last_date = cur_l[4: ]
@@ -97,9 +105,10 @@ def process_curr():
     return inner_process_curr
 
 
-def read_each_line():  # from outp.stdout, which has been set to PIPE
+def read_each_line():
     """
     Called by: __main__()
+    Read from the 'extract' phase output; write to stdout.
     """
     line_processor = process_curr()
     while True:
