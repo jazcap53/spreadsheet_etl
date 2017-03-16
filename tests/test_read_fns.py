@@ -9,9 +9,6 @@ import io
 import datetime
 import pytest
 
-# import unittest
-# from unittest import TestCase
-
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_file, read_lines, _is_header, _append_week
 from src.extract.read_fns import _check_for_date
