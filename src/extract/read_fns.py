@@ -10,7 +10,7 @@ from __future__ import print_function
 import re
 import datetime
 
-from container_objs import validate_segment, Week, Day, Event, weeks
+from src.extract.container_objs import validate_segment, Week, Day, Event, weeks
 
 
 def open_file(file_read_wrapper):

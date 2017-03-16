@@ -2,24 +2,24 @@
 # andrew jarcho
 # 2017-01-28
 
-# nosetests 1.3.7
+# pytest 3.0.7
 
 import io
 
 import datetime
-import unittest
-from unittest import TestCase
+import pytest
+
+# import unittest
+# from unittest import TestCase
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_file, read_lines, _is_header, _append_week
 from src.extract.read_fns import _check_for_date
 from src.extract.container_objs import Week, Day
 
-
-class TestReadFns(TestCase):
-
-    def setUp(self):
-        self.file_wrapper = FakeFileReadWrapper(
+@pytest.fixture
+def file_wrapper():
+    return FakeFileReadWrapper(
                 u''',Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,
 12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00
 ,,,,,,,,,,,,,s,4:45,,s,3:30,,w,5:15,5.25
@@ -34,49 +34,51 @@ class TestReadFns(TestCase):
 ,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,
 ''')
-        self.weeks = []
 
-    def test_open_file(self):
-        self.infile = open_file(self.file_wrapper)
-        self.assertIsInstance(self.infile, io.StringIO)
 
-    def test_read_lines_stores_one_week(self):
-        self.infile = open_file(self.file_wrapper)
-        self.weeks = read_lines(self.infile, self.weeks)
-        self.assertEqual(len(self.weeks), 1)
+def test_open_file(file_wrapper):
+    infile = open_file(file_wrapper)
+    assert isinstance(infile, io.StringIO)
 
-    def test__is_header_returns_true_for_header_line(self):
-        self.infile = open_file(self.file_wrapper)
-        line = self.infile.readline().strip().split(',')
-        self.assertTrue(_is_header(line))
+def test_read_lines_stores_one_week(file_wrapper):
+    weeks = []
+    infile = open_file(file_wrapper)
+    weeks = read_lines(infile, weeks)
+    assert len(weeks) == 1
 
-    def test__is_header_returns_false_for_non_header_line(self):
-        self.infile = open_file(self.file_wrapper)
-        line = self.infile.readline().strip().split(',')
-        line = self.infile.readline().strip().split(',')
-        self.assertFalse(_is_header(line))
+def test__is_header_returns_true_for_header_line(file_wrapper):
+    infile = open_file(file_wrapper)
+    line = infile.readline().strip().split(',')
+    assert _is_header(line)
 
-    def test__append_week_appends_week_to_week_list(self):
-        sunday_date = datetime.date(2016, 12, 4)
-        have_unstored_event = True
-        old_weeks = self.weeks[:]
-        dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
-        new_week = Week(*dts)
-        self.weeks, sunday_date, have_unstored_event, new_week = _append_week(
-                self.weeks, sunday_date, have_unstored_event, new_week)
-        self.assertEqual(len(self.weeks), len(old_weeks) + 1)
+def test__is_header_returns_false_for_non_header_line(file_wrapper):
+    infile = open_file(file_wrapper)
+    line = infile.readline().strip().split(',')
+    line = infile.readline().strip().split(',')
+    assert not _is_header(line)
 
-    def test__check_for_date_matches_date_in_correct_format(self):
-        date_string = '12/34/5678'
-        good_match = _check_for_date(date_string)
-        self.assertTrue(good_match)
+def test__append_week_appends_week_to_week_list(file_wrapper):
+    weeks = []
+    sunday_date = datetime.date(2016, 12, 4)
+    have_unstored_event = True
+    old_weeks = weeks[:]
+    dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
+    new_week = Week(*dts)
+    weeks, sunday_date, have_unstored_event, new_week = _append_week(
+            weeks, sunday_date, have_unstored_event, new_week)
+    assert len(weeks) == len(old_weeks) + 1
 
-    def test__check_for_date_rejects_date_with_hyphens(self):
-        date_string = '12-34-5678'
-        good_match = _check_for_date(date_string)
-        self.assertFalse(good_match)
+def test__check_for_date_matches_date_in_correct_format(file_wrapper):
+    date_string = '12/34/5678'
+    good_match = _check_for_date(date_string)
+    assert good_match
 
-    def test__check_for_date_rejects_date_with_alpha(self):
-        date_string = 'a2/34/5678'
-        good_match = _check_for_date(date_string)
-        self.assertFalse(good_match)
+def test__check_for_date_rejects_date_with_hyphens(file_wrapper):
+    date_string = '12-34-5678'
+    good_match = _check_for_date(date_string)
+    assert not good_match
+
+def test__check_for_date_rejects_date_with_alpha(file_wrapper):
+    date_string = 'a2/34/5678'
+    good_match = _check_for_date(date_string)
+    assert not good_match

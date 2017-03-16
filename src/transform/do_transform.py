@@ -75,7 +75,8 @@ def process_curr():
                'NIGHT, date, time'  or
                'NAP, time, duration'
         """
-        nonlocal out_val, last_date, last_sleep_time, multiplier
+        nonlocal out_val
+        nonlocal last_date, last_sleep_time, multiplier
         nonlocal get_wake_or_last_sleep, get_duration
         try:
             if cur_l == '':
