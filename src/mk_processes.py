@@ -17,11 +17,12 @@ outp = subprocess.Popen(
 )
 
 inp = subprocess.Popen(
-        ['./src/transform/do_transform.py'],
+        # ['./src/transform/do_transform.py'],
+        ['./src/transform/do_transform_class.py'],
         stdin=outp.stdout,
 )
 
-time.sleep(0.1)
+time.sleep(0.3)
 
 outp.terminate()
 inp.terminate()
