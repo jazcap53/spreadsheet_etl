@@ -6,6 +6,8 @@
 # 2017-03-16
 
 
+import sys
+
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
@@ -16,23 +18,29 @@ into the db.
 
 class Transform(object):
 
-    def __init__(self):
+    def __init__(self, data_source=sys.stdin):
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
         self.multiplier = 0
+        self.data_source = data_source
 
     def read_each_line(self):
         """
         Called by: __main__()
         Read from the 'extract' phase output; write to stdout.
         """
-        while True:
-            try:
-                curr_line = input()
-                self.process_curr(curr_line)
-            except EOFError:
-                break
+        # while True:
+        #     try:
+        #         curr_line = input()
+        #         self.process_curr(curr_line)
+        #     except EOFError:
+        #         break
+
+        curr_line = self.data_source.readline()
+        while curr_line:
+            self.process_curr(curr_line.rstrip('\n'))
+            curr_line = self.data_source.readline()
 
     def process_curr(self, cur_l):
         """
