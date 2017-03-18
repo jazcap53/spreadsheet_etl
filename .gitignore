@@ -3,3 +3,4 @@
 *.pyc
 .pgpass
 database.ini
+xtraneous

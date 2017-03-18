@@ -30,13 +30,6 @@ class Transform(object):
         Called by: __main__()
         Read from the 'extract' phase output; write to stdout.
         """
-        # while True:
-        #     try:
-        #         curr_line = input()
-        #         self.process_curr(curr_line)
-        #     except EOFError:
-        #         break
-
         curr_line = self.data_source.readline()
         while curr_line:
             self.process_curr(curr_line.rstrip('\n'))
@@ -50,30 +43,29 @@ class Transform(object):
                'NIGHT, date, time'  or
                'NAP, time, duration'
         """
-        try:
-            if cur_l == '':
-                pass
-            elif cur_l[0] == 'W':  # 'Week of ...'
-                pass
-            elif cur_l[0] == '=':  # '========...'
-                pass
-            elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
-                self.last_date = cur_l[4: ]
-            elif cur_l[: 9] == 'action: b':
-                self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
-                self.out_val = 'NIGHT, {}, {}'.format(self.last_date, self.last_sleep_time)
-            elif cur_l[: 9] == 'action: s':
-                self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
-            elif cur_l[: 9] == 'action: w':
-                wake_time = self.get_wake_or_last_sleep(cur_l)
-                duration = self.get_duration(wake_time, self.last_sleep_time)
-                self.out_val = 'NAP, {}, {}'.format(wake_time, duration)
-        except IndexError:
-            print('BAD VALUE {} in input'.format(cur_l))
+        if cur_l == '':
+            pass
+        elif cur_l[0] == 'W':  # 'Week of ...'
+            pass
+        elif cur_l[0] == '=':  # '========...'
+            pass
+        elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
+            self.last_date = cur_l[4: ]
+        elif cur_l[: 9] == 'action: b':
+            self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
+            self.out_val = 'NIGHT, {}, {}'.format(self.last_date, self.last_sleep_time)
+        elif cur_l[: 9] == 'action: s':
+            self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
+        elif cur_l[: 9] == 'action: w':
+            wake_time = self.get_wake_or_last_sleep(cur_l)
+            duration = self.get_duration(wake_time, self.last_sleep_time)
+            self.out_val = 'NAP, {}, {}'.format(wake_time, duration)
         else:
-            if self.out_val is not None:
-                print(self.out_val)
-            self.out_val = None
+            print('BAD VALUE {} in input'.format(cur_l))
+            raise IndexError
+        if self.out_val is not None:
+            print(self.out_val)
+        self.out_val = None
 
     def get_wake_or_last_sleep(self, cur_l):
         """
