@@ -10,7 +10,7 @@ import sys
 from contextlib import contextmanager
 from io import StringIO
 
-from spreadsheet_etl.xtraneous.do_transform_no_class.orig_do_transform import process_curr
+from spreadsheet_etl.src.transform.orig_do_transform import process_curr
 
 
 @contextmanager
