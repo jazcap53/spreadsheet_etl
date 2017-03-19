@@ -25,47 +25,47 @@ def captured_output():
 
 
 @pytest.fixture
-def inner_process_curr():
+def inner():
     return process_curr()
 
 
-def test_call_to_inner_process_curr_with_date_line_stores_last_date(inner_process_curr):
+def test_call_to_inner_with_date_line_stores_last_date(inner):
     cur_l = '    2017-01-12'
-    inner_process_curr(cur_l)
-    assert len(inner_process_curr.__code__.co_freevars) == 6
-    assert inner_process_curr.__code__.co_freevars[2] == 'last_date'
-    assert inner_process_curr.__closure__[2].cell_contents == '2017-01-12'
+    inner(cur_l)
+    assert len(inner.__code__.co_freevars) == 6
+    assert inner.__code__.co_freevars[2] == 'last_date'
+    assert inner.__closure__[2].cell_contents == '2017-01-12'
 
 
-def test_call_to_inner_process_curr_with_action_b_stores_last_sleep_time(inner_process_curr):
+def test_call_to_inner_with_action_b_stores_last_sleep_time(inner):
     cur_l = 'action: b, time: 0:00, hours: 9.00'
-    inner_process_curr(cur_l)
-    assert inner_process_curr.__closure__[3].cell_contents == '00:00'  # __closure__[3] is last_sleep_time
+    inner(cur_l)
+    assert inner.__closure__[3].cell_contents == '00:00'  # __closure__[3] is last_sleep_time
 
 
-def test_call_to_inner_process_curr_with_date_and_action_b_outputs_NIGHT(inner_process_curr):
+def test_call_to_inner_with_date_and_action_b_outputs_NIGHT(inner):
     cur_l = '    2017-01-12'
-    inner_process_curr(cur_l)
+    inner(cur_l)
     cur_l = 'action: b, time: 0:00, hours: 9.00'
     with captured_output() as (out, err):
-        inner_process_curr(cur_l)
+        inner(cur_l)
     output = out.getvalue().strip()
     assert output == 'NIGHT, 2017-01-12, 00:00'
 
 
-def test_call_to_inner_process_curr_with_action_s_stores_last_sleep_time(inner_process_curr):
+def test_call_to_inner_with_action_s_stores_last_sleep_time(inner):
     cur_l = 'action: s, time: 13:15'
-    inner_process_curr(cur_l)
-    assert inner_process_curr.__closure__[3].cell_contents == '13:15'
+    inner(cur_l)
+    assert inner.__closure__[3].cell_contents == '13:15'
 
 
-def test_call_to_inner_process_curr_with_date_and_action_s_action_w_outputs_NAP(inner_process_curr):
+def test_call_to_inner_with_date_and_action_s_action_w_outputs_NAP(inner):
     cur_l = '    2016-09-12'
-    inner_process_curr(cur_l)
+    inner(cur_l)
     cur_l = 'action: s, time: 03:00'
-    inner_process_curr(cur_l)
+    inner(cur_l)
     cur_l = 'action: w, time: 04:15, hours: 01.15'
     with captured_output() as (out, err):
-        inner_process_curr(cur_l)
+        inner(cur_l)
     output = out.getvalue().strip()
     assert output == 'NAP, 04:15, 01.25'

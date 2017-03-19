@@ -9,7 +9,7 @@
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
-process_curr() returns a closure: inner_process_curr. inner_process_curr()
+process_curr() returns a closure: inner. inner()
 takes a string as an argument, and prints a corresponding command to stdout
 that may be used to load data from the argument string into the db.
 """
@@ -17,7 +17,7 @@ that may be used to load data from the argument string into the db.
 def process_curr():
     """
     Called by: read_each_line()
-    Returns: inner_process_curr()
+    Returns: inner()
     """
     out_val = None
     last_date = ''
@@ -27,7 +27,7 @@ def process_curr():
 
     def get_wake_or_last_sleep(cur_l):
         """
-        Called by: inner_process_curr().
+        Called by: inner().
         Returns: the 'time' part of cur_l, which it receives in 'h:mm' or
                  'hh:mm' format.
         """
@@ -40,7 +40,7 @@ def process_curr():
 
     def get_duration(w_time, s_time):
         """
-        Called by: inner_process_curr()
+        Called by: inner()
         Returns: the difference between the wake and sleep times,
                  expressed as a string in decimal format, e.g.,
                  04.25 for 4 1/4 hours.
@@ -67,7 +67,7 @@ def process_curr():
         return duration
 
 
-    def inner_process_curr(cur_l):
+    def inner(cur_l):
         """
         Called by: inner_process()
         Returns: None
@@ -102,7 +102,7 @@ def process_curr():
                 print(out_val)
             out_val = None
 
-    return inner_process_curr
+    return inner
 
 
 def read_each_line():
