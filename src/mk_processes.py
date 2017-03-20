@@ -4,7 +4,7 @@
 
 
 """
-Build and link the subprocesses that run the extract and transform stages.
+Create and connect the subprocesses that run the extract and transform stages.
 """
 
 import subprocess

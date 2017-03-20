@@ -25,13 +25,21 @@ def open_file(file_read_wrapper):
 def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
         new_week=None):
     """
+    Read and discard lines until a Sunday marker is found.
+    Then create a Week as a list of 7 Days, and insert data into it
+    until a blank line is read. On reading a blank line, append the
+    Week just read to the weeks list.
+    Returns: the weeks list.
     Called by: client code
     """
     for line in infile:
         line = line.strip().split(',')
-        if not any(line):  # we had a blank row in the spreadsheet
-            weeks, sunday_date, do_append_week, new_week = _append_week(
-                    weeks, sunday_date, do_append_week, new_week)
+        if not any(line):      # we had a blank row in the spreadsheet
+            if not sunday_date:
+                continue
+            else:
+                weeks, sunday_date, do_append_week, new_week = _append_week(
+                        weeks, sunday_date, do_append_week, new_week)
         elif not sunday_date:  # we haven't seen a Sunday yet this week
             date_match = _check_for_date(line[0])
             if date_match:
