@@ -7,8 +7,10 @@
 
 from __future__ import print_function
 
+import sys
 import re
 import datetime
+from collections import namedtuple
 
 from src.extract.container_objs import validate_segment, Week, Day, Event, weeks
 
@@ -23,7 +25,7 @@ def open_file(file_read_wrapper):
 # TODO: make this function easier to read
 # TODO: get rid of do_append_week? sunday_date? new_week?
 def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
-        new_week=None):
+               new_week=None):
     """
     Read and discard lines until a Sunday marker is found.
     Then create a Week as a list of 7 Days, and insert data into it
@@ -32,30 +34,44 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     Returns: the weeks list.
     Called by: client code
     """
+    weeks_plus = [weeks, sunday_date, do_append_week, new_week]
     for line in infile:
         line = line.strip().split(',')
+        # if we got a blank line, check whether we have a sunday (i.e., we're in a week)
+            # if no sunday: continue
+            # if yes sunday: append the new week to our output, and set sunday_date to None
         if not any(line):      # we had a blank row in the spreadsheet
-            if not sunday_date:
+            if not weeks_plus[1]:  # sunday_date
                 continue
             else:
-                weeks, sunday_date, do_append_week, new_week = _append_week(
-                        weeks, sunday_date, do_append_week, new_week)
-        elif not sunday_date:  # we haven't seen a Sunday yet this week
+                weeks_plus = _append_week(weeks_plus)
+        # if we got a non-blank line but haven't seen a sunday yet
+            # check that the line starts with a sunday
+            # if it does:
+                # retrieve the sunday date
+                # create a new week for that date
+            # if it doesn't:
+                # continue
+        elif not weeks_plus[1]:  # we haven't seen a Sunday yet this week
             date_match = _check_for_date(line[0])
             if date_match:
-                sunday_date = _match_to_date_obj(date_match)
-                day_list = [Day(sunday_date + datetime.timedelta(days=x), [])
+                weeks_plus[1] = _match_to_date_obj(date_match)
+                day_list = [Day(weeks_plus[1] + datetime.timedelta(days=x), [])
                         for x in range(7)]
-                new_week = Week(*day_list)
+                weeks_plus[3] = Week(*day_list)
+                #### weeks_plus[0].append(weeks_plus[3])  # ???
             else:
                 continue
+        # skip header line  TODO: REMOVE -- SUPERFLUOUS
         elif _is_header(line):
             continue
-        if any(line[1:]):
-            do_append_week, new_week = _get_events(line[1:], new_week)
+        if any(line[1: ]):
+            weeks_plus[2: ] = _get_events(line[1: ], weeks_plus[3])
+            # do_append_week, new_week = _get_events(line[1:], new_week)
+            # weeks_plus = [weeks, sunday_date, do_append_week, new_week]
     # save any remaining unstored data
-    _append_week(weeks, sunday_date, do_append_week, new_week)
-    return weeks
+    weeks_plus = _append_week(weeks_plus)
+    return weeks_plus[0]
 
 
 def _is_header(l):
@@ -65,15 +81,19 @@ def _is_header(l):
     return l[1] == 'Sun'
 
 
-def _append_week(weeks, sunday_date, do_append_week, new_week):
+def _append_week(weeks_plus):
     """
-    Append new Week object to weeks list.
+    If we have a new Week object, append it to the weeks element of
+    weeks_plus.
+    Returns: If we have a new Week object, an updated weeks_plus
+             Else, the function's argument
     Called by: read_lines()
     """
-    if sunday_date and do_append_week and new_week:
-        weeks.append(new_week)
-        return weeks, None, False, None
-    return weeks, sunday_date, do_append_week, new_week
+    if all(weeks_plus[1: ]):  # if sunday_date and do_append_week and new_week
+        weeks_plus[0].append(weeks_plus[3])
+        weeks_plus[1: ] = [None, False, None]
+        # return [weeks, None, False, None]
+    return weeks_plus
 
 
 def _check_for_date(s):
@@ -102,6 +122,7 @@ def _get_events(line, new_week):
     """
     do_append_week = False
     for ix in range(7):
+        # a segment is a list of 3 consecutive items from the .csv file
         segment = line[3*ix: 3*ix + 3]
         if validate_segment(segment):
             try:

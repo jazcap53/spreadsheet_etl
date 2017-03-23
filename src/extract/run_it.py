@@ -16,9 +16,10 @@ purge_fns() removes days for which the data are incomplete.
 from __future__ import print_function
 
 import sys
-import read_fns
-import purge_fns
+
 import container_objs
+import purge_fns
+import tmp_read_fns
 from container_objs import weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
@@ -29,7 +30,7 @@ def print_out(weeks):
     print()
 
 if __name__ == '__main__':
-    infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
-    weeks = read_fns.read_lines(infile, weeks)
+    infile = tmp_read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
+    weeks = tmp_read_fns.read_lines(infile, weeks)
     weeks = purge_fns.purge(weeks)
     print_out(weeks)
