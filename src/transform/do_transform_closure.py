@@ -22,8 +22,6 @@ def process_curr():
     out_val = None
     last_date = ''
     last_sleep_time = ''
-    # multiplier = 0
-
 
     def get_wake_or_last_sleep(cur_l):
         """
@@ -36,7 +34,6 @@ def process_curr():
         if len(out_time) == 4:
             out_time = '0' + out_time
         return out_time
-
 
     def get_duration(w_time, s_time):
         """
@@ -66,7 +63,6 @@ def process_curr():
             duration += '.00'
         return duration
 
-
     def inner(cur_l):
         """
         Called by: inner_process()
@@ -75,7 +71,7 @@ def process_curr():
                'NIGHT, date, time'  or
                'NAP, time, duration'
         """
-        nonlocal out_val, last_date, last_sleep_time  # , multiplier
+        nonlocal out_val, last_date, last_sleep_time
         nonlocal get_wake_or_last_sleep, get_duration
         try:
             if cur_l == '':
@@ -101,9 +97,7 @@ def process_curr():
             if out_val is not None:
                 print(out_val)
             out_val = None
-
     return inner
-
 
 def read_each_line():
     """
