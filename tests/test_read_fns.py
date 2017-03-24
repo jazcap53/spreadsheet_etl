@@ -5,12 +5,12 @@
 # pytest 3.0.7
 
 import io
-
+from collections import namedtuple
 import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_file, read_lines, _is_header, _append_week
+from src.extract.read_fns import open_file, read_lines, _append_week
 from src.extract.read_fns import _check_for_date
 from src.extract.container_objs import Week, Day
 
@@ -43,27 +43,18 @@ def test_read_lines_stores_one_week(file_wrapper):
     weeks = read_lines(infile, weeks)
     assert len(weeks) == 1
 
-def test__is_header_returns_true_for_header_line(file_wrapper):
-    infile = open_file(file_wrapper)
-    line = infile.readline().strip().split(',')
-    assert _is_header(line)
-
-def test__is_header_returns_false_for_non_header_line(file_wrapper):
-    infile = open_file(file_wrapper)
-    line = infile.readline().strip().split(',')
-    line = infile.readline().strip().split(',')
-    assert not _is_header(line)
-
 def test__append_week_appends_week_to_week_list(file_wrapper):
     weeks = []
+    len_weeks = len(weeks)
     sunday_date = datetime.date(2016, 12, 4)
-    have_unstored_event = True
-    old_weeks = weeks[:]
+    do_append_week = True
     dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
     new_week = Week(*dts)
-    weeks, sunday_date, have_unstored_event, new_week = _append_week(
-            weeks, sunday_date, have_unstored_event, new_week)
-    assert len(weeks) == len(old_weeks) + 1
+    WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date',
+            'do_append_week', 'new_week'])
+    wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
+    wks_pls = _append_week(wks_pls)
+    assert len(wks_pls.weeks) == len_weeks + 1
 
 def test__check_for_date_matches_date_in_correct_format(file_wrapper):
     date_string = '12/34/5678'

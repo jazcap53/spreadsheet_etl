@@ -38,34 +38,31 @@ def inner():
 def test_co_freevars_holds_value_we_think_it_does(inner):
     assert inner.__code__.co_freevars == ('get_duration',
             'get_wake_or_last_sleep', 'last_date', 'last_sleep_time',
-            'multiplier', 'out_val')
+            'out_val')
 
 
 def test_empty_line_input_has_no_effect(inner):
     cur_l = ''
     inner(cur_l)
-    assert inner.__closure__[5].cell_contents is None  # out_val
+    assert inner.__closure__[4].cell_contents is None  # out_val
     assert inner.__closure__[2].cell_contents == ''    # last_date
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
-    assert inner.__closure__[4].cell_contents == 0     # multiplier
 
 
 def test_Week_of_input_has_no_effect(inner):
     cur_l = 'Week of Sunday, 2017-03-19:'
     inner(cur_l)
-    assert inner.__closure__[5].cell_contents is None  # out_val
+    assert inner.__closure__[4].cell_contents is None  # out_val
     assert inner.__closure__[2].cell_contents == ''    # last_date
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
-    assert inner.__closure__[4].cell_contents == 0     # multiplier
 
 
 def test_line_of_equals_signs_has_no_effect(inner):
     cur_l = '==========================='
     inner(cur_l)
-    assert inner.__closure__[5].cell_contents is None  # out_val
+    assert inner.__closure__[4].cell_contents is None  # out_val
     assert inner.__closure__[2].cell_contents == ''    # last_date
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
-    assert inner.__closure__[4].cell_contents == 0     # multiplier
 
 
 def test_call_to_inner_with_date_stores_last_date(inner):

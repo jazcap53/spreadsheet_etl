@@ -22,7 +22,7 @@ def process_curr():
     out_val = None
     last_date = ''
     last_sleep_time = ''
-    multiplier = 0
+    # multiplier = 0
 
 
     def get_wake_or_last_sleep(cur_l):
@@ -75,7 +75,7 @@ def process_curr():
                'NIGHT, date, time'  or
                'NAP, time, duration'
         """
-        nonlocal out_val, last_date, last_sleep_time, multiplier
+        nonlocal out_val, last_date, last_sleep_time  # , multiplier
         nonlocal get_wake_or_last_sleep, get_duration
         try:
             if cur_l == '':
