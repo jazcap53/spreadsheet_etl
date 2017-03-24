@@ -34,54 +34,33 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     Returns: the weeks list.
     Called by: client code
     """
-    weeks_plus = [weeks, sunday_date, do_append_week, new_week]
+    WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date', 'do_append_week', 'new_week'])
+    wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
     for line in infile:
         line = line.strip().split(',')
-        # if we got a blank line, check whether we have a sunday (i.e., we're in a week)
-            # if no sunday: continue
-            # if yes sunday: append the new week to our output, and set sunday_date to None
         if not any(line):      # we had a blank row in the spreadsheet
-            if not weeks_plus[1]:  # sunday_date
+            if not wks_pls.sunday_date:
                 continue
             else:
-                weeks_plus = _append_week(weeks_plus)
-        # if we got a non-blank line but haven't seen a sunday yet
-            # check that the line starts with a sunday
-            # if it does:
-                # retrieve the sunday date
-                # create a new week for that date
-            # if it doesn't:
-                # continue
-        elif not weeks_plus[1]:  # we haven't seen a Sunday yet this week
+                wks_pls = _append_week(wks_pls)
+        elif not wks_pls.sunday_date:  # we haven't seen a Sunday yet this week
             date_match = _check_for_date(line[0])
             if date_match:
-                weeks_plus[1] = _match_to_date_obj(date_match)
-                day_list = [Day(weeks_plus[1] + datetime.timedelta(days=x), [])
+                wks_pls = wks_pls._replace(sunday_date=_match_to_date_obj(date_match))
+                day_list = [Day(wks_pls.sunday_date + datetime.timedelta(days=x), [])
                         for x in range(7)]
-                weeks_plus[3] = Week(*day_list)
-                #### weeks_plus[0].append(weeks_plus[3])  # ???
+                wks_pls = wks_pls._replace(new_week=Week(*day_list))
             else:
                 continue
-        # skip header line  TODO: REMOVE -- SUPERFLUOUS
-        elif _is_header(line):
-            continue
         if any(line[1: ]):
-            weeks_plus[2: ] = _get_events(line[1: ], weeks_plus[3])
-            # do_append_week, new_week = _get_events(line[1:], new_week)
-            # weeks_plus = [weeks, sunday_date, do_append_week, new_week]
+            got_events = _get_events(line[1: ], wks_pls.new_week)
+            wks_pls = wks_pls._replace(do_append_week=got_events[0], new_week=got_events[1])
     # save any remaining unstored data
-    weeks_plus = _append_week(weeks_plus)
-    return weeks_plus[0]
+    wks_pls = _append_week(wks_pls)
+    return wks_pls.weeks
 
 
-def _is_header(l):
-    """
-    Called by: read_lines()
-    """
-    return l[1] == 'Sun'
-
-
-def _append_week(weeks_plus):
+def _append_week(wks_pls):
     """
     If we have a new Week object, append it to the weeks element of
     weeks_plus.
@@ -89,11 +68,12 @@ def _append_week(weeks_plus):
              Else, the function's argument
     Called by: read_lines()
     """
-    if all(weeks_plus[1: ]):  # if sunday_date and do_append_week and new_week
-        weeks_plus[0].append(weeks_plus[3])
-        weeks_plus[1: ] = [None, False, None]
+    if all(wks_pls[1: ]):  # if sunday_date and do_append_week and new_week
+        my_new_week = wks_pls.new_week
+        wks_pls.weeks.append(my_new_week)
+        wks_pls = wks_pls._replace(sunday_date=None, do_append_week=False, new_week=None)
         # return [weeks, None, False, None]
-    return weeks_plus
+    return wks_pls
 
 
 def _check_for_date(s):
