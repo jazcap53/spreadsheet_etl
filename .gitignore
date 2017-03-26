@@ -4,3 +4,5 @@
 .pgpass
 database.ini
 xtraneous
+.cache
+.idea

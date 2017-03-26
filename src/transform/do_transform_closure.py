@@ -1,4 +1,4 @@
-#!/usr/bin/python3.5
+#!/usr/bin/python3
 
 
 # file: src/transform/do_transform_closure.py
@@ -9,8 +9,8 @@
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
-process_curr() returns a closure: inner. inner()
-takes a string as an argument, and prints a corresponding command to stdout
+process_curr() returns a closure: inner.
+inner() takes a string as an argument, and prints a corresponding command to stdout
 that may be used to load data from the argument string into the db.
 """
 

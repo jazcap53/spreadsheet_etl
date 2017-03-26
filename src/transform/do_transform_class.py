@@ -1,4 +1,4 @@
-#!/usr/bin/python3.5
+#!/usr/bin/python3
 
 
 # file: src/transform/do_transform_class.py
@@ -16,13 +16,12 @@ command to stdout that may be used to load data from the argument string
 into the db.
 """
 
-class Transform(object):
+class Transform:
 
     def __init__(self, data_source=sys.stdin):
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
-        self.multiplier = 0
         self.data_source = data_source
 
     def read_each_line(self):

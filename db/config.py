@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-02-22
 
-# python 2.7, 3.5
+# python: 3
 
 
 from configparser import ConfigParser

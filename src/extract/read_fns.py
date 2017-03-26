@@ -2,7 +2,7 @@
 # andrew jarcho
 # 2017-01-25
 
-# python: 2.7, 3.5
+# python: 3
 
 
 """
