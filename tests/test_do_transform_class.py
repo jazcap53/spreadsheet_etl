@@ -46,7 +46,7 @@ def test_read_good_date_sets_last_date():
     assert my_transform.last_date == '2017-01-02'
 
 
-def test_read_good_date_b_action_date_w_action_sets_last_sleep_time():
+def test_read_date_b_action_date_w_action_sets_last_sleep_time():
     file_wrapper = FakeFileReadWrapper('    2016-12-07\naction: b, time: 23:45\n'
                    '    2016-12-08\naction: w, time: 3:45, hours: 4.00\n'
                    )

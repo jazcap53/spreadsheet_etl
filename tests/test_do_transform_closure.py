@@ -15,8 +15,7 @@ from spreadsheet_etl.src.transform.do_transform_closure import process_curr
 
 # Note: inner.__code__.co_freevars is a tuple holding the values of inner's
 #       free variables in alpha order. Currently this is (get_duration,
-#       get_wake_or_last_sleep, last_date, last_sleep_time, multiplier,
-#       out_val).
+#       get_wake_or_last_sleep, last_date, last_sleep_time, out_val).
 
 
 @contextmanager
@@ -41,7 +40,7 @@ def test_co_freevars_holds_value_we_think_it_does(inner):
             'out_val')
 
 
-def test_empty_line_input_has_no_effect(inner):
+def test_read_blank_line_has_no_effect(inner):
     cur_l = ''
     inner(cur_l)
     assert inner.__closure__[4].cell_contents is None  # out_val
@@ -49,7 +48,7 @@ def test_empty_line_input_has_no_effect(inner):
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
 
 
-def test_Week_of_input_has_no_effect(inner):
+def test_read_Week_of_line_has_no_effect(inner):
     cur_l = 'Week of Sunday, 2017-03-19:'
     inner(cur_l)
     assert inner.__closure__[4].cell_contents is None  # out_val
@@ -57,7 +56,7 @@ def test_Week_of_input_has_no_effect(inner):
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
 
 
-def test_line_of_equals_signs_has_no_effect(inner):
+def test_read_line_of_equals_signs_has_no_effect(inner):
     cur_l = '==========================='
     inner(cur_l)
     assert inner.__closure__[4].cell_contents is None  # out_val
@@ -65,19 +64,19 @@ def test_line_of_equals_signs_has_no_effect(inner):
     assert inner.__closure__[3].cell_contents == ''    # last_sleep_time
 
 
-def test_call_to_inner_with_date_stores_last_date(inner):
+def test_read_good_date_stores_last_date(inner):
     cur_l = '    2017-01-12'
     inner(cur_l)
     assert inner.__closure__[2].cell_contents == '2017-01-12'
 
 
-def test_call_to_inner_with_action_b_stores_last_sleep_time(inner):
+def test_read_date_b_action_date_w_action_stores_last_sleep_time(inner):
     cur_l = 'action: b, time: 0:00, hours: 9.00'
     inner(cur_l)
     assert inner.__closure__[3].cell_contents == '00:00'  # __closure__[3] is last_sleep_time
 
 
-def test_call_to_inner_with_date_and_action_b_outputs_NIGHT(inner):
+def test_read_date_b_action_outputs_NIGHT(inner):
     cur_l = '    2017-01-12'
     inner(cur_l)
     cur_l = 'action: b, time: 0:00, hours: 9.00'
@@ -87,13 +86,13 @@ def test_call_to_inner_with_date_and_action_b_outputs_NIGHT(inner):
     assert output == 'NIGHT, 2017-01-12, 00:00'
 
 
-def test_call_to_inner_with_action_s_stores_last_sleep_time(inner):
+def test_read_s_action_stores_last_sleep_time(inner):
     cur_l = 'action: s, time: 13:15'
     inner(cur_l)
     assert inner.__closure__[3].cell_contents == '13:15'
 
 
-def test_call_to_inner_with_date_and_action_s_and_action_w_outputs_NAP(inner):
+def test_read_date_s_action_w_action_outputs_NAP(inner):
     cur_l = '    2016-09-12'
     inner(cur_l)
     cur_l = 'action: s, time: 03:00'
