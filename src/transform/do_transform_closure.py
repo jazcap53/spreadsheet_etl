@@ -9,15 +9,15 @@
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
-process_curr() returns a closure: inner.
-inner() takes a string as an argument, and prints a corresponding command to stdout
-that may be used to load data from the argument string into the db.
+The output will be usable by the database with a minimum of further
+processing, and will hold all relevant data from the input.
 """
 
 def process_curr():
     """
     Called by: read_each_line()
-    Returns: inner()
+    Returns: a closure, inner.
+
     """
     out_val = None
     last_date = ''
@@ -65,11 +65,13 @@ def process_curr():
 
     def inner(cur_l):
         """
+        Takes a string as its argument, and may output a single line to stdout.
+        The output may depend on values from previous input, as well as on
+        values in the current input string. Output is formatted as:
+           'NIGHT, date, time'  or
+           'NAP, time, duration'
         Called by: inner_process()
         Returns: None
-        Prints argument to stdout as a string in format:
-               'NIGHT, date, time'  or
-               'NAP, time, duration'
         """
         nonlocal out_val, last_date, last_sleep_time
         nonlocal get_wake_or_last_sleep, get_duration

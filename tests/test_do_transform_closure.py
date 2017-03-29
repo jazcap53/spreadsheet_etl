@@ -13,9 +13,10 @@ from io import StringIO
 from spreadsheet_etl.src.transform.do_transform_closure import process_curr
 
 
-# Note: inner.__code__.co_freevars is a tuple holding the values of inner's
+# Note: inner.__code__.co_freevars is a tuple holding the names of inner's
 #       free variables in alpha order. Currently this is (get_duration,
-#       get_wake_or_last_sleep, last_date, last_sleep_time, out_val).
+#       get_wake_or_last_sleep, last_date, last_sleep_time, out_val). The
+#       first two of these names reference functions.
 
 
 @contextmanager

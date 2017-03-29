@@ -11,9 +11,8 @@ import sys
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
-process_curr() takes a string as an argument, and prints a corresponding
-command to stdout that may be used to load data from the argument string
-into the db.
+The output will be usable by the database with a minimum of further
+processing, and will hold all relevant data from the input.
 """
 
 class Transform:

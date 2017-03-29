@@ -53,8 +53,6 @@ def test_read_date_b_action_date_w_action_sets_last_sleep_time():
     open_file_wrapper = file_wrapper.open()
     my_transform = Transform(open_file_wrapper)
     my_transform.read_each_line()
-    # assert my_transform.out_val == None
-    # assert my_transform.last_date == '2016-12-08'
     assert my_transform.last_sleep_time == '23:45'
 
 
