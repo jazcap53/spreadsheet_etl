@@ -37,7 +37,7 @@ class Transform:
         """
         Called by: read_each_line()
         Returns: None
-        Prints argument to stdout as a string in format:
+        Prints its argument to stdout as a string in format:
                'NIGHT, date, time'  or
                'NAP, time, duration'
         """

@@ -16,7 +16,7 @@ processing, and will hold all relevant data from the input.
 def process_curr():
     """
     Called by: read_each_line()
-    Returns: a closure, inner.
+    Returns: a closure, inner, that will process a single line of input.
 
     """
     out_val = None
@@ -25,9 +25,10 @@ def process_curr():
 
     def get_wake_or_last_sleep(cur_l):
         """
+        Extracts and returns the time part of its string argument.
+        Input time may be in 'h:mm' or 'hh:mm' format.
         Called by: inner().
-        Returns: the 'time' part of cur_l, which it receives in 'h:mm' or
-                 'hh:mm' format.
+        Returns: Extracted time given in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
         out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
@@ -65,12 +66,12 @@ def process_curr():
 
     def inner(cur_l):
         """
-        Takes a string as its argument, and may output a single line to stdout.
-        The output may depend on values from previous input, as well as on
-        values in the current input string. Output is formatted as:
+        A closure. Takes a string as its argument, and may output a single line
+        to stdout. The output may depend on values from previous input strings,
+        as well as on values in the current input string. Output is formatted
+        as:
            'NIGHT, date, time'  or
            'NAP, time, duration'
-        Called by: inner_process()
         Returns: None
         """
         nonlocal out_val, last_date, last_sleep_time
@@ -104,7 +105,7 @@ def process_curr():
 def read_each_line():
     """
     Called by: __main__()
-    Read from the 'extract' phase output; write to stdout.
+    Read a line at a time from the 'extract' phase output; write to stdout.
     """
     line_processor = process_curr()
     while True:
