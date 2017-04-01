@@ -11,17 +11,17 @@ import subprocess
 import time
 
 
-outp = subprocess.Popen(
+extract_p = subprocess.Popen(
         ['./src/extract/run_it.py', './src/sheet_004.csv'],
         stdout=subprocess.PIPE,
 )
 
-inp = subprocess.Popen(
+transform_p = subprocess.Popen(
         ['./src/transform/do_transform_closure.py'],
-        stdin=outp.stdout,
+        stdin=extract_p.stdout,
 )
 
 time.sleep(0.3)
 
-outp.terminate()
-inp.terminate()
+extract_p.terminate()
+transform_p.terminate()

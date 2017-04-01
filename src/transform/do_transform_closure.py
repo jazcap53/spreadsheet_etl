@@ -15,8 +15,10 @@ processing, and will hold all relevant data from the input.
 
 def process_curr():
     """
+    Return a closure that will process a single line of input.
+
     Called by: read_each_line()
-    Returns: a closure, inner, that will process a single line of input.
+    Return: the closure, inner.
 
     """
     out_val = None
@@ -25,10 +27,11 @@ def process_curr():
 
     def get_wake_or_last_sleep(cur_l):
         """
-        Extracts and returns the time part of its string argument.
+        Extract and return the time part of its string argument.
+
         Input time may be in 'h:mm' or 'hh:mm' format.
         Called by: inner().
-        Returns: Extracted time given in 'hh:mm' format.
+        Return: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
         out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
@@ -38,10 +41,15 @@ def process_curr():
 
     def get_duration(w_time, s_time):
         """
+        Calculate the interval between w_time and s_time.
+
+        Arguments are strings representing times in 'hh:mm' format.
+        get_duration() calculates the interval between them as a
+        string in decimal format e.g.,
+            04.25 for 4 1/4 hours
         Called by: inner()
-        Returns: the difference between the wake and sleep times,
-                 expressed as a string in decimal format, e.g.,
-                 04.25 for 4 1/4 hours.
+        Return: the calculated interval, whose value will be
+                non-negative.
         """
         w_time_list = list(map(int, w_time.split(':')))
         s_time_list = list(map(int, s_time.split(':')))
@@ -66,10 +74,12 @@ def process_curr():
 
     def inner(cur_l):
         """
-        A closure. Takes a string as its argument, and may output a single line
-        to stdout. The output may depend on values from previous input strings,
-        as well as on values in the current input string. Output is formatted
-        as:
+        A closure that processes a single line of input.
+
+        Takes a string argument, and may output a single line to stdout.
+        The output may depend on values from previous input strings,
+        as well as on values in the current input string. Output is
+        formatted as:
            'NIGHT, date, time'  or
            'NAP, time, duration'
         Returns: None
@@ -105,7 +115,8 @@ def process_curr():
 def read_each_line():
     """
     Called by: __main__()
-    Read a line at a time from the 'extract' phase output; write to stdout.
+    Read a line at a time from stdin, which is tied to the output of
+    the 'extract' phase; write to stdout.
     """
     line_processor = process_curr()
     while True:
