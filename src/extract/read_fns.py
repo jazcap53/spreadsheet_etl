@@ -35,15 +35,11 @@ read_lines() returns a list of Weeks to the client.
 """
 
 
-
-from __future__ import print_function
-
-import sys
-import re
 import datetime
+import re
 from collections import namedtuple
 
-from src.extract.container_objs import validate_segment, Week, Day, Event, weeks
+from src.extract.container_objs import validate_segment, Week, Day, Event
 
 
 def open_file(file_read_wrapper):
@@ -76,15 +72,15 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
         elif not wks_pls.sunday_date:
             date_match = _check_for_date(line[0])
             if date_match:                  # we've found a Sunday
-                wks_pls = wks_pls._replace(sunday_date = _match_to_date_obj(date_match))
+                wks_pls = wks_pls._replace(sunday_date=_match_to_date_obj(date_match))
                 day_list = [Day(wks_pls.sunday_date + datetime.timedelta(days=x), [])
-                        for x in range(7)]  # collect 7 Days into a day_list
-                wks_pls = wks_pls._replace(new_week = Week(*day_list))  # create a Week
+                            for x in range(7)]  # collect 7 Days into a day_list
+                wks_pls = wks_pls._replace(new_week=Week(*day_list))  # create a Week
             else:
                 continue
         if any(line[1: ]):
             got_events = _get_events(line[1: ], wks_pls.new_week)
-            wks_pls = wks_pls._replace(do_append_week = got_events[0], new_week = got_events[1])
+            wks_pls = wks_pls._replace(do_append_week=got_events[0], new_week=got_events[1])
     # save any remaining unstored data
     wks_pls = _append_week(wks_pls)
     return wks_pls.weeks
