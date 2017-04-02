@@ -114,9 +114,10 @@ def process_curr():
 
 def read_each_line():
     """
+    Read a line at a time from stdin; write to stdout.
+
+    stdin is tied to stdout from the 'extract' phase subprocess.
     Called by: __main__()
-    Read a line at a time from stdin, which is tied to the output of
-    the 'extract' phase; write to stdout.
     """
     line_processor = process_curr()
     while True:

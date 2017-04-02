@@ -46,7 +46,7 @@ class Transform:
         as:
            'NIGHT, date, time'  or
            'NAP, time, duration'
-        Returns: None
+        Return: None
         """
         if cur_l == '':
             pass
