@@ -102,4 +102,4 @@ def test_read_date_s_action_w_action_outputs_NAP(inner):
     with captured_output() as (out, err):
         inner(cur_l)
     output = out.getvalue().strip()
-    assert output == 'NAP, 04:15, 01.25'
+    assert output == 'NAP, 03:00, 01.25'

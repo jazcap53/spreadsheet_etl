@@ -103,7 +103,8 @@ def process_curr():
             elif cur_l[: 9] == 'action: w':
                 wake_time = get_wake_or_last_sleep(cur_l)
                 duration = get_duration(wake_time, last_sleep_time)
-                out_val = 'NAP, {}, {}'.format(wake_time, duration)
+                # out_val = 'NAP, {}, {}'.format(wake_time, duration)  # TODO: should be .format(last_sleep_time, duration) ?
+                out_val = 'NAP, {}, {}'.format(last_sleep_time, duration)
         except IndexError:
             print('BAD VALUE {} in input'.format(cur_l))
         else:

@@ -12,7 +12,7 @@ import time
 
 
 extract_p = subprocess.Popen(
-        ['./src/extract/run_it.py', './src/sheet_004.csv'],
+        ['./src/extract/run_it.py', './src/sheet_005.csv'],
         stdout=subprocess.PIPE,
 )
 
