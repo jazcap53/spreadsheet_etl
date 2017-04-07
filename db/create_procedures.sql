@@ -3,21 +3,7 @@
 -- 2017-04-05
 
 
-CREATE OR REPLACE FUNCTION insert_fraction(numerator int, denominator int) RETURNS text AS $$
-from plpy import spiexceptions
-try:
-    plan = plpy.prepare("INSERT INTO fractions (frac) VALUES ($1 / $2)", ["int", "int"])
-    plpy.execute(plan, [numerator, denominator])
-except spiexceptions.DivisionByZero:
-    return "denominator cannot equal zero"
-except spiexceptions.UniqueViolation:
-    return "already have that fraction"
-except plpy.SPIError, e:
-    return "other error, SQLSTATE %s" % e.sqlstate
-else:
-    return "fraction inserted"
-$$ LANGUAGE plpythonu;
-
+-- the below are modeled on the last example at https://www.postgresql.org/docs/9.3/static/plpython-database.html
 
 DROP FUNCTION sl_insert_night(date, time without time zone);
 
@@ -31,3 +17,19 @@ except plpy.SPIError, e:
 else:
     return "sl_insert_night() succeeded"
 $$ LANGUAGE plpythonu;
+
+
+DROP FUNCTION sl_insert_nap(time without time zone, interval, integer);
+
+CREATE FUNCTION sl_insert_nap(new_start_time time without time zone, new_duration interval, new_night_id integer) RETURNS text AS $$
+from plpy import spiexceptions
+try:
+    plan = plpy.prepare("INSERT INTO sl_nap (start_time, duration, night_id) VALUES($1, $2, $3)", ["time without time zone", "interval", "integer"])
+    plpy.execute(plan, [new_start_time, new_duration, new_night_id])
+except plpy.SPIError, e:
+    return "error: SQLSTATE %s" % (e.sqlstate,)
+else:
+    return "sl_insert_night() succeeded"
+$$ LANGUAGE plpythonu;
+
+
