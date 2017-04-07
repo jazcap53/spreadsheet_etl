@@ -33,3 +33,23 @@ else:
 $$ LANGUAGE plpythonu;
 
 
+DROP FUNCTION sl_foo(time without time zone, interval);
+
+CREATE FUNCTION sl_foo(new_start_time time without time zone, new_duration interval) RETURNS text AS $$
+from plpy import spiexceptions
+try:
+    rv = plpy.execute("SELECT currval('sl_night_night_id_seq') AS my_night_id")
+    plan = plpy.prepare("INSERT INTO sl_nap(start_time, duration, night_id) VALUES($1, $2, $3)", ["time without time zone", "interval", "integer"])
+    plpy.execute(plan, [new_start_time, new_duration, rv[0]["my_night_id"]])
+except plpy.SPIError, e:
+    return "error: SQLSTATE %s" % (e.sqlstate,)
+else:
+    return "sl_foo() succeeded"
+$$ LANGUAGE plpythonu;
+
+
+
+
+
+
+
