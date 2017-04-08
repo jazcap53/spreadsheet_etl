@@ -12,7 +12,7 @@ CREATE FUNCTION sl_insert_night(new_start_date date,
     new_start_time time without time zone) RETURNS text AS $$
 from plpy import spiexceptions
 try:
-    plan = plpy.prepare("INSERT INTO sl_night (start_date, start_time)
+    plan = plpy.prepare("INSERT INTO sl_night (start_date, start_time) \
             VALUES($1, $2)", ["date", "time without time zone"])
     plpy.execute(plan, [new_start_date, new_start_time])
 except plpy.SPIError, e:
@@ -28,7 +28,7 @@ CREATE FUNCTION sl_insert_nap(new_start_time time without time zone,
     new_duration interval, new_night_id integer) RETURNS text AS $$
 from plpy import spiexceptions
 try:
-    plan = plpy.prepare("INSERT INTO sl_nap (start_time, duration, night_id)
+    plan = plpy.prepare("INSERT INTO sl_nap (start_time, duration, night_id) \
             VALUES($1, $2, $3)", ["time without time zone", "interval",
             "integer"])
     plpy.execute(plan, [new_start_time, new_duration, new_night_id])
@@ -46,7 +46,7 @@ CREATE FUNCTION sl_foo(new_start_time time without time zone,
 from plpy import spiexceptions
 try:
     rv = plpy.execute("SELECT currval('sl_night_night_id_seq') AS my_night_id")
-    plan = plpy.prepare("INSERT INTO sl_nap(start_time, duration, night_id)
+    plan = plpy.prepare("INSERT INTO sl_nap(start_time, duration, night_id) \
             VALUES($1, $2, $3)", ["time without time zone", "interval",
             "integer"])
     plpy.execute(plan, [new_start_time, new_duration, rv[0]["my_night_id"]])
