@@ -64,8 +64,5 @@ def connect_2():
             conn.close()
 
 
-
-
-
 if __name__ == '__main__':
     connect_2()
