@@ -22,26 +22,9 @@ else:
 $$ LANGUAGE plpythonu;
 
 
-DROP FUNCTION sl_insert_nap(time without time zone, interval, integer);
+DROP FUNCTION sl_insert_nap(time without time zone, interval);
 
 CREATE FUNCTION sl_insert_nap(new_start_time time without time zone,
-    new_duration interval, new_night_id integer) RETURNS text AS $$
-from plpy import spiexceptions
-try:
-    plan = plpy.prepare("INSERT INTO sl_nap (start_time, duration, night_id) \
-            VALUES($1, $2, $3)", ["time without time zone", "interval",
-            "integer"])
-    plpy.execute(plan, [new_start_time, new_duration, new_night_id])
-except plpy.SPIError, e:
-    return "error: SQLSTATE %s" % (e.sqlstate,)
-else:
-    return "sl_insert_night() succeeded"
-$$ LANGUAGE plpythonu;
-
-
-DROP FUNCTION sl_foo(time without time zone, interval);
-
-CREATE FUNCTION sl_foo(new_start_time time without time zone,
     new_duration interval) RETURNS text AS $$
 from plpy import spiexceptions
 try:
@@ -53,7 +36,7 @@ try:
 except plpy.SPIError, e:
     return "error: SQLSTATE %s" % (e.sqlstate,)
 else:
-    return "sl_foo() succeeded"
+    return "sl_insert_nap() succeeded"
 $$ LANGUAGE plpythonu;
 
 

@@ -7,8 +7,6 @@
 # python: 3
 
 
-# from __future__ import print_function
-
 import sys
 import psycopg2
 from spreadsheet_etl.db.config import config
@@ -53,12 +51,10 @@ def connect_2():
                 break
             line_list = my_line.rstrip().split(', ')
             if line_list[0] == 'NIGHT':
-                # response = cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
                 cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
                 print(cur.fetchone())
             elif line_list[0] == 'NAP':
-                # response = cur.execute('SELECT sl_foo(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
-                cur.execute('SELECT sl_foo(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
+                cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
                 print(cur.fetchone())
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
