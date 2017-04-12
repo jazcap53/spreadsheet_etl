@@ -4,7 +4,7 @@
 # andrew jarcho
 # 2017-02-20
 
-# python: 3
+# python: 3.5+
 
 
 import sys
@@ -13,6 +13,10 @@ from spreadsheet_etl.db.config import config
 
 
 def decimal_to_interval(dec_str):
+    """
+    Convert duration from a decimal string to an interval string.
+    E.g., '3.25' for 3 1/4 hours becomes '0 03:15:00'.
+    """
     dec_mins_to_mins = {'00':'00', '25':'15', '50':'30', '75':'45'}
     hrs, dec_mins = dec_str.split('.')
     try:
@@ -23,29 +27,36 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def connect_and_load():  # TODO: separate into two functions?
+def load_nights_naps(conn, cur):
     """
-    Connect to the PostgreSQL database server
-    and load data from stdin.
+    Load NIGHT and NAP data from stdin into database.
+    """
+    last_serial_val = 0
+    while True:
+        my_line = sys.stdin.readline()
+        if not my_line:
+            break
+        line_list = my_line.rstrip().split(', ')
+        if line_list[0] == 'NIGHT':
+            cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
+            print(cur.fetchone())
+        elif line_list[0] == 'NAP':
+            duration = decimal_to_interval(line_list[2])
+            cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], duration))
+            print(cur.fetchone())
+
+
+def connect():
+    """
+    Connect to the PostgreSQL database server.
+    Call function to load data from stdin to db.
     """
     conn = None
     try:
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        last_serial_val = 0
-        while True:
-            my_line = sys.stdin.readline()
-            if not my_line:
-                break
-            line_list = my_line.rstrip().split(', ')
-            if line_list[0] == 'NIGHT':
-                cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
-                print(cur.fetchone())
-            elif line_list[0] == 'NAP':
-                duration = decimal_to_interval(line_list[2])
-                cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], duration))
-                print(cur.fetchone())
+        load_nights_naps(conn, cur)
         cur.close()
         conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -56,4 +67,4 @@ def connect_and_load():  # TODO: separate into two functions?
 
 
 if __name__ == '__main__':
-    connect_and_load()
+    connect()
