@@ -19,9 +19,16 @@ extract_p = subprocess.Popen(
 transform_p = subprocess.Popen(
         ['./src/transform/do_transform_closure.py'],
         stdin=extract_p.stdout,
+        stdout=subprocess.PIPE,
 )
 
-time.sleep(0.3)
+load_p = subprocess.Popen(
+        ['./src/load/load.py'],
+        stdin=transform_p.stdout,
+)
+
+time.sleep(1)
 
 extract_p.terminate()
 transform_p.terminate()
+load_p.terminate()
