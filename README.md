@@ -2,4 +2,4 @@
 
 #### I'm writing Spreadsheet ETL to help me learn about concurrency in Python, experiment with different programming techniques (such as using functions instead of classes, writing closures, etc.), and work on unit testing and testability. ####
 
-Spreadsheet ETL is no longer in the earliest stages of development; the Extract and Transform modules have been implemented and the groundwork has been set up to create the Load unit.
+As of 2017-04-12, Spreadsheet ETL is no longer in the early stages of development. The Extract and Transform modules have been implemented and the Load unit is progressing nicely.
