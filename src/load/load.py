@@ -57,6 +57,7 @@ def connect_2():
                 cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
                 print(cur.fetchone())
         cur.close()
+        conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
     finally:
