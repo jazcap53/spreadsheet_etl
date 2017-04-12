@@ -38,10 +38,3 @@ except plpy.SPIError, e:
 else:
     return "sl_insert_nap() succeeded"
 $$ LANGUAGE plpythonu;
-
-
-
-
-
-
-

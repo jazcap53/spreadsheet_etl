@@ -12,6 +12,17 @@ import psycopg2
 from spreadsheet_etl.db.config import config
 
 
+def decimal_to_interval(dec_str):
+    dec_mins_to_mins = {'00':'00', '25':'15', '50':'30', '75':'45'}
+    hrs, dec_mins = dec_str.split('.')
+    try:
+        mins = dec_mins_to_mins[dec_mins]
+    except KeyError:  # TODO: better way to handle bad input
+        print('Value for dec {} not found in dec_to_mins'.format(dec))
+    interval_str = '0 {}:{}:00'.format(hrs, mins)
+    return interval_str
+
+
 def connect_and_load():  # TODO: separate into two functions?
     """
     Connect to the PostgreSQL database server
@@ -32,7 +43,8 @@ def connect_and_load():  # TODO: separate into two functions?
                 cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
                 print(cur.fetchone())
             elif line_list[0] == 'NAP':
-                cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
+                duration = decimal_to_interval(line_list[2])
+                cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], duration))
                 print(cur.fetchone())
         cur.close()
         conn.commit()
