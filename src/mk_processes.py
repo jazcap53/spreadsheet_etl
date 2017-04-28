@@ -7,24 +7,30 @@
 Create and connect the subprocesses that run the extract and transform stages.
 """
 
+import sys
 import subprocess
 import time
 
 
+if len(sys.argv) != 2:
+    print('Usage: {} <input_file_name>'.format(sys.argv[0]))
+    sys.exit(0)
+
+
 extract_p = subprocess.Popen(
-        ['./src/extract/run_it.py', './src/sheet_007.csv'],
-        stdout=subprocess.PIPE,
+    ['./src/extract/run_it.py', sys.argv[1]],
+    stdout=subprocess.PIPE,
 )
 
 transform_p = subprocess.Popen(
-        ['./src/transform/do_transform_closure.py'],
-        stdin=extract_p.stdout,
-        stdout=subprocess.PIPE,
+    ['./src/transform/do_transform_closure.py'],
+    stdin=extract_p.stdout,
+    stdout=subprocess.PIPE,
 )
 
 load_p = subprocess.Popen(
-        ['./src/load/load.py'],
-        stdin=transform_p.stdout,
+    ['./src/load/load.py'],
+    stdin=transform_p.stdout,
 )
 
 time.sleep(1)
