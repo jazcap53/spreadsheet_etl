@@ -12,7 +12,7 @@ import subprocess
 import time
 
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 2:  # TODO: fix to allow -O
     print('Usage: {} <input_file_name>'.format(sys.argv[0]))
     sys.exit(0)
 

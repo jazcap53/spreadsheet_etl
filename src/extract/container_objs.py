@@ -83,8 +83,8 @@ class Week(namedtuple('Week',
 weeks = []
 
 
-# Code below this line is normally called in debug mode only.
-# ==============================================================================
+# Code below this line is available just for debugging
+# =============================================================================
 
 def print_event(e, out):
     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
