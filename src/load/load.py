@@ -19,19 +19,19 @@ def decimal_to_interval(dec_str):
     """
     dec_mins_to_mins = {'00':'00', '25':'15', '50':'30', '75':'45'}
     hrs, dec_mins = dec_str.split('.')
+    mins = None
     try:
         mins = dec_mins_to_mins[dec_mins]
     except KeyError:  # TODO: better way to handle bad input
-        print('Value for dec {} not found in dec_to_mins'.format(dec))
+        print('Value for dec_mins {} not found in dec_to_mins'.format(dec_mins))
     interval_str = '0 {}:{}:00'.format(hrs, mins)
     return interval_str
 
 
-def load_nights_naps(conn, cur):
+def load_nights_naps(cur):
     """
     Load NIGHT and NAP data from stdin into database.
     """
-    last_serial_val = 0
     while True:
         my_line = sys.stdin.readline()
         if not my_line:
@@ -56,7 +56,7 @@ def connect():
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        load_nights_naps(conn, cur)
+        load_nights_naps(cur)
         cur.close()
         conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
