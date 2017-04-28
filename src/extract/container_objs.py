@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import datetime
 import re
-import sys
 from collections import namedtuple
 
 
@@ -37,13 +36,14 @@ class Event(namedtuple('Event', 'action, mil_time, hours')):
     Each Event tuple holds:
         action -- a character from the set {'b', 's', 'w'}
         mil_time -- a 24-hour time string as 'H:MM' or 'HH:MM'
-        hours -- a time interval expressed as str(float))
+        hours -- an interval expressed as str(float))
                  The float may have one or two digits before the
                  decimal point, and will have exactly two digits
                  after. Its value may not be zero (0.00), but it
                  may be the empty string.
     """
     __slots__ = ()
+
     def __init__(self, a, m, h):
         """ Ctor used just to filter input """
         if not validate_segment([a, m, h]):
@@ -56,16 +56,21 @@ class Day(namedtuple('Day', 'dt_date, events')):
     list of Events
     """
     __slots__ = ()
+
     def __init__(self, d, e):
         """ Ctor used just to filter input """
         if not isinstance(d, datetime.date):
             raise TypeError
+        if not isinstance(e, list):
+            raise TypeError
 
 
 class Week(namedtuple('Week',
-        'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday')):
+                      'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
+                      ' Saturday')):
     """ Each Week tuple holds seven named Day tuples """
     __slots__ = ()
+
     def __init__(self, su, mo, tu, we, th, fr, sa):
         """ Ctor used just to filter input """
         param_list = [su, mo, tu, we, th, fr, sa]
@@ -79,7 +84,7 @@ weeks = []
 
 
 # Code below this line is normally called in debug mode only.
-#==============================================================================
+# ==============================================================================
 
 def print_event(e, out):
     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)

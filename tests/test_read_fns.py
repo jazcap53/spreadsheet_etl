@@ -14,6 +14,7 @@ from src.extract.read_fns import open_file, read_lines, _append_week
 from src.extract.read_fns import _check_for_date
 from src.extract.container_objs import Week, Day
 
+
 @pytest.fixture
 def file_wrapper():
     return FakeFileReadWrapper(
@@ -37,11 +38,13 @@ def test_open_file(file_wrapper):
     infile = open_file(file_wrapper)
     assert isinstance(infile, io.StringIO)
 
+
 def test_read_lines_stores_one_week(file_wrapper):
     weeks = []
     infile = open_file(file_wrapper)
     weeks = read_lines(infile, weeks)
     assert len(weeks) == 1
+
 
 def test__append_week_appends_week_to_week_list(file_wrapper):
     weeks = []
@@ -51,20 +54,23 @@ def test__append_week_appends_week_to_week_list(file_wrapper):
     dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
     new_week = Week(*dts)
     WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date',
-            'do_append_week', 'new_week'])
+                           'do_append_week', 'new_week'])
     wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
     wks_pls = _append_week(wks_pls)
     assert len(wks_pls.weeks) == len_weeks + 1
+
 
 def test__check_for_date_matches_date_in_correct_format(file_wrapper):
     date_string = '12/34/5678'
     good_match = _check_for_date(date_string)
     assert good_match
 
+
 def test__check_for_date_rejects_date_with_hyphens(file_wrapper):
     date_string = '12-34-5678'
     good_match = _check_for_date(date_string)
     assert not good_match
+
 
 def test__check_for_date_rejects_date_with_alpha(file_wrapper):
     date_string = 'a2/34/5678'
