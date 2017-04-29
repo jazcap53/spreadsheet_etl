@@ -28,8 +28,8 @@ The Events from each Day are grouped together. A Week
 groups 7 consecutive Days, beginning with a Sunday.
 
 Once the input file has been opened, function read_lines()
-controls the data processing: all other functions are
-called from read_lines().
+controls the data processing: all other functions in this
+file are called from read_lines().
 
 read_lines() returns a list of Weeks to the client.
 """
@@ -44,6 +44,10 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 
 def open_file(file_read_wrapper):
     """
+    file_read_wrapper allows functions to read from a fake instead of
+        an actual file.
+
+    Returns: a file handler open for read
     Called by: client code
     """
     return file_read_wrapper.open()
@@ -57,7 +61,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     Append that data to the output, and resume ignoring lines
     until the next Sunday is seen, or EOF.
 
-    Returns: the weeks list.
+    Returns: the weeks list
     Called by: client code
     """
     WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date', 'do_append_week', 'new_week'])
@@ -90,6 +94,7 @@ def _append_week(wks_pls):
     """
     If we have a new Week object, append it to the weeks element of
     wks_pls.
+
     Returns: If we have a new Week object, an updated wks_pls
              Else, the function's argument
     Called by: read_lines()
