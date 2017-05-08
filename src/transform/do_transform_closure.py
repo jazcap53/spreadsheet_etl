@@ -13,6 +13,7 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
+
 def process_curr():
     """
     Return a closure that will process a single line of input.
@@ -41,7 +42,7 @@ def process_curr():
 
     def get_duration(w_time, s_time):
         """
-        Calculate the interval between w_time and s_time.
+        Calculate and format the interval between w_time and s_time.
 
         Arguments are strings representing times in 'hh:mm' format.
         get_duration() calculates the interval between them as a
@@ -49,7 +50,7 @@ def process_curr():
             04.25 for 4 1/4 hours
         Called by: inner()
         Returns: the calculated interval, whose value will be
-                non-negative.
+                non-negative, as a string
         """
         w_time_list = list(map(int, w_time.split(':')))
         s_time_list = list(map(int, s_time.split(':')))
@@ -103,7 +104,6 @@ def process_curr():
             elif cur_l[: 9] == 'action: w':
                 wake_time = get_wake_or_last_sleep(cur_l)
                 duration = get_duration(wake_time, last_sleep_time)
-                # out_val = 'NAP, {}, {}'.format(wake_time, duration)  # TODO: should be .format(last_sleep_time, duration) ?
                 out_val = 'NAP, {}, {}'.format(last_sleep_time, duration)
         except IndexError:
             print('BAD VALUE {} in input'.format(cur_l))
@@ -112,6 +112,7 @@ def process_curr():
                 print(out_val)
             out_val = None
     return inner
+
 
 def read_each_line():
     """
