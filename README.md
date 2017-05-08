@@ -1,7 +1,9 @@
 ## Spreadsheet ETL ##
 
-#### A work in progress. Implements a pipeline that extracts data from a .csv file, transforms it into a database-friendly format, and loads it into a PostgreSQL db. ####
+#### I built this to keep track of my sleep pattern; it turned into something more. ####
 
-I'm writing Spreadsheet ETL to help me learn about concurrency in Python, experiment with different programming techniques, and work on unit testing and code testability.
+Spreadsheet ETL now implements a pipeline that extracts data from a .csv file, transforms the data into a database-friendly format, and loads it into a PostgreSQL db.
 
-As of 2017-04-21, Spreadsheet ETL is no longer in the early stages of development. Its Extract, Transform, and Load modules have been implemented and are fully functional.
+It's letting me experiment with concurrency and other programming techniques in Python, and work on unit testing and code testability.
+
+As of 2017-05-08, Spreadsheet ETL's Extract, Transform, and Load modules all work; but some important features remain to be implemented.
