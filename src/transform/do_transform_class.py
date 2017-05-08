@@ -112,15 +112,32 @@ class Transform:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        if dur_list[1] == 15:
-            duration += '.25'
-        elif dur_list[1] == 30:
-            duration += '.50'
-        elif dur_list[1] == 45:
-            duration += '.75'
-        elif dur_list[1] == 0:
-            duration += '.00'
+        duration += Transform.quarter_hour_to_decimal(duration)
         return duration
+
+    @staticmethod
+    def quarter_hour_to_decimal(quarter):
+        """
+        Convert an integer number of minutes into a decimal string
+
+        Argument is a number of minutes past the hour. If that number
+        is a quarter-hour, convert it to a decimal quarter represented
+        as a string.
+
+        Called by: get_duration()
+        Returns: a number of minutes represented as a decimal fraction
+        """
+        # TODO: log warning if quarter is not a quarter-hour
+        decimal_quarter = '.' + str(quarter)
+        if quarter == 15:
+            decimal_quarter = '.25'
+        elif quarter == 30:
+            decimal_quarter = '.50'
+        elif quarter == 45:
+            decimal_quarter = '.75'
+        elif quarter == 0:
+            decimal_quarter = '.00'
+        return decimal_quarter
 
 
 if __name__ == '__main__':
