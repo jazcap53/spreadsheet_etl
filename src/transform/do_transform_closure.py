@@ -101,8 +101,8 @@ def process_curr():
            'NAP, time, duration'
         Returns: None
         """
-        nonlocal out_val, last_date, last_sleep_time
-        nonlocal get_wake_or_last_sleep, get_duration
+        nonlocal out_val, last_date, last_sleep_time   # data
+        nonlocal get_wake_or_last_sleep, get_duration  # methods
         try:
             if cur_l == '':
                 pass
