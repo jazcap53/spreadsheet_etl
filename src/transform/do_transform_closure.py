@@ -18,7 +18,7 @@ def process_curr():
     Return a closure that will process a single line of input.
 
     Called by: read_each_line()
-    Return: the closure, inner.
+    Returns: the closure, inner.
 
     """
     out_val = None
@@ -31,7 +31,7 @@ def process_curr():
 
         Input time may be in 'h:mm' or 'hh:mm' format.
         Called by: inner().
-        Return: Extracted time as a string in 'hh:mm' format.
+        Returns: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
         out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
@@ -48,7 +48,7 @@ def process_curr():
         string in decimal format e.g.,
             04.25 for 4 1/4 hours
         Called by: inner()
-        Return: the calculated interval, whose value will be
+        Returns: the calculated interval, whose value will be
                 non-negative.
         """
         w_time_list = list(map(int, w_time.split(':')))

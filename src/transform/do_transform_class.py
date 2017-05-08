@@ -15,6 +15,7 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
+
 class Transform:
 
     def __init__(self, data_source=sys.stdin):
@@ -46,7 +47,7 @@ class Transform:
         as:
            'NIGHT, date, time'  or
            'NAP, time, duration'
-        Return: None
+        Returns: None
         """
         if cur_l == '':
             pass
@@ -72,13 +73,14 @@ class Transform:
             print(self.out_val)
         self.out_val = None
 
-    def get_wake_or_last_sleep(self, cur_l):
+    @staticmethod
+    def get_wake_or_last_sleep(cur_l):
         """
         Extract and return the time part of its string argument.
 
         Input time may be in 'h:mm' or 'hh:mm' format.
         Called by: process_curr().
-        Return: Extracted time as a string in 'hh:mm' format.
+        Returns: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
         out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
@@ -86,7 +88,8 @@ class Transform:
             out_time = '0' + out_time
         return out_time
 
-    def get_duration(self, w_time, s_time):
+    @staticmethod
+    def get_duration(w_time, s_time):
         """
         Calculate the interval between w_time and s_time.
 
@@ -95,7 +98,7 @@ class Transform:
         string in decimal format e.g.,
             04.25 for 4 1/4 hours
         Called by: process_curr()
-        Return: the calculated interval, whose value will be
+        Returns: the calculated interval, whose value will be
                 non-negative.
         """
         w_time_list = list(map(int, w_time.split(':')))
