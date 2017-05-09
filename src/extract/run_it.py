@@ -13,8 +13,6 @@ read_fns() reads raw data from the spreadsheet, and groups it by day and week.
 purge_fns() removes days for which the data are incomplete.
 """
 
-from __future__ import print_function
-
 import sys
 
 import container_objs

@@ -6,14 +6,16 @@
 # 2017-03-16
 
 
-import sys
-
 """
 Read lines from stdin, transform to a db-friendly format, and write to stdout.
 
 The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
+
+# TODO: filter all input
+
+import sys
 
 
 class Transform:
