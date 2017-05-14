@@ -13,6 +13,8 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
+# TODO: filter all input
+
 
 def process_curr():
     """
@@ -35,7 +37,7 @@ def process_curr():
         Returns: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
-        out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
+        out_time = cur_l[17:] if end_pos == -1 else cur_l[17: end_pos]
         if len(out_time) == 4:
             out_time = '0' + out_time
         return out_time
@@ -111,7 +113,7 @@ def process_curr():
             elif cur_l[0] == '=':  # '========...'
                 pass
             elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
-                last_date = cur_l[4: ]
+                last_date = cur_l[4:]
             elif cur_l[: 9] == 'action: b':
                 last_sleep_time = get_wake_or_last_sleep(cur_l)
                 out_val = 'NIGHT, {}, {}'.format(last_date, last_sleep_time)

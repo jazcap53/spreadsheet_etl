@@ -82,8 +82,8 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
                 wks_pls = wks_pls._replace(new_week=Week(*day_list))  # create a Week
             else:
                 continue
-        if any(line[1: ]):
-            got_events = _get_events(line[1: ], wks_pls.new_week)
+        if any(line[1:]):
+            got_events = _get_events(line[1:], wks_pls.new_week)
             wks_pls = wks_pls._replace(do_append_week=got_events[0], new_week=got_events[1])
     # save any remaining unstored data
     wks_pls = _append_week(wks_pls)
@@ -99,7 +99,7 @@ def _append_week(wks_pls):
              Else, the function's argument
     Called by: read_lines()
     """
-    if all(wks_pls[1: ]):  # if sunday_date and do_append_week and new_week
+    if all(wks_pls[1:]):  # if sunday_date and do_append_week and new_week
         my_new_week = wks_pls.new_week
         wks_pls.weeks.append(my_new_week)
         wks_pls = wks_pls._replace(sunday_date=None, do_append_week=False, new_week=None)

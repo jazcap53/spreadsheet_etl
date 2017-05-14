@@ -58,7 +58,7 @@ class Transform:
         elif cur_l[0] == '=':  # '========...'
             pass
         elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
-            self.last_date = cur_l[4: ]
+            self.last_date = cur_l[4:]
         elif cur_l[: 9] == 'action: b':
             self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
             self.out_val = 'NIGHT, {}, {}'.format(self.last_date, self.last_sleep_time)
@@ -85,7 +85,7 @@ class Transform:
         Returns: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
-        out_time = cur_l[17: ] if end_pos == -1 else cur_l[17: end_pos]
+        out_time = cur_l[17:] if end_pos == -1 else cur_l[17: end_pos]
         if len(out_time) == 4:
             out_time = '0' + out_time
         return out_time
