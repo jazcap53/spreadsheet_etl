@@ -53,6 +53,7 @@ def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
 
+# TODO: try to simplify the structure of this function
 def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
                new_week=None):
     """
@@ -69,7 +70,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     for line in infile:
         line = line.strip().split(',')
         if not any(line):
-            if not wks_pls.sunday_date:     # we're looking for a Sunday
+            if not wks_pls.sunday_date:     # no Sunday has been seen
                 continue
             else:
                 wks_pls = _append_week(wks_pls)

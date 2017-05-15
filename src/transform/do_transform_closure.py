@@ -15,6 +15,8 @@ processing, and will hold all relevant data from the input.
 
 # TODO: filter all input
 
+import fileinput
+
 
 def process_curr():
     """
@@ -132,6 +134,7 @@ def process_curr():
     return inner
 
 
+# TODO: fix docstring to reflect update
 def read_each_line():
     """
     Read a line at a time from stdin; write to stdout.
@@ -139,13 +142,10 @@ def read_each_line():
     stdin is tied to stdout from the 'extract' phase subprocess.
     Called by: __main__()
     """
-    line_processor = process_curr()
-    while True:
-        try:
-            curr_line = input()
-            line_processor(curr_line)
-        except EOFError:
-            break
+    line_processor = process_curr()  # process_curr() returns a closure
+    with fileinput.input() as infile:
+        for curr_line in infile:
+            line_processor(curr_line.rstrip('\n'))
 
 
 if __name__ == '__main__':

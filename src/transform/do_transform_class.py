@@ -15,17 +15,18 @@ processing, and will hold all relevant data from the input.
 
 # TODO: filter all input
 
-import sys
+import fileinput
 
 
 class Transform:
 
-    def __init__(self, data_source=sys.stdin):
+    def __init__(self, data_source=fileinput.FileInput()):
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
         self.data_source = data_source
 
+    # TODO: fix docstring to reflect update
     def read_each_line(self):
         """
         Read a line at a time from stdin; write to stdout.
@@ -33,10 +34,9 @@ class Transform:
         Called by: __main__()
         stdin is tied to stdout from the 'extract' phase subprocess.
         """
-        curr_line = self.data_source.readline()
-        while curr_line:
-            self.process_curr(curr_line.rstrip('\n'))
-            curr_line = self.data_source.readline()
+        with fileinput.input() as infile:
+            for curr_line in infile:
+                self.process_curr(curr_line.rstrip('\n'))
 
     def process_curr(self, cur_l):
         """
@@ -114,7 +114,7 @@ class Transform:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        duration += Transform.quarter_hour_to_decimal(duration)
+        duration += Transform.quarter_hour_to_decimal(s_time_list[1])
         return duration
 
     @staticmethod
@@ -130,7 +130,7 @@ class Transform:
         Returns: a number of minutes represented as a decimal fraction
         """
         # TODO: log warning if quarter is not a quarter-hour
-        decimal_quarter = '.' + str(quarter)
+        decimal_quarter = None
         if quarter == 15:
             decimal_quarter = '.25'
         elif quarter == 30:
