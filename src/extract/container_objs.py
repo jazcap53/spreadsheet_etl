@@ -30,7 +30,7 @@ def validate_segment(segment):
     return True
 
 
-class Event(namedtuple('Event', 'action, mil_time, hours')):
+class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
     Each Event tuple holds:
         action -- a character from the set {'b', 's', 'w'}
@@ -49,7 +49,7 @@ class Event(namedtuple('Event', 'action, mil_time, hours')):
             raise ValueError
 
 
-class Day(namedtuple('Day', 'dt_date, events')):
+class Day(namedtuple('DayTuple', 'dt_date, events')):
     """
     Each Day tuple holds a datetime.date and a (possibly empty)
     list of Events
@@ -64,7 +64,7 @@ class Day(namedtuple('Day', 'dt_date, events')):
             raise TypeError
 
 
-class Week(namedtuple('Week',
+class Week(namedtuple('WeekTuple',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
     """ Each Week tuple holds seven named Day tuples """
