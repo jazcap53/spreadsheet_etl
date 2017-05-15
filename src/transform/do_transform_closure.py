@@ -103,6 +103,7 @@ def process_curr():
         formatted as:
            'NIGHT, date, time'  or
            'NAP, time, duration'
+
         Returns: None
         """
         nonlocal out_val, last_date, last_sleep_time   # data
@@ -131,15 +132,19 @@ def process_curr():
             if out_val is not None:
                 print(out_val)
             out_val = None
+
     return inner
 
 
-# TODO: fix docstring to reflect update
 def read_each_line():
     """
-    Read a line at a time from stdin; write to stdout.
+    Read a line at a time from the fileinput object; write to stdout
 
-    stdin is tied to stdout from the 'extract' phase subprocess.
+    The fileinput object will read from a file or FakeFileReadWrapper
+    object if either is passed as a c.l. argument. Otherwise the
+    data source will be stdin, which is tied to stdout from the
+    'extract' phase subprocess.
+
     Called by: __main__()
     """
     line_processor = process_curr()  # process_curr() returns a closure
