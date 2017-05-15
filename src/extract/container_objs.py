@@ -32,7 +32,7 @@ def validate_segment(segment):
 
 class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
-    Each Event tuple holds:
+    Each EventTuple holds:
         action -- a character from the set {'b', 's', 'w'}
         mil_time -- a 24-hour time string as 'H:MM' or 'HH:MM'
         hours -- an interval expressed as str(float))
@@ -51,7 +51,7 @@ class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
 
 class Day(namedtuple('DayTuple', 'dt_date, events')):
     """
-    Each Day tuple holds a datetime.date and a (possibly empty)
+    Each DayTuple holds a datetime.date and a (possibly empty)
     list of Events
     """
     __slots__ = ()  # prevents creation of instance dictionaries
@@ -67,7 +67,7 @@ class Day(namedtuple('DayTuple', 'dt_date, events')):
 class Week(namedtuple('WeekTuple',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
-    """ Each Week tuple holds seven named Day tuples """
+    """ Each WeekTuple holds seven named Day tuples """
     __slots__ = ()  # prevents creation of instance dictionaries
 
     def __init__(self, su, mo, tu, we, th, fr, sa):
