@@ -12,7 +12,6 @@ import re
 from collections import namedtuple
 
 
-# TODO: reorganize to prevent repeated tests of same condition
 def validate_segment(segment):
     """
     valid segments: 'b', time, ''
