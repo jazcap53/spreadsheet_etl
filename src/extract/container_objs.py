@@ -12,7 +12,6 @@ import re
 from collections import namedtuple
 
 
-# TODO: add further validation for segment[1] ?
 # TODO: reorganize to prevent repeated tests of same condition
 def validate_segment(segment):
     """
@@ -23,10 +22,11 @@ def validate_segment(segment):
     """
     if not any(segment) or \
             any(segment) and (not segment[0] or not segment[1]) or \
+            not re.match(r'[012]?\d:\d{2}', segment[1]) or \
             len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
             len(segment[0]) and segment[0][0] == 's' and segment[2] or \
             len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
-            segment[2] != '' and not re.match(r'[1,2]?\d\.\d{2}', segment[2]):
+            segment[2] != '' and not re.match(r'[12]?\d\.\d{2}', segment[2]):
         return False
     return True
 
@@ -42,7 +42,7 @@ class Event(namedtuple('Event', 'action, mil_time, hours')):
                  after. Its value may not be zero (0.00), but it
                  may be the empty string.
     """
-    __slots__ = ()
+    __slots__ = ()  # prevents creation of instance dictionaries
 
     def __init__(self, a, m, h):
         """ Ctor used just to filter input """
@@ -55,7 +55,7 @@ class Day(namedtuple('Day', 'dt_date, events')):
     Each Day tuple holds a datetime.date and a (possibly empty)
     list of Events
     """
-    __slots__ = ()
+    __slots__ = ()  # prevents creation of instance dictionaries
 
     def __init__(self, d, e):
         """ Ctor used just to filter input """
@@ -69,7 +69,7 @@ class Week(namedtuple('Week',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
     """ Each Week tuple holds seven named Day tuples """
-    __slots__ = ()
+    __slots__ = ()  # prevents creation of instance dictionaries
 
     def __init__(self, su, mo, tu, we, th, fr, sa):
         """ Ctor used just to filter input """
