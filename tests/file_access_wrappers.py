@@ -22,3 +22,6 @@ class FakeFileReadWrapper:
 
     def open(self):
         return io.StringIO(self.text)
+
+    def input(self):
+        return self.open()

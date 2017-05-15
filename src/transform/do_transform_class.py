@@ -20,7 +20,7 @@ import fileinput
 
 class Transform:
 
-    def __init__(self, data_source=fileinput.FileInput()):
+    def __init__(self, data_source=fileinput):
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
@@ -34,7 +34,7 @@ class Transform:
         Called by: __main__()
         stdin is tied to stdout from the 'extract' phase subprocess.
         """
-        with fileinput.input() as infile:
+        with self.data_source.input() as infile:
             for curr_line in infile:
                 self.process_curr(curr_line.rstrip('\n'))
 
