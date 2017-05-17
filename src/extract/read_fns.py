@@ -65,7 +65,8 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     Returns: the weeks list
     Called by: client code
     """
-    WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date', 'do_append_week', 'new_week'])
+    WeeksPlus = namedtuple('WeeksListPlus', ['weeks', 'sunday_date',
+                                             'do_append_week', 'new_week'])
     wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
     for line in infile:
         line = line.strip().split(',')
@@ -77,15 +78,20 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
         elif not wks_pls.sunday_date:
             date_match = _check_for_date(line[0])
             if date_match:                  # we've found a Sunday
-                wks_pls = wks_pls._replace(sunday_date=_match_to_date_obj(date_match))
-                day_list = [Day(wks_pls.sunday_date + datetime.timedelta(days=x), [])
-                            for x in range(7)]  # collect 7 Days into a day_list
-                wks_pls = wks_pls._replace(new_week=Week(*day_list))  # create a Week
+                wks_pls = wks_pls._replace(
+                        sunday_date=_match_to_date_obj(date_match))
+                # collect 7 Days into a day_list
+                day_list = [Day(wks_pls.sunday_date +
+                            datetime.timedelta(days=x), [])
+                            for x in range(7)]
+                # create a Week
+                wks_pls = wks_pls._replace(new_week=Week(*day_list))
             else:
                 continue
         if any(line[1:]):
             got_events = _get_events(line[1:], wks_pls.new_week)
-            wks_pls = wks_pls._replace(do_append_week=got_events[0], new_week=got_events[1])
+            wks_pls = wks_pls._replace(do_append_week=got_events[0],
+                                       new_week=got_events[1])
     # save any remaining unstored data
     wks_pls = _append_week(wks_pls)
     return wks_pls.weeks

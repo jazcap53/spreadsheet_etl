@@ -30,6 +30,8 @@ def validate_segment(segment):
     return True
 
 
+# TODO: solve problem of calling super() for these 3 classes?
+
 class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
     Each EventTuple holds:
