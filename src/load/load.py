@@ -46,7 +46,7 @@ def load_nights_naps(cur):
             print(cur.fetchone())
 
 
-def connect():
+def connect(store):
     """
     Connect to the PostgreSQL database server.
     Call function to load data from stdin to db.
@@ -56,7 +56,8 @@ def connect():
         params = config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        load_nights_naps(cur)
+        if store == 'True':
+            load_nights_naps(cur)
         cur.close()
         conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -67,4 +68,4 @@ def connect():
 
 
 if __name__ == '__main__':
-    connect()
+    connect(sys.argv[1])  # only c.l.a. will be 'True' or 'False'
