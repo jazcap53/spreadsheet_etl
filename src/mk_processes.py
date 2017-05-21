@@ -7,18 +7,19 @@
 Create and connect the subprocesses that run the extract and transform stages.
 """
 
-import sys
 import subprocess
 import time
+import argparse
 
-
-if len(sys.argv) != 2:  # TODO: import argparse
-    print('Usage: {} <input_file_name>'.format(sys.argv[0]))
-    sys.exit(0)
-
+parser = argparse.ArgumentParser()
+parser.add_argument('infile_name', help='The name of a .csv file to read')
+# TODO: implement the below
+# parser.add_argument('-s', '--store', help='Store output in database',
+#                    action='store_true')
+args = parser.parse_args()
 
 extract_p = subprocess.Popen(
-    ['./src/extract/run_it.py', sys.argv[1]],
+    ['./src/extract/run_it.py', args.infile_name],
     stdout=subprocess.PIPE,
 )
 

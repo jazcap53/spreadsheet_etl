@@ -14,6 +14,7 @@ purge_fns() removes days for which the data are incomplete.
 """
 
 import sys
+import argparse
 
 import container_objs
 import purge_fns
@@ -28,7 +29,10 @@ def print_out(weeks):
     print()
 
 if __name__ == '__main__':
-    infile = read_fns.open_file(FileReadAccessWrapper(sys.argv[1]))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('infile_name', help='The name of a .csv file to read')
+    args = parser.parse_args()
+    infile = read_fns.open_file(FileReadAccessWrapper(args.infile_name))
     weeks = read_fns.read_lines(infile, weeks)
     weeks = purge_fns.purge(weeks)
     print_out(weeks)
