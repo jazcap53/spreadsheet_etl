@@ -69,7 +69,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
                                              'do_append_week', 'new_week'])
     wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
     for line in infile:
-        line = line.strip().split(',')
+        line = line.strip().split(',')[:22]
         if not any(line):
             if not wks_pls.sunday_date:     # no Sunday has been seen
                 continue
