@@ -3,6 +3,7 @@
 # 2017-02-24
 
 
+# TODO: create more detailed docstring here
 """
 Create and connect the subprocesses that run the extract and transform stages.
 """

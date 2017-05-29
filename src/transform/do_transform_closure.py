@@ -73,11 +73,11 @@ def process_curr():
     def quarter_hour_to_decimal(quarter):
         """
         Convert an integer number of minutes into a decimal string
-        
+
         Argument is a number of minutes past the hour. If that number
         is a quarter-hour, convert it to a decimal quarter represented
         as a string.
-        
+
         Called by: get_duration()
         Returns: a number of minutes represented as a decimal fraction
         """
@@ -106,8 +106,7 @@ def process_curr():
 
         Returns: None
         """
-        nonlocal out_val, last_date, last_sleep_time   # data
-        nonlocal get_wake_or_last_sleep, get_duration  # methods
+        nonlocal out_val, last_date, last_sleep_time
         try:
             if cur_l == '':
                 pass

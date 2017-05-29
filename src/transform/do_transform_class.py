@@ -27,10 +27,10 @@ class Transform:
         data source will be stdin, which is tied to stdout from the
         'extract' phase subprocess.
         """
+        self.data_source = data_source
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
-        self.data_source = data_source
 
     def read_each_line(self):
         """
