@@ -5,8 +5,6 @@
 # python: 3
 
 
-from __future__ import print_function
-
 import datetime
 import re
 from collections import namedtuple
@@ -38,10 +36,10 @@ class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
         action -- a character from the set {'b', 's', 'w'}
         mil_time -- a 24-hour time string as 'H:MM' or 'HH:MM'
         hours -- an interval expressed as str(float))
-                 The float may have one or two digits before the
-                 decimal point, and will have exactly two digits
-                 after. Its value may not be zero (0.00), but it
-                 may be the empty string.
+                 The interval may have one or two digits before
+                 the decimal point, and will have exactly two digits
+                 after. Its value may not be zero (0.00), but may be
+                 the empty string.
     """
     __slots__ = ()  # prevents creation of instance dictionaries
 
