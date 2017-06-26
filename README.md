@@ -2,7 +2,7 @@
 
 #### I built this to keep track of my sleep pattern; it turned into something more. ####
 
-Spreadsheet ETL now implements a pipeline that extracts data from a .csv file, transforms the data into a database-friendly format, and loads it into a PostgreSQL database.
+Spreadsheet ETL now implements a pipeline that extracts data from a .csv file, transforms the data into a database-friendly format, and loads it into a PostgreSQL db.
 
 The program let me experiment with concurrency in Python, as well as code testability and unit testing.
 
