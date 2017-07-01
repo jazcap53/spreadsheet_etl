@@ -10,3 +10,4 @@ sheet_*.csv
 mcv
 structure_choice
 *.log
+__pycache__
