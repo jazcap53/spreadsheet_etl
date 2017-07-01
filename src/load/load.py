@@ -9,6 +9,8 @@
 
 import sys
 import psycopg2
+import logging
+
 from spreadsheet_etl.db.config import config
 
 
@@ -23,7 +25,7 @@ def decimal_to_interval(dec_str):
     try:
         mins = dec_mins_to_mins[dec_mins]
     except KeyError:  # TODO: better way to handle bad input
-        print('Value for dec_mins {} not found in dec_to_mins'.format(dec_mins))
+        logging.error('Value for dec_mins {} not found in dec_to_mins'.format(dec_mins))
     interval_str = '0 {}:{}:00'.format(hrs, mins)
     return interval_str
 
@@ -39,11 +41,11 @@ def load_nights_naps(cur):
         line_list = my_line.rstrip().split(', ')
         if line_list[0] == 'NIGHT':
             cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
-            print(cur.fetchone())
+            logging.info(cur.fetchone())
         elif line_list[0] == 'NAP':
             duration = decimal_to_interval(line_list[2])
             cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], duration))
-            print(cur.fetchone())
+            logging.info(cur.fetchone())
 
 
 def connect(store):
@@ -61,11 +63,12 @@ def connect(store):
         cur.close()
         conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        logging.error(error)
     finally:
         if conn is not None:
             conn.close()
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', filename='src/load/load.log', level=logging.INFO)
     connect(sys.argv[1])  # only c.l.a. will be 'True' or 'False'
