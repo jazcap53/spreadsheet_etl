@@ -22,6 +22,19 @@ import read_fns
 from container_objs import weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
+# from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
+import logging, logging.handlers
+
+rootLogger = logging.getLogger('')
+rootLogger.setLevel(logging.DEBUG)
+socketHandler = logging.handlers.SocketHandler('localhost',
+        logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+# don't bother with a formatter, since a socket handler sends the event as
+# an unformatted pickle
+rootLogger.addHandler(socketHandler)
+
+timing_logger = logging.getLogger('extract_run_it.timing')
+
 
 def print_out(weeks):
     for week in weeks:
@@ -29,6 +42,7 @@ def print_out(weeks):
     print()
 
 if __name__ == '__main__':
+    timing_logger.debug('extract start')
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
@@ -36,3 +50,4 @@ if __name__ == '__main__':
     weeks = read_fns.read_lines(infile, weeks)
     weeks = purge_fns.purge(weeks)
     print_out(weeks)
+    timing_logger.debug('extract finish')
