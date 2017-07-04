@@ -13,6 +13,19 @@ import logging
 
 from spreadsheet_etl.db.config import config
 
+# from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
+import logging, logging.handlers
+
+rootLogger = logging.getLogger('')
+rootLogger.setLevel(logging.DEBUG)
+socketHandler = logging.handlers.SocketHandler('localhost',
+        logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+# don't bother with a formatter, since a socket handler sends the event as
+# an unformatted pickle
+rootLogger.addHandler(socketHandler)
+
+timing_logger = logging.getLogger('load.timing')
+
 
 def decimal_to_interval(dec_str):
     """
@@ -70,5 +83,6 @@ def connect(store):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', filename='src/load/load.log', level=logging.INFO)
+    timing_logger.debug('load start')
     connect(sys.argv[1])  # only c.l.a. will be 'True' or 'False'
+    timing_logger.debug('load finish')
