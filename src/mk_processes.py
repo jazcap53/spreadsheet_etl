@@ -23,6 +23,12 @@ args = parser.parse_args()
 d = args.__dict__
 store_in_db = str(d.pop('store', False))  # d[store] is set to True if present
 
+logging_p = subprocess.Popen(
+    ['./src/logging/receiver.py'],
+)
+
+time.sleep(2)
+
 extract_p = subprocess.Popen(
     ['./src/extract/run_it.py', args.infile_name],
     stdout=subprocess.PIPE,
@@ -44,3 +50,4 @@ time.sleep(3)
 extract_p.terminate()
 transform_p.terminate()
 load_p.terminate()
+logging_p.terminate()

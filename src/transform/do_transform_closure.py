@@ -16,7 +16,20 @@ processing, and will hold all relevant data from the input.
 # TODO: filter all input
 
 import fileinput
+import time
 
+# from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
+import logging, logging.handlers
+
+rootLogger = logging.getLogger('')
+rootLogger.setLevel(logging.DEBUG)
+socketHandler = logging.handlers.SocketHandler('localhost',
+        logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+# don't bother with a formatter, since a socket handler sends the event as
+# an unformatted pickle
+rootLogger.addHandler(socketHandler)
+
+timing_logger = logging.getLogger('transform_closure.timing')
 
 def process_curr():
     """
@@ -153,4 +166,6 @@ def read_each_line():
 
 
 if __name__ == '__main__':
+    timing_logger.debug('transform start')
     read_each_line()
+    timing_logger.debug('transform end')
