@@ -16,19 +16,7 @@ processing, and will hold all relevant data from the input.
 # TODO: filter all input
 
 import fileinput
-
-# from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
 import logging, logging.handlers
-
-rootLogger = logging.getLogger('')
-rootLogger.setLevel(logging.DEBUG)
-socketHandler = logging.handlers.SocketHandler('localhost',
-        logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-# don't bother with a formatter, since a socket handler sends the event as
-# an unformatted pickle
-rootLogger.addHandler(socketHandler)
-
-timing_logger = logging.getLogger('transform_closure.timing')
 
 
 class Transform:
@@ -159,8 +147,20 @@ class Transform:
         return decimal_quarter
 
 
+def main():
+    # from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
+    rootLogger = logging.getLogger('')
+    rootLogger.setLevel(logging.INFO)
+    socketHandler = logging.handlers.SocketHandler('localhost',
+        logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+    # don't bother with a formatter, since a socket handler sends the event as
+    # an unformatted pickle
+    rootLogger.addHandler(socketHandler)
+
+
 if __name__ == '__main__':
-    timing_logger.debug('transform class start')
+    main()
+    logging.info('transform class start')
     t = Transform()
-    timing_logger.debug('transform class finish')
     t.read_each_line()
+    logging.info('transform class finish')
