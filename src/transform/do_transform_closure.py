@@ -166,6 +166,6 @@ def read_each_line():
 
 
 if __name__ == '__main__':
-    timing_logger.debug('transform start')
+    timing_logger.debug('transform closure start')
     read_each_line()
-    timing_logger.debug('transform finish')
+    timing_logger.debug('transform closure finish')
