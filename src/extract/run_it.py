@@ -24,7 +24,6 @@ from container_objs import weeks
 from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
 
 
-
 def print_out(weeks):
     for week in weeks:
         container_objs.print_week(week, out=sys.stdout)
