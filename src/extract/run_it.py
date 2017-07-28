@@ -15,7 +15,8 @@ purge_fns() removes days for which the data are incomplete.
 
 import sys
 import argparse
-import logging, logging.handlers
+import logging
+import logging.handlers
 
 import container_objs
 import purge_fns

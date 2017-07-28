@@ -44,8 +44,8 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 
 def open_file(file_read_wrapper):
     """
-    file_read_wrapper allows functions to read from a fake instead of
-        an actual file.
+    file_read_wrapper allows reading from a fake instead of
+        a real file during testing.
 
     Returns: a file handler open for read
     Called by: client code
@@ -57,10 +57,12 @@ def open_file(file_read_wrapper):
 def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
                new_week=None):
     """
-    Ignore lines that appear before the first Sunday is seen.
-    Thereafter, collect data until a blank line is seen.
-    Append that data to the output, and resume ignoring lines
-    until the next Sunday is seen, or EOF.
+    Loop:
+        Ignore lines until a Sunday is seen.
+        Collect data until a blank line is seen.
+        Append that data to the output.
+    Until:
+        EOF.
 
     Returns: the weeks list
     Called by: client code
@@ -100,7 +102,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
 def _append_week(wks_pls):
     """
     If we have a new Week object, append it to the weeks element of
-    wks_pls.
+    wks_pls, and reset wks_pls other fields.
 
     Returns: If we have a new Week object, an updated wks_pls
              Else, the function's argument
