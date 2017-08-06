@@ -18,7 +18,7 @@ def decimal_to_interval(dec_str):
     Convert duration from a decimal string to an interval string.
     E.g., '3.25' for 3 1/4 hours becomes '0 03:15:00'.
     """
-    dec_mins_to_mins = {'00':'00', '25':'15', '50':'30', '75':'45'}
+    dec_mins_to_mins = {'00': '00', '25': '15', '50': '30', '75': '45'}
     hrs, dec_mins = dec_str.split('.')
     mins = None
     try:
@@ -81,7 +81,7 @@ def main():
     # load_logger will need a formatter since it is writing to file
     load_logger = logging.getLogger('load.load')
     load_logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler('src/load/load.log', mode='w')
+    file_handler = logging.FileHandler('src/load/load.log', mode='a+')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     load_logger.addHandler(file_handler)
