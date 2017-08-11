@@ -16,8 +16,8 @@ processing, and will hold all relevant data from the input.
 # TODO: filter all input
 
 import fileinput
-import time
-import logging, logging.handlers
+import logging
+import logging.handlers
 
 
 def process_curr():
@@ -56,7 +56,7 @@ def process_curr():
             04.25 for 4 1/4 hours
         Called by: inner()
         Returns: the calculated interval, whose value will be
-                non-negative, as a string
+                 non-negative, as a string
         """
         w_time_list = list(map(int, w_time.split(':')))
         s_time_list = list(map(int, s_time.split(':')))
@@ -108,7 +108,7 @@ def process_curr():
 
         Returns: None
         """
-        nonlocal out_val, last_date, last_sleep_time
+        nonlocal out_val, last_date, last_sleep_time  # see process_curr()
         try:
             if cur_l == '':
                 pass
