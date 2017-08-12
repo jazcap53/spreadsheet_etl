@@ -9,9 +9,11 @@
 
 import sys
 import psycopg2
-import logging, logging.handlers
+import logging
+import logging.handlers
 
 from spreadsheet_etl.db.config import config
+
 
 def decimal_to_interval(dec_str):
     """
