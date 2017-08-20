@@ -83,7 +83,7 @@ def main():
     # load_logger will need a formatter since it is writing to file
     load_logger = logging.getLogger('load.load')
     load_logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler('src/load/load.log', mode='a+')
+    file_handler = logging.FileHandler('src/load/load.log', mode='w')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     load_logger.addHandler(file_handler)
