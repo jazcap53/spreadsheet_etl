@@ -4,7 +4,7 @@
 # andrew jarcho
 # 2017-02-20
 
-# python: 3.5+
+# python: 3.5
 
 
 import sys
