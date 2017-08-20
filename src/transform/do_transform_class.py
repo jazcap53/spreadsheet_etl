@@ -13,8 +13,6 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
-# TODO: filter all input
-
 import fileinput
 import logging
 import logging.handlers
@@ -37,6 +35,10 @@ class Transform:
     def read_each_line(self):
         """
         Read a line at a time from data_source; write to stdout.
+
+        Not necessary to filter input as it's coming directly from
+        extract process stdout:
+        https://docs.python.org/3/library/subprocess.html#security-considerations
 
         Called by: __main__()
         """

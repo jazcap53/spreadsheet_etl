@@ -13,8 +13,6 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
-# TODO: filter all input
-
 import fileinput
 import logging
 import logging.handlers
@@ -107,6 +105,10 @@ def process_curr():
            'NAP, time, duration'
 
         Returns: None
+
+        Not necessary to filter input as it's coming directly from
+        extract process stdout:
+        https://docs.python.org/3/library/subprocess.html#security-considerations
         """
         nonlocal out_val, last_date, last_sleep_time  # see process_curr()
         try:
