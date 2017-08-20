@@ -12,7 +12,7 @@ import psycopg2
 import logging
 import logging.handlers
 
-from spreadsheet_etl.db.config import config
+from db_s_etl.config import config
 
 
 def decimal_to_interval(dec_str):
@@ -52,7 +52,7 @@ def load_nights_naps(cur, load_logger):
 def connect(store, load_logger):
     """
     Connect to the PostgreSQL database server.
-    Call function to load data from stdin to db.
+    Call function to load data from stdin to db_s_etl.
     """
     conn = None
     try:

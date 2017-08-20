@@ -10,7 +10,7 @@ import sys
 from contextlib import contextmanager
 from io import StringIO
 
-from spreadsheet_etl.src.transform.do_transform_closure import process_curr
+from src.transform.do_transform_closure import process_curr
 
 
 # Note: inner.__code__.co_freevars is a tuple holding the names of inner's

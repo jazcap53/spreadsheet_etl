@@ -8,8 +8,8 @@
 from configparser import ConfigParser
 
 
-def config(filename='db/database.ini', section='postgresql'):
-    """Read the configuration file for the db connection."""
+def config(filename='db_s_etl/database.ini', section='postgresql'):
+    """Read the configuration file for the db_s_etl connection."""
     parser = ConfigParser()
     parser.read(filename)
     db = {}

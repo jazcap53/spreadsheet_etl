@@ -22,7 +22,7 @@ import container_objs
 import purge_fns
 import read_fns
 from container_objs import weeks
-from spreadsheet_etl.tests.file_access_wrappers import FileReadAccessWrapper
+from tests.file_access_wrappers import FileReadAccessWrapper
 
 
 def print_out(weeks):
