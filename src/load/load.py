@@ -8,12 +8,10 @@
 
 
 import sys
-import psycopg2
 import logging
 import logging.handlers
 import fileinput
-
-from db_s_etl.config import config
+from sqlalchemy import create_engine, MetaData, Table
 
 
 def decimal_to_interval(dec_str):
@@ -33,55 +31,57 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def load_nights_naps(cur, load_logger, infile_name):
+def load_nights_naps(engine, load_logger, infile_name):
     """
     Load NIGHT and NAP data from stdin into database.
     """
+    meta = MetaData()
+    night = Table('sl_night', meta, autoload=True, autoload_with=engine)
+    nap = Table('sl_nap', meta, autoload=True, autoload_with=engine)
     with fileinput.input(infile_name) as data_source:
+        last_inserted_p_k = None
         while True:
             my_line = data_source.readline()
             if not my_line:
                 break
             line_list = my_line.rstrip().split(', ')
             if line_list[0] == 'NIGHT':
-                cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.
-                            format(line_list[1], line_list[2]))
-                load_logger.debug(cur.fetchone())
+                night_insert = night.insert().values(
+                        start_date=line_list[1], start_time= line_list[2]
+                )
+                conn = engine.connect()
+                result = conn.execute(night_insert)
+                last_inserted_p_k = result.inserted_primary_key
+                load_logger.debug(result)
             elif line_list[0] == 'NAP':
                 duration = decimal_to_interval(line_list[2])
-                cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.
-                            format(line_list[1], duration))
-                load_logger.debug(cur.fetchone())
+                nap_insert = nap.insert().values(
+                        start_time=line_list[1], duration=duration,
+                        night_id=last_inserted_p_k[0]
+                )
+                conn = engine.connect()
+                result = conn.execute(nap_insert)
+                load_logger.debug(result)
 
 
-def connect(load_logger):
+def connect(load_logger, url):
     """
     Connect to the PostgreSQL database server.
     Call function to load data from stdin to db_s_etl.
     """
-    conn = None
+    engine = create_engine(url)
+
     try:
-        params = config()
-        conn = psycopg2.connect(**params)
-        cur = conn.cursor()
-        try:
             # if 'True' is a c.l. arg:
             #     if a file name is also a c.l. arg:
             #         read from file name
             #     else:
             #         read from stdin
-            sys.argv.remove('True')
-            infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
-            load_nights_naps(cur, load_logger, infile_name)
-        except ValueError:
-            pass  # don't touch the db
-        cur.close()
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(error)
-    finally:
-        if conn is not None:
-            conn.close()
+        sys.argv.remove('True')
+        infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
+        load_nights_naps(engine, load_logger, infile_name)
+    except ValueError:
+        pass  # don't touch the db
 
 
 def main():
@@ -111,5 +111,6 @@ def main():
 if __name__ == '__main__':
     load_logger = main()
     logging.info('load start')
-    connect(load_logger)  # only c.l.a. will be 'True' or 'False'
+    url = 'postgresql://jazcap53:test@localhost/sleep'
+    connect(load_logger, url)  # only c.l.a. will be 'True' or 'False'
     logging.info('load finish')

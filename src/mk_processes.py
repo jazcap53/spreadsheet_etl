@@ -45,7 +45,7 @@ load_p = subprocess.Popen(
     stdin=transform_p.stdout,
 )
 
-time.sleep(3)
+time.sleep(20)
 
 extract_p.terminate()
 transform_p.terminate()
