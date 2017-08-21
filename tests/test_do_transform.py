@@ -1,4 +1,4 @@
-# file: tests/test_do_transform_class.py
+# file: tests/test_do_transform.py
 # andrew jarcho
 # 2017-03-15
 
@@ -8,7 +8,7 @@
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.transform.do_transform_class import Transform
+from src.transform.do_transform import Transform
 
 
 def test_read_blank_line_does_not_change_state():

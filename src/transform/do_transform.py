@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 
-# file: src/transform/do_transform_class.py
+# file: src/transform/do_transform.py
 # andrew jarcho
 # 2017-03-16
 

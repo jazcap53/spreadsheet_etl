@@ -35,7 +35,7 @@ extract_p = subprocess.Popen(
 )
 
 transform_p = subprocess.Popen(
-    ['./src/transform/do_transform_class.py'],
+    ['./src/transform/do_transform.py'],
     stdin=extract_p.stdout,
     stdout=subprocess.PIPE,
 )

@@ -41,11 +41,13 @@ def load_nights_naps(cur, load_logger):
             break
         line_list = my_line.rstrip().split(', ')
         if line_list[0] == 'NIGHT':
-            cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.format(line_list[1], line_list[2]))
+            cur.execute('SELECT sl_insert_night(\'{}\', \'{}\')'.
+                        format(line_list[1], line_list[2]))
             load_logger.debug(cur.fetchone())
         elif line_list[0] == 'NAP':
             duration = decimal_to_interval(line_list[2])
-            cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.format(line_list[1], duration))
+            cur.execute('SELECT sl_insert_nap(\'{}\', \'{}\')'.
+                        format(line_list[1], duration))
             load_logger.debug(cur.fetchone())
 
 
