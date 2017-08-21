@@ -81,6 +81,7 @@ def main():
     # don't bother with a formatter here, since a socket handler sends the event as
     # an unformatted pickle
     rootLogger.addHandler(socketHandler)
+    # end of logging-cookbook code
 
     # load_logger will need a formatter since it is writing to file
     load_logger = logging.getLogger('load.load')
