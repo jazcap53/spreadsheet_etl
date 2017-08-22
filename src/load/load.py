@@ -11,7 +11,7 @@ import sys
 import logging
 import logging.handlers
 import fileinput
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, func
 
 
 def decimal_to_interval(dec_str):
@@ -35,33 +35,21 @@ def load_nights_naps(engine, load_logger, infile_name):
     """
     Load NIGHT and NAP data from stdin into database.
     """
-    meta = MetaData(bind=engine)
-    night = Table('sl_night', meta, autoload=True)
-    nap = Table('sl_nap', meta, autoload=True)
     with fileinput.input(infile_name) as data_source:
-        last_inserted_p_k = None
+        connection = engine.connect()
+        trans = connection.begin()
         while True:
             my_line = data_source.readline()
             if not my_line:
                 break
             line_list = my_line.rstrip().split(', ')
             if line_list[0] == 'NIGHT':
-                night_insert = night.insert()
-                result = engine.execute(night_insert,
-                                        start_date=line_list[1],
-                                        start_time=line_list[2])
-                last_inserted_p_k = result.inserted_primary_key
+                result = connection.execute(func.sl_insert_night(line_list[1], line_list[2]))
                 load_logger.debug(result)
             elif line_list[0] == 'NAP':
-                duration = decimal_to_interval(line_list[2])
-                nap_insert = nap.insert()
-                result = engine.execute(nap_insert,
-                                        start_time=line_list[1],
-                                        duration=duration,
-                                        night_id=last_inserted_p_k[0]
-                                        )
+                result = connection.execute(func.sl_insert_nap(line_list[1], line_list[2]))
                 load_logger.debug(result)
-
+        trans.commit()
 
 def connect(load_logger, url):
     """
