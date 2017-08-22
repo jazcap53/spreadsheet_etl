@@ -38,18 +38,27 @@ def load_nights_naps(engine, load_logger, infile_name):
     with fileinput.input(infile_name) as data_source:
         connection = engine.connect()
         trans = connection.begin()
-        while True:
-            my_line = data_source.readline()
-            if not my_line:
-                break
-            line_list = my_line.rstrip().split(', ')
-            if line_list[0] == 'NIGHT':
-                result = connection.execute(func.sl_insert_night(line_list[1], line_list[2]))
-                load_logger.debug(result)
-            elif line_list[0] == 'NAP':
-                result = connection.execute(func.sl_insert_nap(line_list[1], line_list[2]))
-                load_logger.debug(result)
-        trans.commit()
+        try:
+            while True:
+                my_line = data_source.readline()
+                if not my_line:
+                    break
+                line_list = my_line.rstrip().split(', ')
+                if line_list[0] == 'NIGHT':
+                    result = connection.execute(func.sl_insert_night(line_list[1],
+                                                                     line_list[2])
+                                                )
+                    load_logger.debug(result)
+                elif line_list[0] == 'NAP':
+                    result = connection.execute(func.sl_insert_nap(line_list[1],
+                                                                   line_list[2])
+                                                )
+                    load_logger.debug(result)
+            trans.commit()
+        except:
+            trans.rollback()
+            raise
+
 
 def connect(load_logger, url):
     """
