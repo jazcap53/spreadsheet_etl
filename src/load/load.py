@@ -35,9 +35,9 @@ def load_nights_naps(engine, load_logger, infile_name):
     """
     Load NIGHT and NAP data from stdin into database.
     """
-    meta = MetaData()
-    night = Table('sl_night', meta, autoload=True, autoload_with=engine)
-    nap = Table('sl_nap', meta, autoload=True, autoload_with=engine)
+    meta = MetaData(bind=engine)
+    night = Table('sl_night', meta, autoload=True)
+    nap = Table('sl_nap', meta, autoload=True)
     with fileinput.input(infile_name) as data_source:
         last_inserted_p_k = None
         while True:
@@ -46,21 +46,20 @@ def load_nights_naps(engine, load_logger, infile_name):
                 break
             line_list = my_line.rstrip().split(', ')
             if line_list[0] == 'NIGHT':
-                night_insert = night.insert().values(
-                        start_date=line_list[1], start_time= line_list[2]
-                )
-                conn = engine.connect()
-                result = conn.execute(night_insert)
+                night_insert = night.insert()
+                result = engine.execute(night_insert,
+                                        start_date=line_list[1],
+                                        start_time=line_list[2])
                 last_inserted_p_k = result.inserted_primary_key
                 load_logger.debug(result)
             elif line_list[0] == 'NAP':
                 duration = decimal_to_interval(line_list[2])
-                nap_insert = nap.insert().values(
-                        start_time=line_list[1], duration=duration,
-                        night_id=last_inserted_p_k[0]
-                )
-                conn = engine.connect()
-                result = conn.execute(nap_insert)
+                nap_insert = nap.insert()
+                result = engine.execute(nap_insert,
+                                        start_time=line_list[1],
+                                        duration=duration,
+                                        night_id=last_inserted_p_k[0]
+                                        )
                 load_logger.debug(result)
 
 
