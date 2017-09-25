@@ -10,6 +10,9 @@ install:
 services:
     - postgresql
 
+addons:
+    postgresql: "9.5" 
+
 before_script:
     - psql -c "CREATE DATABASE sleep_test;" -U postgres
     - psql -c "DROP TABLE IF EXISTS slt_night CASCADE;" -U postgres
@@ -30,8 +33,5 @@ before_script:
               );" -U postgres
     - psql -c "create user test_user with password 'test';" -U postgres
       #    - psql -c 'create database travis_ci_test;' -U postgres
-
-addons:
-    postgresql: "9.5"
 
 script: python -m pytest
