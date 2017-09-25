@@ -16,4 +16,4 @@ before_script:
 addons:
     postgresql: "9.5"
 
-script: -m pytest
+script: python -m pytest
