@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, text
 
 @pytest.fixture(scope="module")
 def my_setup():
-    url = 'postgresql://jazcap53:test@localhost/sleep_test'
+    url = 'postgresql://test_user:test@localhost/sleep_test'
     engine = create_engine(url)
     return engine
 
