@@ -11,7 +11,7 @@ Removes any incomplete Day's from the weeks list.
 A Day is 'incomplete' if the data do not show the total hours slept
 during that Day. Each 'b' event holds the total hours slept in the
 previous Day as its third element *if that total is known*. Thus a
-'b' event with less than 3 elements indicates that some sleep data
+'b' event with fewer than 3 elements indicates that some sleep data
 from the preceding Day are missing.
 
 purge() reads Event's in reverse order from the last Event to the first.
@@ -30,7 +30,8 @@ def purge(weeks, out=sys.stdout):
     Remove incomplete Day's from the weeks list. Processing begins with
         the last Event and proceeds backwards to the first Event.
     
-    Returns: the weeks list, with any incomplete Day's removed
+    Returns: the weeks list, with the Event's from any incomplete Day's
+             removed
     Called by: client code
     """
     purging = True

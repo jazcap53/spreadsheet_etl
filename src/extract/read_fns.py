@@ -75,7 +75,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
         if not any(line):
             if not wks_pls.sunday_date:     # no Sunday has been seen
                 continue
-            else:
+            else:                           # we have a complete Week
                 wks_pls = _append_week(wks_pls)
         elif not wks_pls.sunday_date:
             date_match = _check_for_date(line[0])
@@ -88,7 +88,7 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
                             for x in range(7)]
                 # create a Week
                 wks_pls = wks_pls._replace(new_week=Week(*day_list))
-            else:
+            else:                           # still no Sunday
                 continue
         if any(line[1:]):
             got_events = _get_events(line[1:], wks_pls.new_week)
