@@ -1,0 +1,19 @@
+language: python
+python:
+    - "3.4"
+    - "3.5"
+    - "3.6"
+      
+install:
+    - pip install -r requirements.txt
+
+services:
+    - postgresql
+
+before_script:
+    - psql -c 'create database travis_ci_test;' -U postgres
+
+addons:
+    postgresql: "9.5"
+
+script: pytest
