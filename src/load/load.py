@@ -12,6 +12,8 @@ import logging
 import logging.handlers
 import fileinput
 from sqlalchemy import create_engine, func
+import os
+import sys
 
 
 def decimal_to_interval(dec_str):
@@ -107,6 +109,12 @@ def main():
 if __name__ == '__main__':
     load_logger = main()
     logging.info('load start')
-    url = 'postgresql://jazcap53:test@localhost/sleep'
+    try:
+        url = 'postgresql://{}:{}@localhost/sleep'.format(
+                os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
+    except KeyError:
+        print('Please set the environment variables DB_USERNAME and '
+                'DB_PASSWORD')
+        sys.exit(1)
     connect(load_logger, url)  # only c.l.a. will be 'True' or 'False'
     logging.info('load finish')

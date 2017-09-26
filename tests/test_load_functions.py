@@ -1,11 +1,19 @@
 import pytest
 from datetime import datetime
+import os
+import sys
 from sqlalchemy import create_engine, text
 
 
 @pytest.fixture(scope="module")
 def my_setup():
-    url = 'postgresql://test_user:test@localhost/sleep_test'
+    try:
+        url = 'postgresql://{}:{}@localhost/sleep_test'.format(
+                os.environ['DB_TEST_USERNAME'], os.environ['DB_TEST_PASSWORD'])
+    except KeyError:
+        print('Please set the environment variables DB_TEST_USERNAME and '
+                'DB_TEST_PASSWORD')
+        sys.exit(1)
     engine = create_engine(url)
     return engine
 
