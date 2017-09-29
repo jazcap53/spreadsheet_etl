@@ -46,20 +46,6 @@ def test_read_lines_stores_one_week(file_wrapper):
     assert len(weeks) == 1
 
 
-# def test__append_week_appends_week_to_week_list(file_wrapper):
-#     weeks = []
-#     len_weeks = len(weeks)
-#     sunday_date = datetime.date(2016, 12, 4)
-#     do_append_week = True
-#     dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
-#     new_week = Week(*dts)
-#     WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date',
-#                            'do_append_week', 'new_week'])
-#     wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
-#     wks_pls = _append_week(wks_pls)
-#     assert len(wks_pls.weeks) == len_weeks + 1
-
-
 def test__check_for_date_matches_date_in_correct_format(file_wrapper):
     date_string = '12/34/5678'
     good_match = _check_for_date(date_string)
