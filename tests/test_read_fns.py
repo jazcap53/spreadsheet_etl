@@ -5,14 +5,14 @@
 # pytest 3.0.7
 
 import io
-from collections import namedtuple
-import datetime
+# from collections import namedtuple
+# import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_file, read_lines, _append_week
+from src.extract.read_fns import open_file, read_lines
 from src.extract.read_fns import _check_for_date
-from src.extract.container_objs import Week, Day
+# from src.extract.container_objs import Week, Day
 
 
 @pytest.fixture
@@ -46,18 +46,18 @@ def test_read_lines_stores_one_week(file_wrapper):
     assert len(weeks) == 1
 
 
-def test__append_week_appends_week_to_week_list(file_wrapper):
-    weeks = []
-    len_weeks = len(weeks)
-    sunday_date = datetime.date(2016, 12, 4)
-    do_append_week = True
-    dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
-    new_week = Week(*dts)
-    WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date',
-                           'do_append_week', 'new_week'])
-    wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
-    wks_pls = _append_week(wks_pls)
-    assert len(wks_pls.weeks) == len_weeks + 1
+# def test__append_week_appends_week_to_week_list(file_wrapper):
+#     weeks = []
+#     len_weeks = len(weeks)
+#     sunday_date = datetime.date(2016, 12, 4)
+#     do_append_week = True
+#     dts = [Day(sunday_date + datetime.timedelta(days=x), []) for x in range(7)]
+#     new_week = Week(*dts)
+#     WeeksPlus = namedtuple('WeeksPlus', ['weeks', 'sunday_date',
+#                            'do_append_week', 'new_week'])
+#     wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
+#     wks_pls = _append_week(wks_pls)
+#     assert len(wks_pls.weeks) == len_weeks + 1
 
 
 def test__check_for_date_matches_date_in_correct_format(file_wrapper):

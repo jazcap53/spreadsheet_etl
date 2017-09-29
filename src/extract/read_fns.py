@@ -87,8 +87,10 @@ def read_lines(infile, weeks):
             if not any(line):
                 weeks.append(new_week)
                 in_week = False
+                sunday_date = None
             else:
                 got_events = _get_events(line[1:], new_week)
+    # save any remaining unstored data
     if sunday_date and got_events and new_week:
         weeks.append(new_week)
     return weeks
