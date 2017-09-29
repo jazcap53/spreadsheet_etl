@@ -37,7 +37,6 @@ read_lines() returns a list of Weeks to the client.
 
 import datetime
 import re
-from collections import namedtuple
 
 from src.extract.container_objs import validate_segment, Week, Day, Event
 
@@ -53,9 +52,8 @@ def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
 
-# TODO: try to simplify the structure of this function
-def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
-               new_week=None):
+# TODO: fix docstring
+def read_lines(infile, weeks):
     """
     Loop:
         Ignore lines until a Sunday is seen.
@@ -67,52 +65,33 @@ def read_lines(infile, weeks, sunday_date=None, do_append_week=False,
     Returns: the weeks list
     Called by: client code
     """
-    WeeksPlus = namedtuple('WeeksListPlus', ['weeks', 'sunday_date',
-                                             'do_append_week', 'new_week'])
-    wks_pls = WeeksPlus(weeks, sunday_date, do_append_week, new_week)
+    in_week = False
+    sunday_date = None
+    got_events = False
+    new_week = None
     for line in infile:
         line = line.strip().split(',')[:22]
-        if not any(line):
-            if not wks_pls.sunday_date:     # no Sunday has been seen
-                continue
-            else:                           # we have a complete Week
-                wks_pls = _append_week(wks_pls)
-        elif not wks_pls.sunday_date:
-            date_match = _check_for_date(line[0])
-            if date_match:                  # we've found a Sunday
-                wks_pls = wks_pls._replace(
-                        sunday_date=_match_to_date_obj(date_match))
-                # collect 7 Days into a day_list
-                day_list = [Day(wks_pls.sunday_date +
+        date_match = _check_for_date(line[0])
+        if not in_week and not date_match:
+            continue
+        elif not in_week and date_match:  # we just found a date_match
+            sunday_date = _match_to_date_obj(date_match)
+            # collect 7 Days into a day_list
+            day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
-                            for x in range(7)]
-                # create a Week
-                wks_pls = wks_pls._replace(new_week=Week(*day_list))
-            else:                           # still no Sunday
-                continue
-        if any(line[1:]):
-            got_events = _get_events(line[1:], wks_pls.new_week)
-            wks_pls = wks_pls._replace(do_append_week=got_events[0],
-                                       new_week=got_events[1])
-    # save any remaining unstored data
-    wks_pls = _append_week(wks_pls)
-    return wks_pls.weeks
-
-
-def _append_week(wks_pls):
-    """
-    If we have a new Week object, append it to the weeks element of
-    wks_pls, and reset wks_pls other fields.
-
-    Returns: If we have a new Week object, an updated wks_pls
-             Else, the function's argument
-    Called by: read_lines()
-    """
-    if all(wks_pls[1:]):  # if sunday_date and do_append_week and new_week
-        my_new_week = wks_pls.new_week
-        wks_pls.weeks.append(my_new_week)
-        wks_pls = wks_pls._replace(sunday_date=None, do_append_week=False, new_week=None)
-    return wks_pls
+                        for x in range(7)]
+            # create a week
+            new_week = Week(*day_list)
+            in_week = True
+        if in_week:
+            if not any(line):
+                weeks.append(new_week)
+                in_week = False
+            else:
+                got_events = _get_events(line[1:], new_week)
+    if sunday_date and got_events and new_week:
+        weeks.append(new_week)
+    return weeks
 
 
 def _check_for_date(s):
@@ -140,7 +119,7 @@ def _get_events(line, new_week):
     Add each valid event in line to new_week.
     Called by: read_lines()
     """
-    do_append_week = False
+    got_events = False
     for ix in range(7):
         # a segment is a list of 3 consecutive items from the .csv file
         segment = line[3*ix: 3*ix + 3]
@@ -151,5 +130,5 @@ def _get_events(line, new_week):
                 continue
             if new_week and an_event.action:
                 new_week[ix].events.append(an_event)
-                do_append_week = True
-    return do_append_week, new_week
+                got_events = True
+    return got_events
