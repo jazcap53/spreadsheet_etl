@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS sl_nap;
 CREATE TABLE sl_nap (
     nap_id SERIAL UNIQUE, 
     start_time time NOT NULL,
-    duration interval NOT NULL,
+    duration interval hour to minute NOT NULL,
     night_id integer NOT NULL,
     PRIMARY KEY (nap_id),
     FOREIGN KEY (night_id) REFERENCES sl_night (night_id)

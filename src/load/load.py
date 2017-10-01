@@ -29,7 +29,7 @@ def decimal_to_interval(dec_str):
     except KeyError:  # TODO: better way to handle bad input
         logging.error('Value for dec_mins {} not found in dec_to_mins'.
                       format(dec_mins))
-    interval_str = '0 {}:{}:00'.format(hrs, mins)
+    interval_str = '{}:{}'.format(hrs, mins)
     return interval_str
 
 
@@ -53,7 +53,7 @@ def load_nights_naps(engine, load_logger, infile_name):
                     load_logger.debug(result)
                 elif line_list[0] == 'NAP':
                     result = connection.execute(func.sl_insert_nap(line_list[1],
-                                                                   line_list[2])
+                                                                   decimal_to_interval(line_list[2]))
                                                 )
                     load_logger.debug(result)
             trans.commit()
