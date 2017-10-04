@@ -70,11 +70,11 @@ def connect(load_logger, url):
     engine = create_engine(url)
 
     try:
-            # if 'True' is a c.l. arg:
-            #     if a file name is also a c.l. arg:
-            #         read from file name
-            #     else:
-            #         read from stdin
+        # if 'True' is a c.l. arg:
+        #     if a file name is also a c.l. arg:
+        #         read from file name
+        #     else:
+        #         read from stdin
         sys.argv.remove('True')
         infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
         load_nights_naps(engine, load_logger, infile_name)
