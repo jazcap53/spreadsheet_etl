@@ -31,6 +31,11 @@ def print_out(weeks):
     print()
 
 
+def print_buffer(buf):
+    for line in buf:
+        print(line)
+
+
 def main():
     # from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
     rootLogger = logging.getLogger('')
@@ -49,7 +54,11 @@ if __name__ == '__main__':
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
     infile = read_fns.open_file(FileReadAccessWrapper(args.infile_name))
-    weeks = read_fns.read_lines(infile, weeks)
-    weeks = purge_fns.purge(weeks)
-    print_out(weeks)
+    # weeks = read_fns.read_lines(infile, weeks)
+    # weeks = purge_fns.purge(weeks)
+    # print_out(weeks)
+    # buffer =
+    # read_fns.read_lines(infile, weeks)
+    read_fns.read_lines(infile)
+    # print_buffer(buffer)
     logging.info('extract finish')

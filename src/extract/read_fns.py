@@ -53,7 +53,8 @@ def open_file(file_read_wrapper):
 
 
 # TODO: fix docstring
-def read_lines(infile, weeks):
+# def read_lines(infile, weeks):
+def read_lines(infile):
     """
     Loop:
         Ignore lines until a Sunday is seen.
@@ -69,6 +70,7 @@ def read_lines(infile, weeks):
     sunday_date = None
     got_events = False
     new_week = None
+    lines_buffer = []
     for line in infile:
         line = line.strip().split(',')[:22]
         date_match = _check_for_date(line[0])
@@ -76,7 +78,7 @@ def read_lines(infile, weeks):
             continue
         elif not in_week and date_match:  # we just found a date_match
             sunday_date = _match_to_date_obj(date_match)
-            # collect 7 Days into a day_list
+            # collect 7 (empty) Days into a day_list
             day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
                         for x in range(7)]
@@ -85,15 +87,17 @@ def read_lines(infile, weeks):
             in_week = True
         if in_week:
             if not any(line):
-                weeks.append(new_week)
+                _buffer_week(new_week, lines_buffer)
+                # weeks.append(new_week)
                 in_week = False
                 sunday_date = None
             else:
                 got_events = _get_events(line[1:], new_week)
     # save any remaining unstored data
     if sunday_date and got_events and new_week:
-        weeks.append(new_week)
-    return weeks
+        # weeks.append(new_week)
+        _buffer_week(new_week, lines_buffer, True)
+    # return weeks
 
 
 def _check_for_date(s):
@@ -134,3 +138,50 @@ def _get_events(line, new_week):
                 new_week[ix].events.append(an_event)
                 got_events = True
     return got_events
+
+
+def _buffer_week(week, buffer, cleanup=False):
+    wk_header = '\nWeek of Sunday, {}:\n'.format(week[0].dt_date)
+    underscores = '=' * (len(wk_header) - 2)
+    buffer.append(wk_header + underscores)
+    for day in week:
+        dy_header = '    ' + '{}'.format(day.dt_date)
+        buffer.append(dy_header)
+        for event in day.events:
+            event_str = 'action: {}, time: {}'.format(event.action,
+                                                      event.mil_time)
+            if event.hours:
+                event_str += ', hours: {:.2f}'.format(float(event.hours))
+            if event.action == 'b' and event.hours:
+                for line in buffer:
+                    print(line)
+                buffer.clear()
+            elif event.action == 'b':
+                for buf_ix in range(len(buffer) - 1, -1, -1):
+                    this_line = buffer[buf_ix]
+                    # if we've found a 3-element 'b' event
+                    if this_line != '\n' and this_line[8] == 'b' and len(this_line) > 21:
+                        buffer.pop(buf_ix)
+                        break
+                    if this_line[:6] == 'action':
+                        buffer.pop(buf_ix)
+            buffer.append(event_str)
+    # buffer.append('\n')
+    if cleanup:
+        for line in buffer:
+            if line[:4] == '    ':  # only print dates, not events
+                print(line)
+        buffer.clear()
+
+
+# def _buffer_day(day, buffer):
+#     out.write('{}\n'.format(d.dt_date))
+#     for item in d.events:
+#         print_event(item, out)
+#
+#
+# def _buffer_event(event, buffer):
+#     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
+#     if e.hours:
+#         out_str += ', hours: {:.2f}'.format(float(e.hours))
+#     out.write(out_str + u'\n')
