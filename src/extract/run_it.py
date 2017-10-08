@@ -10,30 +10,16 @@
 Run the extract phase of the pipeline.
 
 read_fns() reads raw data from the spreadsheet, and groups it by day and week.
-purge_fns() removes days for which the data are incomplete.
 """
 
-import sys
+# import sys
 import argparse
 import logging
 import logging.handlers
 
-import container_objs
-import purge_fns
+# import container_objs
 import read_fns
-from container_objs import weeks
 from tests.file_access_wrappers import FileReadAccessWrapper
-
-
-def print_out(weeks):
-    for week in weeks:
-        container_objs.print_week(week, out=sys.stdout)
-    print()
-
-
-def print_buffer(buf):
-    for line in buf:
-        print(line)
 
 
 def main():
@@ -54,11 +40,5 @@ if __name__ == '__main__':
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
     infile = read_fns.open_file(FileReadAccessWrapper(args.infile_name))
-    # weeks = read_fns.read_lines(infile, weeks)
-    # weeks = purge_fns.purge(weeks)
-    # print_out(weeks)
-    # buffer =
-    # read_fns.read_lines(infile, weeks)
     read_fns.read_lines(infile)
-    # print_buffer(buffer)
     logging.info('extract finish')

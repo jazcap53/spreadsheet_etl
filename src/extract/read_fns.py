@@ -53,7 +53,6 @@ def open_file(file_read_wrapper):
 
 
 # TODO: fix docstring
-# def read_lines(infile, weeks):
 def read_lines(infile):
     """
     Loop:
@@ -82,22 +81,18 @@ def read_lines(infile):
             day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
                         for x in range(7)]
-            # create a week
             new_week = Week(*day_list)
             in_week = True
         if in_week:
             if not any(line):
                 _buffer_week(new_week, lines_buffer)
-                # weeks.append(new_week)
                 in_week = False
                 sunday_date = None
             else:
                 got_events = _get_events(line[1:], new_week)
     # save any remaining unstored data
     if sunday_date and got_events and new_week:
-        # weeks.append(new_week)
         _buffer_week(new_week, lines_buffer, True)
-    # return weeks
 
 
 def _check_for_date(s):
@@ -127,7 +122,7 @@ def _get_events(line, new_week):
     """
     got_events = False
     for ix in range(7):
-        # a segment is a list of 3 consecutive items from the .csv file
+        # a segment is a list of 3 consecutive fields from the .csv file
         segment = line[3*ix: 3*ix + 3]
         if validate_segment(segment):
             try:
@@ -140,11 +135,12 @@ def _get_events(line, new_week):
     return got_events
 
 
-def _buffer_week(week, buffer, cleanup=False):
-    wk_header = '\nWeek of Sunday, {}:\n'.format(week[0].dt_date)
+# TODO: write docstring, comments
+def _buffer_week(wk, buffer, cleanup=False):
+    wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
     buffer.append(wk_header + underscores)
-    for day in week:
+    for day in wk:
         dy_header = '    ' + '{}'.format(day.dt_date)
         buffer.append(dy_header)
         for event in day.events:
@@ -166,22 +162,8 @@ def _buffer_week(week, buffer, cleanup=False):
                     if this_line[:6] == 'action':
                         buffer.pop(buf_ix)
             buffer.append(event_str)
-    # buffer.append('\n')
     if cleanup:
         for line in buffer:
             if line[:4] == '    ':  # only print dates, not events
                 print(line)
         buffer.clear()
-
-
-# def _buffer_day(day, buffer):
-#     out.write('{}\n'.format(d.dt_date))
-#     for item in d.events:
-#         print_event(item, out)
-#
-#
-# def _buffer_event(event, buffer):
-#     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
-#     if e.hours:
-#         out_str += ', hours: {:.2f}'.format(float(e.hours))
-#     out.write(out_str + u'\n')
