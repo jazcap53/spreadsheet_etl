@@ -4,6 +4,6 @@
 
 Spreadsheet ETL now implements a pipeline that extracts data from a .csv file, transforms the data into a database-friendly format, and loads it into a PostgreSQL db.
 
-The program let me experiment with concurrency in Python, as well as code testability and unit testing.
+The program let me experiment with concurrency in Python, and with writing testable code.
 
-As of 2017-06-25, Spreadsheet ETL's Extract, Transform, and Load modules all work; but a different approach to the pipelining aspect would have been more practical. I plan to come back to this program from time to time to refactor and learn. 
+As of 2017-10-09, Spreadsheet ETL's Extract, Transform, and Load modules are all working properly. The pipelining strategy needs to be revamped; other changes are planned. I expect to return to this project frequently to refactor and learn.
