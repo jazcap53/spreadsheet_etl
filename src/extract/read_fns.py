@@ -149,22 +149,32 @@ def _buffer_week(wk, buffer, cleanup=False):
                                                       event.mil_time)
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b' and event.hours:  # we have a complete Day
-                for line in buffer:                  # so print the buffer
-                    print(line)                      # and clear it
-                buffer.clear()
-            elif event.action == 'b':                # day is *incomplete*
-                for buf_ix in range(len(buffer) - 1, -1, -1):  # pop lines
-                    this_line = buffer[buf_ix]
-                    # if we find a 3-element 'b' event
-                    if this_line != '\n' and this_line[8] == 'b' and len(this_line) > 21:
-                        buffer.pop(buf_ix)
-                        break  # quit popping
-                    if this_line[:6] == 'action':  # pop only 'action' lines
-                        buffer.pop(buf_ix)
+            if event.action == 'b':
+                _print_complete_days(buffer, event)
             buffer.append(event_str)
     if cleanup:
+        _print_cleanup(buffer)
+
+
+def _print_complete_days(buffer, event):
+    if event.hours:  # we have a complete Day
         for line in buffer:
-            if line[:4] == '    ':  # only print dates, not events
-                print(line)
+            print(line)
         buffer.clear()
+    else:  # day is *incomplete*
+        for buf_ix in range(len(buffer) - 1, -1, -1):  # pop lines
+            this_line = buffer[buf_ix]
+            # if we find a 3-element 'b' event
+            if this_line != '\n' and this_line[8] == 'b' and \
+                            len(this_line) > 21:
+                buffer.pop(buf_ix)
+                break  # quit popping
+            if this_line[:6] == 'action':  # pop only 'action' lines
+                buffer.pop(buf_ix)
+
+
+def _print_cleanup(buffer):
+    for line in buffer:
+        if line[:4] == '    ':  # only print dates, not events
+            print(line)
+    buffer.clear()
