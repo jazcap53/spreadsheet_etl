@@ -4,7 +4,7 @@
 
 # python: 3.5
 
-
+# TODO: fix below docstring
 """
 The input is structured in lines as:
 
@@ -136,6 +136,7 @@ def _get_events(line, new_week):
 
 
 # TODO: write docstring, comments
+# TODO: refactor -- move innermost 'if, elif' into another function (?)
 def _buffer_week(wk, buffer, cleanup=False):
     wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
@@ -148,18 +149,18 @@ def _buffer_week(wk, buffer, cleanup=False):
                                                       event.mil_time)
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b' and event.hours:
-                for line in buffer:
-                    print(line)
+            if event.action == 'b' and event.hours:  # we have a complete Day
+                for line in buffer:                  # so print the buffer
+                    print(line)                      # and clear it
                 buffer.clear()
-            elif event.action == 'b':
-                for buf_ix in range(len(buffer) - 1, -1, -1):
+            elif event.action == 'b':                # day is *incomplete*
+                for buf_ix in range(len(buffer) - 1, -1, -1):  # pop lines
                     this_line = buffer[buf_ix]
-                    # if we've found a 3-element 'b' event
+                    # if we find a 3-element 'b' event
                     if this_line != '\n' and this_line[8] == 'b' and len(this_line) > 21:
                         buffer.pop(buf_ix)
-                        break
-                    if this_line[:6] == 'action':
+                        break  # quit popping
+                    if this_line[:6] == 'action':  # pop only 'action' lines
                         buffer.pop(buf_ix)
             buffer.append(event_str)
     if cleanup:
