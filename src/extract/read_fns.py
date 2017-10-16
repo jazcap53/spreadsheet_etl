@@ -136,7 +136,6 @@ def _get_events(line, new_week):
 
 
 # TODO: write docstring, comments
-# TODO: refactor -- move innermost 'if, elif' into another function (?)
 def _buffer_week(wk, buffer, cleanup=False):
     wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
@@ -156,6 +155,7 @@ def _buffer_week(wk, buffer, cleanup=False):
         _print_cleanup(buffer)
 
 
+# TODO: write docstring
 def _print_complete_days(buffer, event):
     if event.hours:  # we have a complete Day
         for line in buffer:
@@ -173,6 +173,7 @@ def _print_complete_days(buffer, event):
                 buffer.pop(buf_ix)
 
 
+# TODO: write docstring
 def _print_cleanup(buffer):
     for line in buffer:
         if line[:4] == '    ':  # only print dates, not events
