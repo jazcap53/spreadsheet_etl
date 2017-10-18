@@ -51,7 +51,7 @@ def print_week(w, out):
     print()
 
 
-# TODO: solve problem of calling super() for these 3 classes?
+# TODO: is not calling super() for these 3 classes a problem?
 
 class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """

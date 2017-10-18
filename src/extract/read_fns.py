@@ -62,7 +62,6 @@ def read_lines(infile):
     Until:
         EOF.
 
-    Returns: the weeks list
     Called by: client code
     """
     in_week = False
@@ -77,7 +76,7 @@ def read_lines(infile):
             continue
         elif not in_week and date_match:  # we just found a date_match
             sunday_date = _match_to_date_obj(date_match)
-            # collect 7 (empty) Days into a day_list
+            # create a day_list of 7 (empty) Days
             day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
                         for x in range(7)]
@@ -151,12 +150,14 @@ def _buffer_week(wk, buffer, cleanup=False):
             if event.action == 'b':
                 _print_complete_days(buffer, event)
             buffer.append(event_str)
-    if cleanup:
-        _print_cleanup(buffer)
 
 
-# TODO: write docstring
+# TODO: complete docstring
 def _print_complete_days(buffer, event):
+    """
+    Write complete days (only) from buffer to stdout
+    Called by: _buffer_week()
+    """
     if event.hours:  # we have a complete Day
         for line in buffer:
             print(line)
@@ -171,11 +172,3 @@ def _print_complete_days(buffer, event):
                 break  # quit popping
             if this_line[:6] == 'action':  # pop only 'action' lines
                 buffer.pop(buf_ix)
-
-
-# TODO: write docstring
-def _print_cleanup(buffer):
-    for line in buffer:
-        if line[:4] == '    ':  # only print dates, not events
-            print(line)
-    buffer.clear()
