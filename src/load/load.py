@@ -115,7 +115,7 @@ if __name__ == '__main__':
                 os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
     except KeyError:
         print('Please set the environment variables DB_USERNAME and '
-                'DB_PASSWORD')
+              'DB_PASSWORD')
         sys.exit(1)
     connect(load_logger, url)  # only c.l.a. will be 'True' or 'False'
     logging.info('load finish')

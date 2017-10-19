@@ -30,8 +30,6 @@ groups 7 consecutive Days, beginning with a Sunday.
 Once the input file has been opened, function read_lines()
 controls the data processing: all other functions in this
 file are called from read_lines().
-
-read_lines() returns a list of Weeks to the client.
 """
 
 
@@ -91,15 +89,15 @@ def read_lines(infile):
                 got_events = _get_events(line[1:], new_week)
     # save any remaining unstored data
     if sunday_date and got_events and new_week:
-        _buffer_week(new_week, lines_buffer, True)
+        _buffer_week(new_week, lines_buffer)
 
 
-def _check_for_date(s):
+def _check_for_date(segment):
     """
-    Is the first element of s a date?
+    Does segment start with a date?
     Called by: read_lines()
     """
-    m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
+    m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', segment)
     return m if m else None
 
 
@@ -135,7 +133,7 @@ def _get_events(line, new_week):
 
 
 # TODO: write docstring, comments
-def _buffer_week(wk, buffer, cleanup=False):
+def _buffer_week(wk, buffer):
     wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
     buffer.append(wk_header + underscores)

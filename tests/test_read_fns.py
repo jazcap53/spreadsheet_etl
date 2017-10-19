@@ -15,6 +15,7 @@ from src.extract.read_fns import _check_for_date
 # from src.extract.container_objs import Week, Day
 
 
+# TODO: at present, the 'fixture' is used in only one test
 @pytest.fixture
 def file_wrapper():
     return FakeFileReadWrapper(
@@ -37,13 +38,6 @@ def file_wrapper():
 def test_open_file(file_wrapper):
     infile = open_file(file_wrapper)
     assert isinstance(infile, io.StringIO)
-
-
-def test_read_lines_stores_one_week(file_wrapper):
-    weeks = []
-    infile = open_file(file_wrapper)
-    weeks = read_lines(infile, weeks)
-    assert len(weeks) == 1
 
 
 def test__check_for_date_matches_date_in_correct_format(file_wrapper):
