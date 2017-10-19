@@ -32,6 +32,16 @@ def main():
     # an unformatted pickle
     rootLogger.addHandler(socketHandler)
 
+    # read_logger will need a formatter since it is writing to file
+    read_logger = logging.getLogger('extract.read_fns')
+    read_logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler('src/extract/read_fns.log', mode='w')
+    formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    read_logger.addHandler(file_handler)
+    read_logger.propagate = False
+
 
 if __name__ == '__main__':
     main()

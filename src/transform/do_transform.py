@@ -137,7 +137,12 @@ class Transform:
         Called by: get_duration()
         Returns: a number of minutes represented as a decimal fraction
         """
-        # TODO: log warning if quarter is not a quarter-hour
+        valid_quarters = (0, 15, 30, 45)
+        if quarter not in valid_quarters:
+            transform_logger = logging.getLogger('transform.do_transform')
+            transform_logger.warning('Invalid quarter {} in do_transform.py '
+                                     'quarter_hour_to_decimal()'.
+                                     format(quarter))
         decimal_quarter = None
         if quarter == 15:
             decimal_quarter = '.25'
@@ -159,6 +164,16 @@ def main():
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
     rootLogger.addHandler(socketHandler)
+
+    # transform_logger will need a formatter since it is writing to file
+    transform_logger = logging.getLogger('transform.do_transform')
+    transform_logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler('src/transform/do_transform.log', mode='w')
+    formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    transform_logger.addHandler(file_handler)
+    transform_logger.propagate = False
 
 
 if __name__ == '__main__':
