@@ -64,12 +64,12 @@ class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
                  after. Its value may not be zero (0.00), but may be
                  the empty string.
     """
-    __slots__ = ()  # prevents creation of instance dictionaries
+    __slots__ = ()  # prevents creation of per-instance dictionaries
 
     def __init__(self, a, m, h):
         """ Ctor used just to filter input """
         if not validate_segment([a, m, h]):
-            raise ValueError
+            raise ValueError('Event ctor called with invalid segment')
 
 
 class Day(namedtuple('DayTuple', 'dt_date, events')):
@@ -77,29 +77,30 @@ class Day(namedtuple('DayTuple', 'dt_date, events')):
     Each DayTuple holds a datetime.date and a (possibly empty)
     list of Events
     """
-    __slots__ = ()  # prevents creation of instance dictionaries
+    __slots__ = ()  # prevents creation of per-instance dictionaries
 
     def __init__(self, d, e):
         """ Ctor used just to filter input """
         if not isinstance(d, datetime.date):
-            raise TypeError
+            raise TypeError('Day ctor called with non-date first arg')
         if not isinstance(e, list):
-            raise TypeError
+            raise TypeError('Day ctor called with non-list second arg')
 
 
 class Week(namedtuple('WeekTuple',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
     """ Each WeekTuple holds seven named Day tuples """
-    __slots__ = ()  # prevents creation of instance dictionaries
+    __slots__ = ()  # prevents creation of per-instance dictionaries
 
     def __init__(self, su, mo, tu, we, th, fr, sa):
         """ Ctor used just to filter input """
         param_list = [su, mo, tu, we, th, fr, sa]
         for ix, p in enumerate(param_list):
             if not isinstance(p, Day):
-                raise TypeError
-            elif not ix and p.dt_date.weekday() != 6:
-                raise ValueError
+                raise TypeError('Week ctor with non-Day in param list')
+            if not ix and p.dt_date.weekday() != 6:
+                raise ValueError('Week ctor called with non-Sunday start'
+                                 'date')
 
 weeks = []
