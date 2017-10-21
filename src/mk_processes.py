@@ -3,9 +3,12 @@
 # 2017-02-24
 
 
-# TODO: create more detailed docstring here
 """
-Create and connect the subprocesses that run the extract and transform stages.
+Create and connect the subprocesses that run the extract, transform,
+and load stages.
+
+logging_process runs the network logging receiver that allows all 3 stages
+to log to the same file.
 """
 
 import subprocess
@@ -20,34 +23,35 @@ parser.add_argument('-s', '--store', help='Store output in database',
 args = parser.parse_args()
 
 # remove the --store argument from the args Namespace, if present
-d = args.__dict__
-store_in_db = str(d.pop('store', False))  # d[store] is set to True if present
+args_dict = args.__dict__
+# args_dict[store] has been set to True if present
+store_in_db = str(args_dict.pop('store', False))
 
-logging_p = subprocess.Popen(
+logging_process = subprocess.Popen(
     ['./src/logging/receiver.py'],
 )
 
 time.sleep(2)
 
-extract_p = subprocess.Popen(
+extract_process = subprocess.Popen(
     ['./src/extract/run_it.py', args.infile_name],
     stdout=subprocess.PIPE,
 )
 
-transform_p = subprocess.Popen(
+transform_process = subprocess.Popen(
     ['./src/transform/do_transform.py'],
-    stdin=extract_p.stdout,
+    stdin=extract_process.stdout,
     stdout=subprocess.PIPE,
 )
 
-load_p = subprocess.Popen(
+load_process = subprocess.Popen(
     ['./src/load/load.py', store_in_db],
-    stdin=transform_p.stdout,
+    stdin=transform_process.stdout,
 )
 
 time.sleep(3)
 
-extract_p.terminate()
-transform_p.terminate()
-load_p.terminate()
-logging_p.terminate()
+extract_process.terminate()
+transform_process.terminate()
+load_process.terminate()
+logging_process.terminate()

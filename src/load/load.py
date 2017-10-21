@@ -4,7 +4,7 @@
 # andrew jarcho
 # 2017-02-20
 
-# python: 3.5
+# python: 3.5, 3.6
 
 
 import logging
@@ -15,21 +15,20 @@ import os
 import sys
 
 
-# TODO: update docstrings with 'Called by:'
-
 def decimal_to_interval(dec_str):
     """
-    Convert duration from a decimal string to an interval string.
-    E.g., '3.25' for 3 1/4 hours becomes '0 03:15:00'.
+    Convert duration from a decimal string to an interval string
+    (E.g., '3.25' for 3 1/4 hours becomes '0 03:15:00').
+    Called by: load_nights_naps()
     """
     dec_mins_to_mins = {'00': '00', '25': '15', '50': '30', '75': '45'}
     hrs, dec_mins = dec_str.split('.')
     mins = None
     try:
         mins = dec_mins_to_mins[dec_mins]
-    except KeyError:  # TODO: better way to handle bad input
-        logging.error('Value for dec_mins {} not found in dec_to_mins'.
-                      format(dec_mins))
+    except KeyError:
+        logging.warning('Value for dec_mins {} not found in '
+                        'decimal_to_interval()'.format(dec_mins))
     interval_str = '{}:{}'.format(hrs, mins)
     return interval_str
 
@@ -37,6 +36,7 @@ def decimal_to_interval(dec_str):
 def load_nights_naps(engine, load_logger, infile_name):
     """
     Load NIGHT and NAP data from stdin into database.
+    Called by: connect()
     """
     with fileinput.input(infile_name) as data_source:
         connection = engine.connect()
@@ -65,8 +65,9 @@ def load_nights_naps(engine, load_logger, infile_name):
 
 def connect(load_logger, url):
     """
-    Connect to the PostgreSQL database server.
-    Call function to load data from stdin to db_s_etl.
+    Connect to the PostgreSQL database server;
+    invoke load_nights_naps() to load data from stdin to db_s_etl.
+    Called by: client code
     """
     engine = create_engine(url)
 
@@ -84,6 +85,10 @@ def connect(load_logger, url):
 
 
 def main():
+    """
+    Set up root (network) logger and load logger
+    Called by: client code
+    """
     # https://docs.python.org/3/howto/logging-cookbook.html#network-logging
     rootLogger = logging.getLogger('')
     rootLogger.setLevel(logging.INFO)
