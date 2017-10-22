@@ -66,11 +66,6 @@ class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
     __slots__ = ()  # prevents creation of per-instance dictionaries
 
-    def __init__(self, a, m, h):
-        """ Ctor used just to filter input """
-        if not validate_segment([a, m, h]):
-            raise ValueError('Event ctor called with invalid segment')
-
 
 class Day(namedtuple('DayTuple', 'dt_date, events')):
     """
@@ -102,5 +97,6 @@ class Week(namedtuple('WeekTuple',
             if not ix and p.dt_date.weekday() != 6:
                 raise ValueError('Week ctor called with non-Sunday start'
                                  'date')
+
 
 weeks = []

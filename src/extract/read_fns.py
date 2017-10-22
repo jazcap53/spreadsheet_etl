@@ -35,8 +35,12 @@ file are called from read_lines().
 
 import datetime
 import re
+import logging
 
 from src.extract.container_objs import validate_segment, Week, Day, Event
+
+
+read_logger = logging.getLogger('extract.read_fns')
 
 
 def open_file(file_read_wrapper):
@@ -50,13 +54,14 @@ def open_file(file_read_wrapper):
     return file_read_wrapper.open()
 
 
-# TODO: fix docstring
 def read_lines(infile):
     """
     Loop:
         Ignore lines until a Sunday is seen.
-        Collect data until a blank line is seen.
-        Append that data to the output.
+        Collect one week of data (until a blank line is seen).
+        Append that week of data to lines_buffer[].
+        Call _manage_buffer() to write good data, discard bad data,
+            and empty the buffer.
     Until:
         EOF.
 
@@ -64,16 +69,16 @@ def read_lines(infile):
     """
     in_week = False
     sunday_date = None
-    got_events = False
+    have_events = False
     new_week = None
     lines_buffer = []
     for line in infile:
         line = line.strip().split(',')[:22]
-        date_match = _check_for_date(line[0])
-        if not in_week and not date_match:
+        date_match_found = _check_for_date(line[0])
+        if not in_week and not date_match_found:
             continue
-        elif not in_week and date_match:  # we just found a date_match
-            sunday_date = _match_to_date_obj(date_match)
+        elif not in_week and date_match_found:  # we *just* found a date
+            sunday_date = _match_to_date_obj(date_match_found)
             # create a day_list of 7 (empty) Days
             day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
@@ -81,23 +86,23 @@ def read_lines(infile):
             new_week = Week(*day_list)
             in_week = True
         if in_week:
-            if not any(line):
-                _buffer_week(new_week, lines_buffer)
+            if not any(line):  # a blank line: our week has ended
+                _manage_buffer(new_week, lines_buffer)
                 in_week = False
                 sunday_date = None
-            else:
-                got_events = _get_events(line[1:], new_week)
-    # save any remaining unstored data
-    if sunday_date and got_events and new_week:
-        _buffer_week(new_week, lines_buffer)
+            else:  # add the line's events to the present week
+                have_events = _get_events(line[1:], new_week)
+    # manage any remaining unstored data
+    if sunday_date and have_events and new_week:
+        _manage_buffer(new_week, lines_buffer)
 
 
-def _check_for_date(segment):
+def _check_for_date(field):
     """
-    Does segment start with a date?
+    Does field start with a date?
     Called by: read_lines()
     """
-    m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', segment)
+    m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
     return m if m else None
 
 
@@ -107,9 +112,9 @@ def _match_to_date_obj(m):
     Called by: read_lines()
     """
     # group(3) is the year, group(1) is the month, group(2) is the day
-    d = [int(m.group(x)) for x in (3, 1, 2)]
-    d_obj = datetime.date(d[0], d[1], d[2])  # year, month, day
-    return d_obj
+    dt = [int(m.group(x)) for x in (3, 1, 2)]
+    dt_obj = datetime.date(dt[0], dt[1], dt[2])  # year, month, day
+    return dt_obj
 
 
 def _get_events(line, new_week):
@@ -117,23 +122,26 @@ def _get_events(line, new_week):
     Add each valid event in line to new_week.
     Called by: read_lines()
     """
-    got_events = False
+    find_events = False
     for ix in range(7):
         # a segment is a list of 3 consecutive fields from the .csv file
         segment = line[3*ix: 3*ix + 3]
         if validate_segment(segment):
-            try:
-                an_event = Event(*segment)
-            except ValueError:
-                continue
-            if new_week and an_event.action:
-                new_week[ix].events.append(an_event)
-                got_events = True
-    return got_events
+            an_event = Event(*segment)
+        elif segment == ['', '', '']:
+            an_event = None
+        else:
+            read_logger.warning('segment {} not valid in _get_events()'.
+                                format(segment))
+            continue
+        if new_week and an_event and an_event.action:
+            new_week[ix].events.append(an_event)
+            find_events = True
+    return find_events
 
 
 # TODO: write docstring, comments
-def _buffer_week(wk, buffer):
+def _manage_buffer(wk, buffer):
     wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
     buffer.append(wk_header + underscores)
@@ -154,7 +162,7 @@ def _buffer_week(wk, buffer):
 def _print_complete_days(buffer, event):
     """
     Write complete days (only) from buffer to stdout
-    Called by: _buffer_week()
+    Called by: _manage_buffer()
     """
     if event.hours:  # we have a complete Day
         for line in buffer:
