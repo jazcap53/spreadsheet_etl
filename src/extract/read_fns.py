@@ -142,39 +142,61 @@ def _get_events(line, new_week):
 
 # TODO: write docstring, comments
 def _manage_buffer(wk, buffer):
+    """
+
+
+    :param wk: a Week object, holding Days some of which might have
+               data missing
+    :param buffer:
+    :return:
+    """
     wk_header = '\nWeek of Sunday, {}:\n'.format(wk[0].dt_date)
     underscores = '=' * (len(wk_header) - 2)
     buffer.append(wk_header + underscores)
     for day in wk:
-        dy_header = '    ' + '{}'.format(day.dt_date)
+        dy_header = '    {}'.format(day.dt_date)  # four leading spaces
         buffer.append(dy_header)
         for event in day.events:
             event_str = 'action: {}, time: {}'.format(event.action,
                                                       event.mil_time)
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b':
-                _print_complete_days(buffer, event)
+            if event.action == 'b':  # the end of a Day (complete or not)
+                _print_complete_day_only(buffer, event)
             buffer.append(event_str)
 
 
 # TODO: complete docstring
-def _print_complete_days(buffer, event):
+def _print_complete_day_only(buffer, action_b_event):
     """
-    Write complete days (only) from buffer to stdout
+    Write complete Day's (only) from buffer to stdout.
+
+    :param buffer: may contain header lines and/or 'action' lines
+    :param action_b_event: is the last Event of some Day.
+        action_b_event will have an hours field <=> we have complete
+            data for that Day.
+
+    if we have complete data:
+        output the entire buffer
+        clear the buffer
+    else:
+        do not output anything
+        remove 'action' lines from the buffer
+        leave any header lines
+
     Called by: _manage_buffer()
     """
-    if event.hours:  # we have a complete Day
+    if action_b_event.hours:  # we have a complete Day
         for line in buffer:
             print(line)
         buffer.clear()
-    else:  # day is *incomplete*
-        for buf_ix in range(len(buffer) - 1, -1, -1):  # pop lines
+    else:  # Day is *incomplete*: pop 'action' lines only
+        for buf_ix in range(len(buffer) - 1, -1, -1):
             this_line = buffer[buf_ix]
             # if we find a 3-element 'b' event
             if this_line != '\n' and this_line[8] == 'b' and \
                             len(this_line) > 21:
-                buffer.pop(buf_ix)
-                break  # quit popping
-            if this_line[:6] == 'action':  # pop only 'action' lines
-                buffer.pop(buf_ix)
+                buffer.pop(buf_ix)  # pop one last time, then stop
+                break
+            elif this_line[:6] == 'action':  # pop only 'action' lines:
+                buffer.pop(buf_ix)           # leave headers in buffer
