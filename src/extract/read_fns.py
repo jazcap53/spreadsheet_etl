@@ -132,8 +132,9 @@ def _get_events(line, new_week):
         elif segment == ['', '', '']:
             an_event = None
         else:
-            read_logger.warning('segment {} not valid in _get_events()'.
-                                format(segment))
+            read_logger.warning('segment {} not valid in _get_events()\n'
+                                '\tsegment date is {}'.
+                                format(segment, new_week[ix].dt_date))
             continue
         if new_week and an_event and an_event.action:
             new_week[ix].events.append(an_event)
