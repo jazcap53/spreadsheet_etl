@@ -90,6 +90,7 @@ def read_lines(infile):
                 _manage_buffer(new_week, lines_buffer)
                 in_week = False
                 sunday_date = None
+                # assert lines_buffer == []  # TODO: remove this
             else:  # add the line's events to the present week
                 have_events = _get_events(line[1:], new_week)
     # manage any remaining unstored data
@@ -162,12 +163,12 @@ def _manage_buffer(wk, buffer):
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
             if event.action == 'b':  # the end of a Day (complete or not)
-                _print_complete_day_only(buffer, event)
+                _handle_end_of_day(buffer, event)
             buffer.append(event_str)
 
 
 # TODO: complete docstring
-def _print_complete_day_only(buffer, action_b_event):
+def _handle_end_of_day(buffer, action_b_event):
     """
     Write complete Day's (only) from buffer to stdout.
 
@@ -187,7 +188,7 @@ def _print_complete_day_only(buffer, action_b_event):
     Called by: _manage_buffer()
     """
     if action_b_event.hours:  # we have a complete Day
-        for line in buffer:
+        for line in buffer:  # action_b_event is not yet in buffer (!!!)
             print(line)
         buffer.clear()
     else:  # Day is *incomplete*: pop 'action' lines only
