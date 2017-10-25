@@ -6,10 +6,10 @@
 
 # TODO: fix below docstring
 """
-The input is structured in lines as:
+The input, a .csv file, is structured in lines as:
 
-    Sunday Date   Sun   Mon  Tue  Wed  Thu  Fri  Sat
-                                   x    x    x    x
+    w              Sun   Mon  Tue  Wed  Thu  Fri  Sat
+    Sunday Date                    x    x    x    x
                                    x         x    x
                                    x              x
                                                   x
@@ -21,15 +21,27 @@ The input is structured in lines as:
                               x              x
                               x
 
-    where each 'x' is a data item (event) we care about.
+    where each 'x' is a data item (Event) we care about.
 
-The output is structured into Events, Days, and Weeks.
-The Events from each Day are grouped together. A Week
-groups 7 consecutive Days, beginning with a Sunday.
+This file creates an intermediate format structured into Weeks,
+Days, and Events. A Week has 7 consecutive (calendar) Days,
+beginning with a Sunday. The Events from each Day are grouped together.
+
+The output, extracted from this intermediate format, is written to
+stdout. It consists of a series of lines. Each line is part of a Week
+header, a Day header, or represents an Event.
+
+Each Event has an 'action' key/value pair, a 'time' key/value pair, and
+may have an 'hours' key/value pair.
+
+An 'action' with a value of 'b' (for bedtime) represents the beginning
+of a *night*. If an ('action':'b') pair lacks a third field, this means
+data beginning after the end of the previous night (if any) is incomplete
+and should be discarded.
 
 Once the input file has been opened, function read_lines()
 controls the data processing: all other functions in this
-file are called from read_lines().
+file are called directly or indirectly from read_lines().
 """
 
 
@@ -149,32 +161,43 @@ def _handle_end_of_week(wk, buffer):
     """
 
 
-    :param wk: a Week object, holding Days some of which might be
+    :param wk: a Week object, holding seven Days some of which might be
                missing data (incomplete).
+               Each Day may have zero or more night (action == 'b')
+               events.
     :param buffer: a list, possibly empty, of header strings and event
                    strings.
     :return: None
+    Called by: read_lines()
     """
-    if not buffer:
-        read_logger.debug('Empty buffer in _handle_end_of_week()')  # TODO: remove this line
-    wk_header = '\nWeek of Sunday, {}:'.format(wk[0].dt_date)
-    wk_header += '\n' + '=' * (len(wk_header) - 2)
-    buffer.append(wk_header)
+    # if not buffer:
+    #     read_logger.debug('Empty buffer in _handle_end_of_week()')  # TODO: remove this line
+    append_week_header(buffer, wk)
     for day in wk:
-        dy_header = '    {}'.format(day.dt_date)  # four leading spaces
-        buffer.append(dy_header)
+        append_day_header(buffer, day)
         for event in day.events:
             event_str = 'action: {}, time: {}'.format(event.action,
                                                       event.mil_time)
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b':  # the end of a Day (complete or not)
-                _handle_end_of_day(buffer, event)
+            if event.action == 'b':  # the end of a Day (complete or not)  # TODO: change to night ?
+                _handle_start_of_night(buffer, event)
             buffer.append(event_str)
 
 
+def append_week_header(buffer, wk):
+    wk_header = '\nWeek of Sunday, {}:'.format(wk[0].dt_date)
+    wk_header += '\n' + '=' * (len(wk_header) - 2)
+    buffer.append(wk_header)
+
+
+def append_day_header(buffer, dy):
+    dy_header = '    {}'.format(dy.dt_date)  # four leading spaces
+    buffer.append(dy_header)
+
+
 # TODO: complete docstring
-def _handle_end_of_day(buffer, action_b_event):
+def _handle_start_of_night(buffer, action_b_event):
     """
     Write complete Day's (only) from buffer to stdout.
 
@@ -194,16 +217,16 @@ def _handle_end_of_day(buffer, action_b_event):
 
     Called by: _handle_end_of_week()
     """
-    if action_b_event.hours:  # we have a complete Day
+    if action_b_event.hours:  # we have a complete Day  # TODO: change to night ?
         for line in buffer:  # note: action_b_event is not yet in buffer
             print(line)
         buffer.clear()
-    else:  # Day is incomplete: pop Event lines only, starting from end
-        read_logger.debug('Incomplete Day')  # TODO: remove this line
+    else:  # Day is incomplete: pop Event lines only, starting from end  # TODO: change to night ?
+        read_logger.debug('Incomplete Day')  # TODO: remove this line  # TODO: change to night ?
         for buf_ix in range(len(buffer) - 1, -1, -1):
             this_line = buffer[buf_ix]
             # if we reach a 3-element 'b' event
-            # i.e., if the last Day handled was incomplete
+            # i.e., if the last Day handled was incomplete  # TODO: change to night ?
             if this_line != '\n' and this_line[8] == 'b' and \
                             len(this_line) > 21:
                 read_logger.debug('reached 3-element b-event {}'.format(this_line))  # TODO: remove this line

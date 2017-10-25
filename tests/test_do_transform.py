@@ -53,8 +53,9 @@ def test_read_date_b_action_date_w_action_sets_last_sleep_time():
     assert my_transform.last_sleep_time == '23:45'
 
 
-def test_read_bad_line_raises_indexerror():
-    with pytest.raises(IndexError):
-        file_wrapper = FakeFileReadWrapper('bongobongobongobongo')
-        my_transform = Transform(file_wrapper)
-        my_transform.read_each_line()
+# note: reading a bad line now writes to do_transform.log instead of raising
+# def test_read_bad_line_raises_indexerror():
+#     with pytest.raises(IndexError):
+#         file_wrapper = FakeFileReadWrapper('bongobongobongobongo')
+#         my_transform = Transform(file_wrapper)
+#         my_transform.read_each_line()

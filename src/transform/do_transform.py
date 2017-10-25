@@ -19,6 +19,7 @@ import logging.handlers
 
 
 class Transform:
+    transform_logger = logging.getLogger('transform.do_transform')
 
     def __init__(self, data_source=fileinput):
         """
@@ -77,8 +78,8 @@ class Transform:
             duration = self.get_duration(wake_time, self.last_sleep_time)
             self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
         else:
-            print('BAD VALUE {} in input'.format(cur_l))
-            raise IndexError
+            Transform.transform_logger.warning('Bad value {} in input'.format(cur_l))
+            # raise IndexError  # TODO: remove this line
         if self.out_val is not None:
             print(self.out_val)
         self.out_val = None
