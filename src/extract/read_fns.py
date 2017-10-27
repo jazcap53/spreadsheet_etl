@@ -6,6 +6,14 @@
 
 # TODO: fix below docstring
 """
+SUMMARY:
+=======
+read_fns.py contains functions which read the raw input,
+extract and format the data of interest, discard incomplete data, and
+write the remaining formatted data of interest to stdout.
+
+DETAIL:
+======
 The input, a .csv file, is structured in lines as:
 
     w              Sun   Mon  Tue  Wed  Thu  Fri  Sat
@@ -21,23 +29,61 @@ The input, a .csv file, is structured in lines as:
                               x              x
                               x
 
-    where each 'x' is a data item (Event) we care about.
+.
+.
+.
 
-This file creates an intermediate format structured into Weeks,
-Days, and Events. A Week has 7 consecutive (calendar) Days,
-beginning with a Sunday. The Events from each Day are grouped together.
+where each 'x' is a data item we care about (the 'w' at the start of
+the file is noise).
 
-The output, extracted from this intermediate format, is written to
-stdout. It consists of a series of lines. Each line is part of a Week
-header, a Day header, or represents an Event.
+read_fns.py first structures the data into Weeks, Days, and Events. A
+Week has 7 consecutive (calendar) Days, beginning with a Sunday. The
+Events from each Day are grouped together (note that this is *not* the
+case in the .csv file).
+
+The data are then put into a buffer one Week at a time.
+
+The main unit of interest to the database is a *night*, not a Day. We
+must discard any night for which we do not have complete data.
+
+Each Event has either 2 or 3 fields; each field is a key/value pair. The
+key of the first field of each Event is 'action'. If the value for the
+'action' field is 'b' (bedtime), then that Event starts a night.
+
+The first two fields of any 'action':'b' Event hold data for the night
+being started. The third field, when present, indicates that the data for
+the *preceding* night (if there was one) is complete.
+
+If an 'action':'b' event has only two fields, then the data for the
+preceding night or nights is NOT complete. In that case, Event's must be
+discarded *in reverse order* starting with the Event before the current
+'action':'b' event, up to and including the most recent 'action':'b'
+event with three fields.
+
+
+<STUFF GOES HERE>
+Describe how intermediate format is converted into
+lines that are inserted in buffer.
+
+Describe how *nights* are removed from buffer and output.
+</STUFF GOES HERE>
+
+The output, extracted from the buffer, is written to
+stdout. The output consists of a series of lines. Each line is part of
+a Week header, or of a Day header, or represents an Event.
 
 Each Event has an 'action' key/value pair, a 'time' key/value pair, and
 may have an 'hours' key/value pair.
+
+
 
 An 'action' with a value of 'b' (for bedtime) represents the beginning
 of a *night*. If an ('action':'b') pair lacks a third field, this means
 data beginning after the end of the previous night (if any) is incomplete
 and should be discarded.
+
+
+
 
 Once the input file has been opened, function read_lines()
 controls the data processing: all other functions in this
@@ -68,14 +114,14 @@ def open_file(file_read_wrapper):
 
 def read_lines(infile):
     """
-    Loop:
-        Ignore lines until a Sunday is seen.
-        Collect one week of data (until a blank line is seen).
-        Append that week of data to lines_buffer[].
-        Call _handle_end_of_week() to write good data, discard bad data,
-            and empty the buffer.
-    Until:
-        EOF.
+    While there is data to read:
+        Read and ignore lines until we see a Sunday at the beginning of
+            a line
+        Collect one week of data (i.e., until a blank line is seen)
+        Call _manage_output_buffer() to write good data, discard bad data,
+            and perhaps empty the buffer
+    If a partial week has been collected:
+        Call _manage_output_buffer() once more
 
     Called by: client code
     """
@@ -83,7 +129,7 @@ def read_lines(infile):
     sunday_date = None
     have_events = False
     new_week = None
-    lines_buffer = []
+    output_buffer = []
     for line in infile:
         line_as_list = line.strip().split(',')[:22]
         re_date_match_found = _check_for_date(line_as_list[0])
@@ -99,15 +145,14 @@ def read_lines(infile):
             in_week = True
         if in_week:
             if not any(line_as_list):  # a blank line: our week has ended
-                _handle_end_of_week(new_week, lines_buffer)
+                _manage_output_buffer(new_week, output_buffer)
                 in_week = False
                 sunday_date = None
-                # assert lines_buffer == []  # TODO: remove this
             else:  # add the line's events to the present week
                 have_events = _get_events(line_as_list[1:], new_week)
     # manage any remaining unstored data
     if sunday_date and have_events and new_week:
-        _handle_end_of_week(new_week, lines_buffer)
+        _manage_output_buffer(new_week, output_buffer)
 
 
 def _check_for_date(field):
@@ -157,21 +202,19 @@ def _get_events(shorter_line, new_week):
 
 
 # TODO: write docstring, comments
-def _handle_end_of_week(wk, buffer):
+def _manage_output_buffer(wk, buffer):
     """
 
 
-    :param wk: a Week object, holding seven Days some of which might be
-               missing data (incomplete).
-               Each Day may have zero or more night (action == 'b')
-               events.
+    :param wk: a Week object, holding seven Day objects beginning
+               with a Sunday. Each Day may have zero or more bedtime
+               (action == 'b') Events, as well as zero or more other
+               Events.
     :param buffer: a list, possibly empty, of header strings and event
                    strings.
     :return: None
     Called by: read_lines()
     """
-    # if not buffer:
-    #     read_logger.debug('Empty buffer in _handle_end_of_week()')  # TODO: remove this line
     append_week_header(buffer, wk)
     for day in wk:
         append_day_header(buffer, day)
@@ -180,8 +223,8 @@ def _handle_end_of_week(wk, buffer):
                                                       event.mil_time)
             if event.hours:
                 event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b':  # the end of a Day (complete or not)  # TODO: change to night ?
-                _handle_start_of_night(buffer, event)
+            if event.action == 'b':
+                _handle_start_of_night(buffer, event, day.dt_date)
             buffer.append(event_str)
 
 
@@ -197,39 +240,45 @@ def append_day_header(buffer, dy):
 
 
 # TODO: complete docstring
-def _handle_start_of_night(buffer, action_b_event):
+def _handle_start_of_night(buffer, action_b_event, datetime_date):
     """
-    Write complete Day's (only) from buffer to stdout.
+    Write complete nights (only) from buffer to stdout.
+
+    A 'b' action Event starts each night of data.
+    If any data from the *previous* night are missing, this Event will
+        have exactly two key/value elements.
+    Otherwise, 'b' action Events have exactly three key/value elements.
+
+    if we have a 3-element 'b' action Event:
+        output the entire buffer
+        clear() the buffer
+    else:
+        do not output anything
+        pop() Event lines from the buffer:
+            start with the last Event
+            leave any header lines intact
+            stop pop()ping after removing a 3-element 'b' Event
 
     :param buffer: a list of strings. May contain header lines and/or
                    Event lines. Event lines start with 'action'.
-    :param action_b_event: is the last Event of some Day.
+    :param action_b_event: is the first event for some night.
                            action_b_event will have an hours field <=>
-                           we have complete data for that Day.
-
-    if we have complete data for this Day:
-        output the entire buffer
-        clear the buffer
-    else:
-        do not output anything
-        remove Event lines from the buffer
-        leave any header lines
-
-    Called by: _handle_end_of_week()
+                           we have complete data for the preceding night.
+    :param datetime_date: a datetime.date
+    :return: None
+    Called by: _manage_output_buffer()
     """
-    if action_b_event.hours:  # we have a complete Day  # TODO: change to night ?
-        for line in buffer:  # note: action_b_event is not yet in buffer
+    if action_b_event.hours:  # we have complete data for the preceding night
+        for line in buffer:  # note: action_b_event is not in buffer
             print(line)
         buffer.clear()
-    else:  # Day is incomplete: pop Event lines only, starting from end  # TODO: change to night ?
-        read_logger.debug('Incomplete Day')  # TODO: remove this line  # TODO: change to night ?
+    else:
+        read_logger.info('Incomplete night(s) before {}'.format(datetime_date))
         for buf_ix in range(len(buffer) - 1, -1, -1):
             this_line = buffer[buf_ix]
-            # if we reach a 3-element 'b' event
-            # i.e., if the last Day handled was incomplete  # TODO: change to night ?
+            # if we see a 3-element 'b' event, there's good data preceding it
             if this_line != '\n' and this_line[8] == 'b' and \
                             len(this_line) > 21:
-                read_logger.debug('reached 3-element b-event {}'.format(this_line))  # TODO: remove this line
                 buffer.pop(buf_ix)  # pop one last time, then stop
                 break
             elif this_line[:6] == 'action':  # pop only Event lines:

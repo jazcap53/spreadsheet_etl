@@ -51,8 +51,6 @@ def print_week(w, out):
     print()
 
 
-# TODO: is not calling super() for these 3 classes a problem?
-
 class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
     Each EventTuple holds:
@@ -97,6 +95,3 @@ class Week(namedtuple('WeekTuple',
             if not ix and p.dt_date.weekday() != 6:
                 raise ValueError('Week ctor called with non-Sunday start'
                                  'date')
-
-
-weeks = []
