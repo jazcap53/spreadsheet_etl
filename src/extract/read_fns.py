@@ -94,6 +94,7 @@ file are called directly or indirectly from read_lines().
 import datetime
 import re
 import logging
+import sys
 
 from src.extract.container_objs import validate_segment, Week, Day, Event
 
@@ -101,6 +102,7 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
+# TODO: fix 'Returns:' line of docstring
 def open_file(file_read_wrapper):
     """
     file_read_wrapper allows reading from a fake instead of
@@ -110,6 +112,18 @@ def open_file(file_read_wrapper):
     Called by: client code
     """
     return file_read_wrapper.open()
+
+
+# TODO: fix 'Returns:' line of docstring
+def open_outfile(file_write_wrapper):
+    """
+    file_write_wrapper allows writing to a fake instead of
+        a real file during testing.
+
+    Returns:
+    Called by: client code
+    """
+    return file_write_wrapper.open()
 
 
 def read_lines(infile):
@@ -247,7 +261,7 @@ def append_day_header(buffer, dy):
 
 
 # TODO: complete docstring
-def _handle_start_of_night(buffer, action_b_event, datetime_date):
+def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout):
     """
     Write (only) complete nights from buffer to stdout.
 
@@ -277,7 +291,7 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date):
     """
     if action_b_event.hours:  # we have complete data for the preceding night
         for line in buffer:  # note: action_b_event is *not* in buffer
-            print(line)
+            out.write(line + '\n')
         buffer.clear()
     else:
         read_logger.info('Incomplete night(s) before {}'.format(datetime_date))
@@ -298,8 +312,9 @@ def _is_complete_b_event(line):
     return line != '\n' and line[8] == 'b' and len(line) > 21
 
 
+# TODO: convert test to (compiled) re
 def _is_event_line(line):
     """
     Called by: _handle_start_of_night()
     """
-    return line[:6] == 'action'
+    return line[:8] == 'action: ' and line[8] in 'bsw' and line[9:17] == ', time: '

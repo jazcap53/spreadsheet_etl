@@ -6,13 +6,13 @@
 
 import io
 # from collections import namedtuple
-# import datetime
+import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_file, read_lines
-from src.extract.read_fns import _check_for_date
-# from src.extract.container_objs import Week, Day
+from src.extract.read_fns import _check_for_date, _handle_start_of_night
+from src.extract.container_objs import Event
 
 
 # TODO: at present, the 'fixture' is used in only one test
@@ -35,24 +35,48 @@ def file_wrapper():
 ''')
 
 
+def test__handle_start_of_night_with_3_element_b_event_outputs_and_empties_buffer():
+    output = io.StringIO()
+    buffer = ['bongo', 'Hello World']
+    _handle_start_of_night(buffer,
+                           Event(action='b', mil_time='8:15', hours='4.25'),
+                           datetime.date(2017, 10, 12),
+                           output)
+    assert output.getvalue() == 'bongo\nHello World\n'
+    assert buffer == []
+
+
+# TODO: test _handle_start_of_night with 2-element b event and long string in buffer
+# TODO: with 'b' in position 8
+def test__handle_start_of_night_with_2_element_b_event_outputs_nothing_and_pops_actions():
+    output = io.StringIO()
+    buffer = ['bongobongo', 'action: s, time: 19:00']
+    _handle_start_of_night(buffer,
+                           Event(action='b', mil_time='10:00', hours=''),
+                           datetime.date(2017, 5, 17),
+                           output)
+    assert output.getvalue() == ''
+    assert buffer == ['bongobongo']
+
+
 def test_open_file(file_wrapper):
     infile = open_file(file_wrapper)
     assert isinstance(infile, io.StringIO)
 
 
-def test__check_for_date_matches_date_in_correct_format(file_wrapper):
+def test__check_for_date_matches_date_in_correct_format():
     date_string = '12/34/5678'
     good_match = _check_for_date(date_string)
     assert good_match
 
 
-def test__check_for_date_rejects_date_with_hyphens(file_wrapper):
+def test__check_for_date_rejects_date_with_hyphens():
     date_string = '12-34-5678'
     good_match = _check_for_date(date_string)
     assert not good_match
 
 
-def test__check_for_date_rejects_date_with_alpha(file_wrapper):
+def test__check_for_date_rejects_date_with_alpha():
     date_string = 'a2/34/5678'
     good_match = _check_for_date(date_string)
     assert not good_match
