@@ -114,44 +114,45 @@ def open_file(file_read_wrapper):
 
 def read_lines(infile):
     """
+    Send a Week's worth of data at a time from infile to the output buffer.
+
     While there is data to read:
         Read and ignore lines until we see a Sunday at the beginning of
             a line
         Collect one week of data (i.e., until a blank line is seen)
-        Call _manage_output_buffer() to write good data, discard bad data,
-            and perhaps empty the buffer
+        Call _manage_output_buffer() to handle what's been collected
     If a partial week has been collected:
         Call _manage_output_buffer() once more
 
     Called by: client code
     """
-    in_week = False
+    we_are_in_week = False
     sunday_date = None
-    have_events = False
+    we_have_events = False
     new_week = None
     output_buffer = []
     for line in infile:
         line_as_list = line.strip().split(',')[:22]
         re_date_match_found = _check_for_date(line_as_list[0])
-        if not in_week and not re_date_match_found:
+        if not we_are_in_week and not re_date_match_found:
             continue
-        elif not in_week and re_date_match_found:  # we *just* found a date
+        elif not we_are_in_week and re_date_match_found:  # just found a date
             sunday_date = _re_match_to_date_obj(re_date_match_found)
-            # create a day_list of 7 (empty) Days
+            # set up a Week
             day_list = [Day(sunday_date +
                             datetime.timedelta(days=x), [])
                         for x in range(7)]
             new_week = Week(*day_list)
-            in_week = True
-        if in_week:
-            if not any(line_as_list):  # a blank line: our week has ended
+            we_are_in_week = True
+        if we_are_in_week:
+            if any(line_as_list):
+                we_have_events = _get_events(line_as_list[1:], new_week)
+            else:  # a blank line: our week has ended
                 _manage_output_buffer(new_week, output_buffer)
-                in_week = False
+                we_are_in_week = False
                 sunday_date = None
-            else:  # add the line's events to the present week
-                have_events = _get_events(line_as_list[1:], new_week)
-    # manage any remaining unstored data
-    if sunday_date and have_events and new_week:
+    # handle any data left in buffer
+    if sunday_date and we_have_events and new_week:
         _manage_output_buffer(new_week, output_buffer)
 
 
@@ -229,12 +230,18 @@ def _manage_output_buffer(wk, buffer):
 
 
 def append_week_header(buffer, wk):
+    """
+    Called by: _manage_output_buffer()
+    """
     wk_header = '\nWeek of Sunday, {}:'.format(wk[0].dt_date)
     wk_header += '\n' + '=' * (len(wk_header) - 2)
     buffer.append(wk_header)
 
 
 def append_day_header(buffer, dy):
+    """
+    Called by: _manage_output_buffer()
+    """
     dy_header = '    {}'.format(dy.dt_date)  # four leading spaces
     buffer.append(dy_header)
 
@@ -242,34 +249,34 @@ def append_day_header(buffer, dy):
 # TODO: complete docstring
 def _handle_start_of_night(buffer, action_b_event, datetime_date):
     """
-    Write complete nights (only) from buffer to stdout.
+    Write (only) complete nights from buffer to stdout.
 
     A 'b' action Event starts each night of data.
     If any data from the *previous* night are missing, this Event will
         have exactly two key/value elements.
     Otherwise, 'b' action Events have exactly three key/value elements.
 
-    if we have a 3-element 'b' action Event:
+    if the Event parameter action_b_event has 3 elements:
         output the entire buffer
         clear() the buffer
     else:
         do not output anything
-        pop() Event lines from the buffer:
-            start with the last Event
+        pop() lines from the buffer:
+            start with the last line that represents an Event
             leave any header lines intact
             stop pop()ping after removing a 3-element 'b' Event
 
     :param buffer: a list of strings. May contain header lines and/or
-                   Event lines. Event lines start with 'action'.
-    :param action_b_event: is the first event for some night.
-                           action_b_event will have an hours field <=>
+                   Event lines. Event lines start with 'action: '.
+    :param action_b_event: is the first Event for some night.
+                           action_b_event will have an 'hours' field <=>
                            we have complete data for the preceding night.
     :param datetime_date: a datetime.date
     :return: None
     Called by: _manage_output_buffer()
     """
     if action_b_event.hours:  # we have complete data for the preceding night
-        for line in buffer:  # note: action_b_event is not in buffer
+        for line in buffer:  # note: action_b_event is *not* in buffer
             print(line)
         buffer.clear()
     else:
@@ -277,9 +284,22 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date):
         for buf_ix in range(len(buffer) - 1, -1, -1):
             this_line = buffer[buf_ix]
             # if we see a 3-element 'b' event, there's good data preceding it
-            if this_line != '\n' and this_line[8] == 'b' and \
-                            len(this_line) > 21:
-                buffer.pop(buf_ix)  # pop one last time, then stop
+            if _is_complete_b_event(this_line):
+                buffer.pop(buf_ix)  # pop one last time
                 break
-            elif this_line[:6] == 'action':  # pop only Event lines:
-                buffer.pop(buf_ix)           # leave headers in buffer
+            elif _is_event_line(this_line):  # pop only Event lines:
+                buffer.pop(buf_ix)          # leave headers in buffer
+
+
+def _is_complete_b_event(line):
+    """
+    Called by: _handle_start_of_night()
+    """
+    return line != '\n' and line[8] == 'b' and len(line) > 21
+
+
+def _is_event_line(line):
+    """
+    Called by: _handle_start_of_night()
+    """
+    return line[:6] == 'action'
