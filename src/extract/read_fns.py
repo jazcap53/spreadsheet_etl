@@ -4,7 +4,6 @@
 
 # python: 3.5
 
-# TODO: fix below docstring
 """
 SUMMARY:
 =======
@@ -14,6 +13,10 @@ write the remaining formatted data of interest to stdout.
 
 DETAIL:
 ======
+
+The Task
+---------
+
 The input, a .csv file, is structured in lines as:
 
     w              Sun   Mon  Tue  Wed  Thu  Fri  Sat
@@ -36,61 +39,60 @@ The input, a .csv file, is structured in lines as:
 where each 'x' is a data item we care about (the 'w' at the start of
 the file is noise).
 
-read_fns.py first structures the data into Weeks, Days, and Events. A
-Week has 7 consecutive (calendar) Days, beginning with a Sunday. The
-Events from each Day are grouped together (note that this is *not* the
-case in the .csv file).
+A central problem is to extract data from the .csv file so that data
+relating to each calendar day are grouped together.
 
-The data are then put into a buffer one Week at a time.
+A second problem is that the database cares about 'nights', which may
+begin and end with arbitrary data points 'x'.
 
-The main unit of interest to the database is a *night*, not a Day. We
+A third problem is that we must discard data points 'x' that are part
+of a 'night' for which we do not have complete data.
+
+
+Functions
+---------
+
+lines_in_weeks_out() structures the data into an intermediate format
+consisting of Weeks, Days, and Events. A Week has 7 consecutive (calendar)
+Days, beginning with a Sunday. The Events from each Day are grouped
+together (note that this is *not* the case in the .csv file).
+
+_manage_output_buffer() converts the Weeks, Days, and Events into strings
+and puts the strings into a buffer one Week at a time.
+
+The main unit of interest to the database is a *night*, not a day. We
 must discard any night for which we do not have complete data.
+
+_handle_start_of_night() makes sure that only complete nights are written
+to output
+
+
+Week, Day, Event
+----------------
 
 Each Event has either 2 or 3 fields; each field is a key/value pair. The
 key of the first field of each Event is 'action'. If the value for the
 'action' field is 'b' (bedtime), then that Event starts a night.
 
-The first two fields of any 'action':'b' Event hold data for the night
-being started. The third field, when present, indicates that the data for
-the *preceding* night (if there was one) is complete.
+The first two fields of any key 'action' / value 'b' Event hold data for
+the night being started. The third field, with key 'hours', when present,
+indicates that the data for the *preceding* night (if there was one) are
+complete.
 
-If an 'action':'b' event has only two fields, then the data for the
-preceding night or nights is NOT complete. In that case, Event's must be
-discarded *in reverse order* starting with the Event before the current
-'action':'b' event, up to and including the most recent 'action':'b'
-event with three fields.
+If an 'action: b' event string (i.e., an Event converted to a string) has
+NO 'hours' substring, then the data for the preceding night or nights is NOT
+complete. In that case, event strings are discarded *in reverse order*
+starting with the event string before the current 'action: b' string,
+up to and including the most recent 'action: b' event string that *does*
+have an 'hours' substring.
 
+The selection of event strings to be discarded is done by the
+_handle_start_of_night() member function, as described in the "Functions"
+section above.
 
-<STUFF GOES HERE>
-Describe how intermediate format is converted into
-lines that are inserted in buffer.
-
-Describe how *nights* are removed from buffer and output.
-</STUFF GOES HERE>
-
-The output, extracted from the buffer, is written to
-stdout. The output consists of a series of lines. Each line is part of
-a Week header, or of a Day header, or represents an Event.
-
-Each Event has an 'action' key/value pair, a 'time' key/value pair, and
-may have an 'hours' key/value pair.
-
-
-
-An 'action' with a value of 'b' (for bedtime) represents the beginning
-of a *night*. If an ('action':'b') pair lacks a third field, this means
-data beginning after the end of the previous night (if any) is incomplete
-and should be discarded.
-
-
-
-
-Once the input file has been opened, function read_lines()
-controls the data processing: all other functions in this
-file are called directly or indirectly from read_lines().
+Event strings not discarded, along with header strings for each calendar
+week and day, are written to sys.stdout by default.
 """
-
-
 import datetime
 import re
 import logging
@@ -102,33 +104,32 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
-# TODO: fix 'Returns:' line of docstring
 def open_file(file_read_wrapper):
     """
-    file_read_wrapper allows reading from a fake instead of
-        a real file during testing.
+    :param file_read_wrapper: allows reading from a fake instead of
+                              a real file during testing.
 
-    Returns: a file handler open for read
+    :return: a file handle open for read
     Called by: client code
     """
     return file_read_wrapper.open()
 
 
-# TODO: fix 'Returns:' line of docstring
 def open_outfile(file_write_wrapper):
     """
-    file_write_wrapper allows writing to a fake instead of
-        a real file during testing.
-
-    Returns:
+    :param file_write_wrapper: allows writing to a fake instead of
+                               a real file during testing.
+    :return: a file handle open for write
     Called by: client code
     """
     return file_write_wrapper.open()
 
 
-def read_lines(infile):
+def lines_in_weeks_out(infile):
     """
-    Send a Week's worth of data at a time from infile to the output buffer.
+    Reorganize lines from .csv file into Weeks, Days, and Events.
+    Call _manage_output_buffer() to send a Week's worth of data at
+    a time from infile to the output buffer.
 
     While there is data to read:
         Read and ignore lines until we see a Sunday at the beginning of
@@ -138,6 +139,8 @@ def read_lines(infile):
     If a partial week has been collected:
         Call _manage_output_buffer() once more
 
+    :param infile: a file handle open for read
+    :return: None
     Called by: client code
     """
     we_are_in_week = False
@@ -162,18 +165,20 @@ def read_lines(infile):
             if any(line_as_list):
                 we_have_events = _get_events(line_as_list[1:], new_week)
             else:  # a blank line: our week has ended
-                _manage_output_buffer(new_week, output_buffer)
+                _manage_output_buffer(output_buffer, new_week)
                 we_are_in_week = False
                 sunday_date = None
     # handle any data left in buffer
     if sunday_date and we_have_events and new_week:
-        _manage_output_buffer(new_week, output_buffer)
+        _manage_output_buffer(output_buffer, new_week)
 
 
 def _check_for_date(field):
     """
     Does field start with a date?
-    Called by: read_lines()
+
+    :param field: a string
+    Called by: lines_in_weeks_out()
     """
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
     return m if m else None
@@ -182,7 +187,7 @@ def _check_for_date(field):
 def _re_match_to_date_obj(m):
     """
     Convert a successful regex match to a datetime.date object
-    Called by: read_lines()
+    Called by: lines_in_weeks_out()
     """
     # group(3) is the year, group(1) is the month, group(2) is the day
     dt = [int(m.group(x)) for x in (3, 1, 2)]
@@ -193,9 +198,11 @@ def _re_match_to_date_obj(m):
 def _get_events(shorter_line, new_week):
     """
     Add each valid event in shorter_line to new_week.
-    :param shorter_line: line_as_list, from read_lines(),
+
+    :param shorter_line: line_as_list, from lines_in_weeks_out(),
         without its first field
-    Called by: read_lines()
+    :param new_week: a Week object
+    Called by: lines_in_weeks_out()
     """
     find_events = False
     for ix in range(7):
@@ -216,10 +223,9 @@ def _get_events(shorter_line, new_week):
     return find_events
 
 
-# TODO: write docstring, comments
-def _manage_output_buffer(wk, buffer):
+def _manage_output_buffer(buffer, wk):
     """
-
+    Convert the Events in wk into strings and place strings into buffer.
 
     :param wk: a Week object, holding seven Day objects beginning
                with a Sunday. Each Day may have zero or more bedtime
@@ -228,11 +234,11 @@ def _manage_output_buffer(wk, buffer):
     :param buffer: a list, possibly empty, of header strings and event
                    strings.
     :return: None
-    Called by: read_lines()
+    Called by: lines_in_weeks_out()
     """
-    append_week_header(buffer, wk)
+    _append_week_header(buffer, wk)
     for day in wk:
-        append_day_header(buffer, day)
+        _append_day_header(buffer, day)
         for event in day.events:
             event_str = 'action: {}, time: {}'.format(event.action,
                                                       event.mil_time)
@@ -243,7 +249,7 @@ def _manage_output_buffer(wk, buffer):
             buffer.append(event_str)
 
 
-def append_week_header(buffer, wk):
+def _append_week_header(buffer, wk):
     """
     Called by: _manage_output_buffer()
     """
@@ -252,7 +258,7 @@ def append_week_header(buffer, wk):
     buffer.append(wk_header)
 
 
-def append_day_header(buffer, dy):
+def _append_day_header(buffer, dy):
     """
     Called by: _manage_output_buffer()
     """
@@ -260,10 +266,10 @@ def append_day_header(buffer, dy):
     buffer.append(dy_header)
 
 
-# TODO: complete docstring
+# TODO: edit docstring
 def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout):
     """
-    Write (only) complete nights from buffer to stdout.
+    Write (only) complete nights from buffer to out.
 
     A 'b' action Event starts each night of data.
     If any data from the *previous* night are missing, this Event will
@@ -305,6 +311,7 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout
                 buffer.pop(buf_ix)          # leave headers in buffer
 
 
+# TODO: convert test to (compiled) re
 def _is_complete_b_event(line):
     """
     Called by: _handle_start_of_night()

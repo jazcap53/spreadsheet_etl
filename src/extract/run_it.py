@@ -50,5 +50,5 @@ if __name__ == '__main__':
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
     infile = read_fns.open_file(FileReadAccessWrapper(args.infile_name))
-    read_fns.read_lines(infile)
+    read_fns.lines_in_weeks_out(infile)
     logging.info('extract finish')

@@ -10,7 +10,7 @@ import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_file, read_lines
+from src.extract.read_fns import open_file, lines_in_weeks_out
 from src.extract.read_fns import _check_for_date, _handle_start_of_night
 from src.extract.container_objs import Event
 
