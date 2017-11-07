@@ -28,6 +28,7 @@ def validate_segment(segment):
     return True
 
 
+# TODO: refactor these functions as members of the namedtuple subclasses (?)
 def print_event(e, out):
     out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
     if e.hours:
@@ -62,7 +63,7 @@ class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
                  after. Its value may not be zero (0.00), but may be
                  the empty string.
     """
-    __slots__ = ()  # prevents creation of per-instance dictionaries
+    pass
 
 
 class Day(namedtuple('DayTuple', 'dt_date, events')):
@@ -70,8 +71,6 @@ class Day(namedtuple('DayTuple', 'dt_date, events')):
     Each DayTuple holds a datetime.date and a (possibly empty)
     list of Events
     """
-    __slots__ = ()  # prevents creation of per-instance dictionaries
-
     def __init__(self, d, e):
         """ Ctor used just to filter input """
         if not isinstance(d, datetime.date):
@@ -84,8 +83,6 @@ class Week(namedtuple('WeekTuple',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
     """ Each WeekTuple holds seven named Day tuples """
-    __slots__ = ()  # prevents creation of per-instance dictionaries
-
     def __init__(self, su, mo, tu, we, th, fr, sa):
         """ Ctor used just to filter input """
         param_list = [su, mo, tu, we, th, fr, sa]
