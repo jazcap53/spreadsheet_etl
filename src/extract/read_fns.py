@@ -266,7 +266,6 @@ def _append_day_header(buffer, dy):
     buffer.append(dy_header)
 
 
-# TODO: edit docstring
 def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout):
     """
     Write (only) complete nights from buffer to out.
@@ -287,7 +286,7 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout
             stop pop()ping after removing a 3-element 'b' Event
 
     :param buffer: a list of strings. May contain header lines and/or
-                   Event lines. Event lines start with 'action: '.
+                   event lines. Event lines start with 'action: '.
     :param action_b_event: is the first Event for some night.
                            action_b_event will have an 'hours' field <=>
                            we have complete data for the preceding night.
@@ -311,17 +310,15 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout
                 buffer.pop(buf_ix)          # leave headers in buffer
 
 
-# TODO: convert test to (compiled) re
 def _is_complete_b_event(line):
     """
     Called by: _handle_start_of_night()
     """
-    return line != '\n' and line[8] == 'b' and len(line) > 21
+    return re.match(r'action: b, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$', line)
 
 
-# TODO: convert test to (compiled) re
 def _is_event_line(line):
     """
     Called by: _handle_start_of_night()
     """
-    return line[:8] == 'action: ' and line[8] in 'bsw' and line[9:17] == ', time: '
+    return re.match(r'action: [bsw], time: \d{1,2}:\d{2}(?:, hours: \d{1,2}\.\d{2})?$', line)
