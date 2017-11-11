@@ -14,6 +14,7 @@ from src.extract.read_fns import open_infile, lines_in_weeks_out
 from src.extract.read_fns import _check_for_date, _handle_start_of_night
 from src.extract.read_fns import _append_week_header, _append_day_header
 from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
+from src.extract.read_fns import _manage_output_buffer, _get_events
 from src.extract.container_objs import Event, Day, Week
 
 # TODO: at present, the 'fixture' is used in only one test
@@ -34,6 +35,66 @@ def infile_wrapper():
 ,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,
 ''')
+
+
+def test__get_events_creates_events_from_non_empty_line_segments():
+    # shorter_line holds an 's' event for Thu and Fri, and a 'w' event for Sat
+    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
+                    's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
+    sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    new_week = Week(*day_list)
+    _get_events(shorter_line, new_week)
+    assert new_week[0].events == []
+    assert isinstance(new_week[4].events[-1], Event)
+    assert isinstance(new_week[6].events[-1], Event)
+
+
+def test__get_events_returns_true_on_valid_non_empty_line_input():
+    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
+                    's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
+    sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    new_week = Week(*day_list)
+    assert _get_events(shorter_line, new_week)
+
+
+def test__get_events_returns_false_on_empty_line_input():
+    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
+                    '', '', '', '', '', '', '', '', '']
+    sunday_date = datetime.date(2017, 11, 5)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    new_week = Week(*day_list)
+    assert not _get_events(shorter_line, new_week)
+
+
+def test__manage_output_buffer_leaves_last_event_in_buffer():
+    buffer = []
+    sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    wk = Week(*day_list)
+    wk[6].events.append(Event('w', '13:15', '6.5'))
+    _manage_output_buffer(buffer, wk)
+    assert buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
+
+
+def test__manage_output_buffer_leaves_last_date_in_buffer_if_no_events():
+    buffer = []
+    sunday_date = datetime.date(2016, 4, 10)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    wk = Week(*day_list)
+    _manage_output_buffer(buffer, wk)
+    assert buffer[-1] == '    2016-04-16'
 
 
 def test__append_week_header():
@@ -134,6 +195,11 @@ def test__is_event_line_returns_false_on_3_element_s_line_input():
 
 def test__is_event_line_returns_false_on_2_element_w_line_input():
     line = 'action: w, time: 11:45'
+    assert not bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_false_on_non_action_input():
+    line = '=' * 18
     assert not bool(_is_event_line(line))
 
 
