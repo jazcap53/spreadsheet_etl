@@ -12,12 +12,12 @@ import pytest
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile, lines_in_weeks_out
 from src.extract.read_fns import _check_for_date, _handle_start_of_night
-from src.extract.container_objs import Event
-
+from src.extract.read_fns import _append_week_header, _append_day_header
+from src.extract.container_objs import Event, Day, Week
 
 # TODO: at present, the 'fixture' is used in only one test
 @pytest.fixture
-def file_wrapper():
+def infile_wrapper():
     return FakeFileReadWrapper(
                 u''',Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,
 12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00
@@ -35,6 +35,24 @@ def file_wrapper():
 ''')
 
 
+def test__append_week_header():
+    buffer = []
+    sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    wk = Week(*day_list)
+    _append_week_header(buffer, wk)
+    assert buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + '=' * 26
+
+
+def test__append_day_header():
+    buffer = []
+    dy = Day(datetime.date(2015, 5, 5), [])
+    _append_day_header(buffer, dy)
+    assert buffer[-1] == '    2015-05-05'
+
+
 def test__handle_start_of_night_with_3_element_b_event_outputs_and_empties_buffer():
     output = io.StringIO()
     buffer = ['bongo', 'Hello World']
@@ -46,8 +64,6 @@ def test__handle_start_of_night_with_3_element_b_event_outputs_and_empties_buffe
     assert buffer == []
 
 
-# TODO: test _handle_start_of_night with 2-element b event and long string in buffer
-# TODO: with 'b' in position 8
 def test__handle_start_of_night_with_2_element_b_event_outputs_nothing_and_pops_actions():
     output = io.StringIO()
     buffer = ['bongobongo', 'action: s, time: 19:00']
@@ -70,8 +86,8 @@ def test__handle_start_of_night_with_2_element_b_event_and_long_b_string_in_buff
     assert buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
-def test_open_file(file_wrapper):
-    infile = open_infile(file_wrapper)
+def test_open_infile(infile_wrapper):
+    infile = open_infile(infile_wrapper)
     assert isinstance(infile, io.StringIO)
 
 

@@ -25,3 +25,20 @@ class FakeFileReadWrapper:
 
     def input(self):
         return self.open()
+
+
+# TODO: fix or delete these
+# class FileWriteAccessWrapper:
+#     def __init__(self, filename):
+#         self.filename = filename
+#
+#     def open(self):
+#         return open(self.filename, 'w')
+#
+#
+# class FakeFileWriteWrapper:
+#     def __init__(self):
+#         pass
+
+#     def open(self):
+#         return io.StringIO(self)

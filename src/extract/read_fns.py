@@ -108,7 +108,6 @@ def open_infile(file_read_wrapper):
     """
     :param file_read_wrapper: allows reading from a fake instead of
                               a real file during testing.
-
     :return: a file handle open for read
     Called by: client code
     """
@@ -251,6 +250,13 @@ def _manage_output_buffer(buffer, wk):
 
 def _append_week_header(buffer, wk):
     """
+    :param buffer: a list, possibly empty, of header strings and event
+                   strings.
+    :param wk: a Week object, holding seven Day objects beginning
+               with a Sunday. Each Day may have zero or more bedtime
+               (action == 'b') Events, as well as zero or more other
+               Events.
+    :return: None
     Called by: _manage_output_buffer()
     """
     wk_header = '\nWeek of Sunday, {}:'.format(wk[0].dt_date)
@@ -260,6 +266,12 @@ def _append_week_header(buffer, wk):
 
 def _append_day_header(buffer, dy):
     """
+    :param buffer: a list, possibly empty, of header strings and event
+                   strings.
+    :param dy: a Day object, which may have zero or more bedtime
+               (action == 'b') Events, as well as zero or more other
+               Events.
+    :return: None
     Called by: _manage_output_buffer()
     """
     dy_header = '    {}'.format(dy.dt_date)  # four leading spaces
