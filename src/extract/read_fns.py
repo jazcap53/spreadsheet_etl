@@ -104,7 +104,7 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
-def open_file(file_read_wrapper):
+def open_infile(file_read_wrapper):
     """
     :param file_read_wrapper: allows reading from a fake instead of
                               a real file during testing.
@@ -227,12 +227,12 @@ def _manage_output_buffer(buffer, wk):
     """
     Convert the Events in wk into strings and place strings into buffer.
 
+    :param buffer: a list, possibly empty, of header strings and event
+                   strings.
     :param wk: a Week object, holding seven Day objects beginning
                with a Sunday. Each Day may have zero or more bedtime
                (action == 'b') Events, as well as zero or more other
                Events.
-    :param buffer: a list, possibly empty, of header strings and event
-                   strings.
     :return: None
     Called by: lines_in_weeks_out()
     """

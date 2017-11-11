@@ -49,6 +49,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
-    infile = read_fns.open_file(FileReadAccessWrapper(args.infile_name))
+    infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
     read_fns.lines_in_weeks_out(infile)
     logging.info('extract finish')

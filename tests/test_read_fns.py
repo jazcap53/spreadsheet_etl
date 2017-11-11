@@ -10,7 +10,7 @@ import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_file, lines_in_weeks_out
+from src.extract.read_fns import open_infile, lines_in_weeks_out
 from src.extract.read_fns import _check_for_date, _handle_start_of_night
 from src.extract.container_objs import Event
 
@@ -59,8 +59,19 @@ def test__handle_start_of_night_with_2_element_b_event_outputs_nothing_and_pops_
     assert buffer == ['bongobongo']
 
 
+def test__handle_start_of_night_with_2_element_b_event_and_long_b_string_in_buffer():
+    output = io.StringIO()
+    buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
+    _handle_start_of_night(buffer,
+                           Event(action='b', mil_time='23:15', hours=''),
+                           datetime.date(2017, 3, 19),
+                           output)
+    assert output.getvalue() == ''
+    assert buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+
+
 def test_open_file(file_wrapper):
-    infile = open_file(file_wrapper)
+    infile = open_infile(file_wrapper)
     assert isinstance(infile, io.StringIO)
 
 
