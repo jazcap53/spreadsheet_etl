@@ -13,6 +13,7 @@ from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile, lines_in_weeks_out
 from src.extract.read_fns import _check_for_date, _handle_start_of_night
 from src.extract.read_fns import _append_week_header, _append_day_header
+from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
 from src.extract.container_objs import Event, Day, Week
 
 # TODO: at present, the 'fixture' is used in only one test
@@ -84,6 +85,56 @@ def test__handle_start_of_night_with_2_element_b_event_and_long_b_string_in_buff
                            output)
     assert output.getvalue() == ''
     assert buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+
+
+def test__is_complete_b_event_line_returns_true_on_complete_b_event_line_input():
+    line = 'action: b, time: 21:45, hours: 3.75'
+    assert bool(_is_complete_b_event_line(line))
+
+
+def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line_input():
+    line = 'action: b, time: 17:25'
+    assert not bool(_is_complete_b_event_line(line))
+
+
+def test__is_complete_b_event_line_returns_false_on_non_b_event_line_input():
+    line = 'action: s, time: 17:25'
+    assert not bool(_is_complete_b_event_line(line))
+
+
+def test__is_complete_b_event_line_returns_false_on_non_event_line_input():
+    line = 'cowabunga!!!'
+    assert not bool(_is_complete_b_event_line(line))
+
+
+def test__is_event_line_returns_true_on_2_element_b_line_input():
+    line = 'action: b, time: 4:25'
+    assert bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_true_on_3_element_b_line_input():
+    line = 'action: b, time: 4:25, hours: 6.00'
+    assert bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_true_on_2_element_s_line_input():
+    line = 'action: s, time: 4:25'
+    assert bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_true_on_3_element_w_line_input():
+    line = 'action: w, time: 11:00, hours: 10.50'
+    assert bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_false_on_3_element_s_line_input():
+    line = 'action: s, time: 12:00, hours: 6.00'
+    assert not bool(_is_event_line(line))
+
+
+def test__is_event_line_returns_false_on_2_element_w_line_input():
+    line = 'action: w, time: 11:45'
+    assert not bool(_is_event_line(line))
 
 
 def test_open_infile(infile_wrapper):

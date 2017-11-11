@@ -315,14 +315,14 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout
         for buf_ix in range(len(buffer) - 1, -1, -1):
             this_line = buffer[buf_ix]
             # if we see a 3-element 'b' event, there's good data preceding it
-            if _is_complete_b_event(this_line):
+            if _is_complete_b_event_line(this_line):
                 buffer.pop(buf_ix)  # pop one last time
                 break
             elif _is_event_line(this_line):  # pop only Event lines:
                 buffer.pop(buf_ix)          # leave headers in buffer
 
 
-def _is_complete_b_event(line):
+def _is_complete_b_event_line(line):
     """
     Called by: _handle_start_of_night()
     """
@@ -333,4 +333,10 @@ def _is_event_line(line):
     """
     Called by: _handle_start_of_night()
     """
-    return re.match(r'action: [bsw], time: \d{1,2}:\d{2}(?:, hours: \d{1,2}\.\d{2})?$', line)
+    # b events may have 2 or 3 elements
+    matchline = r'(?:action: b, time: \d{1,2}:\d{2}(?:, hours: \d{1,2}\.\d{2})?$)'
+    # s events may have only 2 elements
+    matchline += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
+    # w events may have only 3 elements
+    matchline += r'|(?:action: w, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$)'
+    return re.match(matchline, line)
