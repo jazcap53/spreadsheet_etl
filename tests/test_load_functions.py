@@ -12,7 +12,7 @@ def my_setup():
                 os.environ['DB_TEST_USERNAME'], os.environ['DB_TEST_PASSWORD'])
     except KeyError:
         print('Please set the environment variables DB_TEST_USERNAME and '
-                'DB_TEST_PASSWORD')
+              'DB_TEST_PASSWORD')
         sys.exit(1)
     engine = create_engine(url)
     return engine
