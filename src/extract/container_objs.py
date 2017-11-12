@@ -17,13 +17,19 @@ def validate_segment(segment):
                     's', time, ''
                     'w', time, str(float)
     """
-    if not any(segment) or \
-            any(segment) and (not segment[0] or not segment[1]) or \
-            not re.match(r'[012]?\d:\d{2}', segment[1]) or \
-            len(segment[0]) and segment[0][0] not in ('b', 's', 'w') or \
-            len(segment[0]) and segment[0][0] == 's' and segment[2] or \
-            len(segment[0]) and segment[0][0] == 'w' and not segment[2] or \
-            segment[2] != '' and not re.match(r'[12]?\d\.\d{2}', segment[2]):
+    if not any(segment):
+        return False
+    if any(segment) and (not segment[0] or not segment[1]):
+        return False
+    if not re.match(r'[012]?\d:\d{2}', segment[1]):
+        return False
+    if len(segment[0]) and segment[0][0] not in ('b', 's', 'w'):
+        return False
+    if len(segment[0]) and segment[0][0] == 's' and segment[2]:
+        return False
+    if len(segment[0]) and segment[0][0] == 'w' and not segment[2]:
+        return False
+    if segment[2] != '' and not re.match(r'[12]?\d\.\d{2}', segment[2]):
         return False
     return True
 
