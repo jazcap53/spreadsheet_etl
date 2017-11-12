@@ -91,9 +91,9 @@ class Week(namedtuple('WeekTuple',
                       'Sunday, Monday, Tuesday, Wednesday, Thursday, Friday,'
                       ' Saturday')):
     """ Each WeekTuple holds seven named Day tuples """
-    def __init__(self, su, mo, tu, we, th, fr, sa):
+    def __init__(self, *day_list):
         """ Ctor used just to filter input """
-        param_list = [su, mo, tu, we, th, fr, sa]
+        param_list = day_list
         for ix, p in enumerate(param_list):
             if not isinstance(p, Day):
                 raise TypeError('Week ctor with non-Day in param list')
