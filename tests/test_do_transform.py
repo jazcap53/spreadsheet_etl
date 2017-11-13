@@ -2,11 +2,6 @@
 # andrew jarcho
 # 2017-03-15
 
-# pytest 3.0.7
-
-
-import pytest
-
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.transform.do_transform import Transform
 
@@ -51,11 +46,3 @@ def test_read_date_b_action_date_w_action_sets_last_sleep_time():
     my_transform = Transform(file_wrapper)
     my_transform.read_each_line()
     assert my_transform.last_sleep_time == '23:45'
-
-
-# note: reading a bad line now writes to do_transform.log instead of raising
-# def test_read_bad_line_raises_indexerror():
-#     with pytest.raises(IndexError):
-#         file_wrapper = FakeFileReadWrapper('bongobongobongobongo')
-#         my_transform = Transform(file_wrapper)
-#         my_transform.read_each_line()

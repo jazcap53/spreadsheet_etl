@@ -11,3 +11,9 @@ mcv
 structure_choice
 *.log
 __pycache__
+.flake8
+.tox/
+MANIFEST
+REDIRECT*
+requirements.txt.*
+select_n*_output_*.txt

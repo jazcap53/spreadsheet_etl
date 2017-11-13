@@ -10,12 +10,13 @@ import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_infile, lines_in_weeks_out
+from src.extract.read_fns import open_infile
 from src.extract.read_fns import _re_match_date, _handle_start_of_night
 from src.extract.read_fns import _append_week_header, _append_day_header
 from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
 from src.extract.read_fns import _manage_output_buffer, _get_events
 from src.extract.container_objs import Event, Day, Week
+
 
 # TODO: at present, the 'fixture' is used in only one test
 @pytest.fixture
@@ -115,7 +116,7 @@ def test__append_day_header():
     assert buffer[-1] == '    2015-05-05'
 
 
-def test__handle_start_of_night_with_3_element_b_event_outputs_and_empties_buffer():
+def test__handle_start_of_night_3_element_b_event_output_and_empty_buffer():
     output = io.StringIO()
     buffer = ['bongo', 'Hello World']
     _handle_start_of_night(buffer,
@@ -126,7 +127,7 @@ def test__handle_start_of_night_with_3_element_b_event_outputs_and_empties_buffe
     assert buffer == []
 
 
-def test__handle_start_of_night_with_2_element_b_event_outputs_nothing_and_pops_actions():
+def test__handle_start_of_night_2_element_b_event_no_output_pops_actions():
     output = io.StringIO()
     buffer = ['bongobongo', 'action: s, time: 19:00']
     _handle_start_of_night(buffer,
@@ -137,7 +138,7 @@ def test__handle_start_of_night_with_2_element_b_event_outputs_nothing_and_pops_
     assert buffer == ['bongobongo']
 
 
-def test__handle_start_of_night_with_2_element_b_event_and_long_b_string_in_buffer():
+def test__handle_start_of_night_2_element_b_event_long_b_string_in_buffer():
     output = io.StringIO()
     buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
     _handle_start_of_night(buffer,
@@ -148,12 +149,12 @@ def test__handle_start_of_night_with_2_element_b_event_and_long_b_string_in_buff
     assert buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
-def test__is_complete_b_event_line_returns_true_on_complete_b_event_line_input():
+def test__is_complete_b_event_line_returns_true_on_complete_b_event_line():
     line = 'action: b, time: 21:45, hours: 3.75'
     assert bool(_is_complete_b_event_line(line))
 
 
-def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line_input():
+def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line():
     line = 'action: b, time: 17:25'
     assert not bool(_is_complete_b_event_line(line))
 

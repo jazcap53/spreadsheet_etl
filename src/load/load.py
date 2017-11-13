@@ -47,7 +47,7 @@ def load_nights_naps(engine, infile_name):
                 my_line = data_source.readline()
                 keep_going = store_nights_naps(connection, my_line)
             trans.commit()
-        except:
+        except Exception:
             trans.rollback()
             raise
 

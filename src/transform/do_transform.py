@@ -70,7 +70,8 @@ class Transform:
             self.last_date = cur_l[4:]
         elif cur_l[: 9] == 'action: b':
             self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
-            self.out_val = 'NIGHT, {}, {}'.format(self.last_date, self.last_sleep_time)
+            self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
+                                                  self.last_sleep_time)
         elif cur_l[: 9] == 'action: s':
             self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
         elif cur_l[: 9] == 'action: w':
@@ -78,7 +79,8 @@ class Transform:
             duration = self.get_duration(wake_time, self.last_sleep_time)
             self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
         else:
-            Transform.transform_logger.warning('Bad value {} in input'.format(cur_l))
+            Transform.transform_logger.warning('Bad value {} in input'.
+                                               format(cur_l))
             # raise IndexError  # TODO: remove this line
         if self.out_val is not None:
             print(self.out_val)
@@ -119,7 +121,8 @@ class Transform:
             w_time_list[0] -= 1
         if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
             w_time_list[0] += 24
-        dur_list = [(w_time_list[x] - s_time_list[x]) for x in range(len(w_time_list))]
+        dur_list = [(w_time_list[x] - s_time_list[x])
+                    for x in range(len(w_time_list))]
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
@@ -157,19 +160,22 @@ class Transform:
 
 
 def main():
-    # from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
-    rootLogger = logging.getLogger('')
-    rootLogger.setLevel(logging.INFO)
-    socketHandler = logging.handlers.SocketHandler('localhost',
-            logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+    # from: https://docs.python.org/3/howto/
+    # logging-cookbook.html#network-logging
+    root_logger = logging.getLogger('')
+    root_logger.setLevel(logging.INFO)
+    socket_handler = logging.handlers.SocketHandler('localhost',
+                                                    logging.handlers.
+                                                    DEFAULT_TCP_LOGGING_PORT)
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
-    rootLogger.addHandler(socketHandler)
+    root_logger.addHandler(socket_handler)
 
     # transform_logger will need a formatter since it is writing to file
     transform_logger = logging.getLogger('transform.do_transform')
     transform_logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler('src/transform/do_transform.log', mode='w')
+    file_handler = logging.FileHandler('src/transform/do_transform.log',
+                                       mode='w')
     formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)

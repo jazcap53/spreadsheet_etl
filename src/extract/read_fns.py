@@ -122,7 +122,6 @@ def open_outfile(file_write_wrapper):
     return file_write_wrapper.open()
 
 
-# TODO: update docstring
 def lines_in_weeks_out(infile):
     """
     Read lines from .csv file; write Weeks, Days, and Events.
@@ -293,7 +292,8 @@ def _append_day_header(buffer, dy):
     buffer.append(dy_header)
 
 
-def _handle_start_of_night(buffer, action_b_event, datetime_date, out=sys.stdout):
+def _handle_start_of_night(buffer, action_b_event, datetime_date,
+                           out=sys.stdout):
     """
     Write (only) complete nights from buffer to out.
 
@@ -341,7 +341,8 @@ def _is_complete_b_event_line(line):
     """
     Called by: _handle_start_of_night()
     """
-    return re.match(r'action: b, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$', line)
+    return re.match(r'action: b, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$',
+                    line)
 
 
 def _is_event_line(line):
@@ -349,9 +350,11 @@ def _is_event_line(line):
     Called by: _handle_start_of_night()
     """
     # b events may have 2 or 3 elements
-    matchline = r'(?:action: b, time: \d{1,2}:\d{2}(?:, hours: \d{1,2}\.\d{2})?$)'
+    matchline = r'(?:action: b, time: \d{1,2}:\d{2})' + \
+                r'(?:, hours: \d{1,2}\.\d{2})?$'
     # s events may have only 2 elements
     matchline += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
     # w events may have only 3 elements
-    matchline += r'|(?:action: w, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$)'
+    matchline += r'|(?:action: w, time: \d{1,2}:\d{2}, ' + \
+                 r'hours: \d{1,2}\.\d{2}$)'
     return re.match(matchline, line)

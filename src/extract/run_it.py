@@ -23,14 +23,16 @@ from tests.file_access_wrappers import FileReadAccessWrapper
 
 
 def main():
-    # from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
-    rootLogger = logging.getLogger('')
-    rootLogger.setLevel(logging.INFO)
-    socketHandler = logging.handlers.SocketHandler('localhost',
-            logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+    # from: https://docs.python.org/3/howto/
+    # logging-cookbook.html#network-logging
+    root_logger = logging.getLogger('')
+    root_logger.setLevel(logging.INFO)
+    socket_handler = logging.handlers.SocketHandler('localhost',
+                                                    logging.handlers.
+                                                    DEFAULT_TCP_LOGGING_PORT)
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
-    rootLogger.addHandler(socketHandler)
+    root_logger.addHandler(socket_handler)
 
     # read_logger will need a formatter since it is writing to file
     read_logger = logging.getLogger('extract.read_fns')

@@ -49,6 +49,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
         # cycles and network bandwidth!
         logger.handle(record)
 
+
 class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
     """
     Simple TCP socket-based logging receiver SUITABLE FOR TESTING!!!
