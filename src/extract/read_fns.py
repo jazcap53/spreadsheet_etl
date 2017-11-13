@@ -161,6 +161,7 @@ def lines_in_weeks_out(infile):
         _manage_output_buffer(output_buffer, new_week)
 
 
+# TODO: write docstring
 def _look_for_week(date_match_found):
     if not date_match_found:
         return None, None, False  # sunday_date, new_week, in_week
@@ -175,6 +176,7 @@ def _look_for_week(date_match_found):
         return sunday_date, new_week, in_week
 
 
+# TODO: write docstring
 def collect_week(line_as_list, new_week, output_buffer, sunday_date):
     if any(line_as_list):
         # True: have_events
