@@ -21,11 +21,10 @@ def validate_segment(segment):
         return False
     if not re.match(r'[012]?\d:\d{2}', segment[1]):
         return False
-    if segment[0]:
-        return check_segment_0(segment)
     if segment[2] and not re.match(r'[12]?\d\.\d{2}', segment[2]):
         return False
-    return True
+    if segment[0]:
+        return check_segment_0(segment)  # this test must go last
 
 
 def check_segment_0(segment):
