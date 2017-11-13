@@ -124,6 +124,7 @@ def open_outfile(file_write_wrapper):
     return file_write_wrapper.open()
 
 
+# TODO: update docstring
 def lines_in_weeks_out(infile):
     """
     Reorganize lines from .csv file into Weeks, Days, and Events.
@@ -142,34 +143,45 @@ def lines_in_weeks_out(infile):
     :return: None
     Called by: client code
     """
-    we_are_in_week = False
     sunday_date = None
-    we_have_events = False
     new_week = None
+    in_week = False
+    have_events = False
     output_buffer = []
     for line in infile:
         line_as_list = line.strip().split(',')[:22]
-        re_date_match_found = _check_for_date(line_as_list[0])
-        if not we_are_in_week and not re_date_match_found:
-            continue
-        elif not we_are_in_week and re_date_match_found:  # just found a date
-            sunday_date = _re_match_to_date_obj(re_date_match_found)
-            # set up a Week
-            day_list = [Day(sunday_date +
-                            datetime.timedelta(days=x), [])
-                        for x in range(7)]
-            new_week = Week(*day_list)
-            we_are_in_week = True
-        if we_are_in_week:
-            if any(line_as_list):
-                we_have_events = _get_events(line_as_list[1:], new_week)
-            else:  # a blank line: our week has ended
-                _manage_output_buffer(output_buffer, new_week)
-                we_are_in_week = False
-                sunday_date = None
+        date_match_found = _check_for_date(line_as_list[0])
+        if not in_week:
+            sunday_date, new_week, in_week = _look_for_week(date_match_found)
+        if in_week:
+            have_events, in_week, sunday_date = \
+                collect_week(line_as_list, new_week, output_buffer, sunday_date)
     # handle any data left in buffer
-    if sunday_date and we_have_events and new_week:
+    if sunday_date and have_events and new_week:
         _manage_output_buffer(output_buffer, new_week)
+
+
+def _look_for_week(date_match_found):
+    if not date_match_found:
+        return None, None, False  # sunday_date, new_week, in_week
+    else:
+        sunday_date = _match_to_date_obj(date_match_found)
+        # set up a Week
+        day_list = [Day(sunday_date +
+                        datetime.timedelta(days=x), [])
+                    for x in range(7)]
+        new_week = Week(*day_list)
+        in_week = True
+        return sunday_date, new_week, in_week
+
+
+def collect_week(line_as_list, new_week, output_buffer, sunday_date):
+    if any(line_as_list):
+        # True: have_events
+        return _get_events(line_as_list[1:], new_week), True, sunday_date
+    else:  # a blank line: our week has ended
+        _manage_output_buffer(output_buffer, new_week)
+        return False, False, None  # have_events, in_week, sunday_date
 
 
 def _check_for_date(field):
@@ -183,7 +195,7 @@ def _check_for_date(field):
     return m if m else None
 
 
-def _re_match_to_date_obj(m):
+def _match_to_date_obj(m):
     """
     Convert a successful regex match to a datetime.date object
     Called by: lines_in_weeks_out()
