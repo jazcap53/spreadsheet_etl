@@ -33,7 +33,7 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def load_nights_naps(engine, load_logger, infile_name):
+def load_nights_naps(engine, infile_name):
     """
     Load NIGHT and NAP data from stdin into database.
     Called by: connect()
@@ -42,28 +42,36 @@ def load_nights_naps(engine, load_logger, infile_name):
         connection = engine.connect()
         trans = connection.begin()
         try:
-            while True:
+            keep_going = True
+            while keep_going:
                 my_line = data_source.readline()
-                if not my_line:
-                    break
-                line_list = my_line.rstrip().split(', ')
-                if line_list[0] == 'NIGHT':
-                    result = connection.execute(func.sl_insert_night(line_list[1],
-                                                                     line_list[2])
-                                                )
-                    load_logger.debug(result)
-                elif line_list[0] == 'NAP':
-                    result = connection.execute(func.sl_insert_nap(line_list[1],
-                                                                   decimal_to_interval(line_list[2]))
-                                                )
-                    load_logger.debug(result)
+                keep_going = store_nights_naps(connection, my_line)
             trans.commit()
         except:
             trans.rollback()
             raise
 
 
-def connect(load_logger, url):
+def store_nights_naps(connection, my_line):
+    if not my_line:
+        return False
+    line_list = my_line.rstrip().split(', ')
+    if line_list[0] == 'NIGHT':
+        result = connection.execute(
+            func.sl_insert_night(line_list[1], line_list[2])
+        )
+        load_logger.debug(result)
+    elif line_list[0] == 'NAP':
+        result = connection.execute(
+            func.sl_insert_nap(line_list[1],
+                               decimal_to_interval(line_list[2])
+                               )
+        )
+        load_logger.debug(result)
+    return True
+
+
+def connect(url):
     """
     Connect to the PostgreSQL database server;
     invoke load_nights_naps() to load data from stdin to db_s_etl.
@@ -79,7 +87,7 @@ def connect(load_logger, url):
         #         read from stdin
         sys.argv.remove('True')
         infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
-        load_nights_naps(engine, load_logger, infile_name)
+        load_nights_naps(engine, infile_name)
     except ValueError:
         pass  # don't touch the db
 
@@ -122,5 +130,5 @@ if __name__ == '__main__':
         print('Please set the environment variables DB_USERNAME and '
               'DB_PASSWORD')
         sys.exit(1)
-    connect(load_logger, url)  # only c.l.a. will be 'True' or 'False'
+    connect(url)  # only c.l.a. will be 'True' or 'False'
     logging.info('load finish')
