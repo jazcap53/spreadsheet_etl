@@ -2,8 +2,6 @@
 # andrew jarcho
 # 2017-01-25
 
-# python: 3.5
-
 """
 SUMMARY:
 =======
@@ -127,17 +125,13 @@ def open_outfile(file_write_wrapper):
 # TODO: update docstring
 def lines_in_weeks_out(infile):
     """
-    Reorganize lines from .csv file into Weeks, Days, and Events.
-    Call _manage_output_buffer() to send a Week's worth of data at
-    a time from infile to the output buffer.
+    Read lines from .csv file; write Weeks, Days, and Events.
 
     While there is data to read:
-        Read and ignore lines until we see a Sunday at the beginning of
-            a line
-        Collect one week of data (i.e., until a blank line is seen)
-        Call _manage_output_buffer() to handle what's been collected
-    If a partial week has been collected:
-        Call _manage_output_buffer() once more
+        Read and ignore lines until we see the start of a week
+        Call _handle_week() to collect and output a week of data
+    If a partial week remains in output buffer:
+        Call _handle_leftovers() to output it
 
     :param infile: a file handle open for read
     :return: None
@@ -145,20 +139,23 @@ def lines_in_weeks_out(infile):
     """
     sunday_date = None
     new_week = None
-    in_week = False
-    have_events = False
+    are_in_week = False
+    are_events = False
     output_buffer = []
     for line in infile:
         line_as_list = line.strip().split(',')[:22]
-        date_match_found = _check_for_date(line_as_list[0])
-        if not in_week:
-            sunday_date, new_week, in_week = _look_for_week(date_match_found)
-        if in_week:
-            have_events, in_week, sunday_date = \
-                collect_week(line_as_list, new_week, output_buffer, sunday_date)
+        is_date_match_found = _re_match_date(line_as_list[0])  # start of week
+        if not are_in_week:
+            sunday_date, new_week, are_in_week = \
+                _look_for_week(is_date_match_found)
+        if are_in_week:  # *not* else: _look_for_week() may alter are_in_week
+            # _handle_week() outputs good data and discards bad data
+            are_events, are_in_week, sunday_date = \
+                _handle_week(line_as_list, new_week, output_buffer,
+                             sunday_date)
     # handle any data left in buffer
-    if sunday_date and have_events and new_week:
-        _manage_output_buffer(output_buffer, new_week)
+    if sunday_date and are_events and new_week:
+        _handle_leftovers(output_buffer, new_week)
 
 
 # TODO: write docstring
@@ -177,7 +174,7 @@ def _look_for_week(date_match_found):
 
 
 # TODO: write docstring
-def collect_week(line_as_list, new_week, output_buffer, sunday_date):
+def _handle_week(line_as_list, new_week, output_buffer, sunday_date):
     if any(line_as_list):
         # True: have_events
         return _get_events(line_as_list[1:], new_week), True, sunday_date
@@ -186,7 +183,11 @@ def collect_week(line_as_list, new_week, output_buffer, sunday_date):
         return False, False, None  # have_events, in_week, sunday_date
 
 
-def _check_for_date(field):
+def _handle_leftovers(output_buffer, new_week):
+    _manage_output_buffer(output_buffer, new_week)
+
+
+def _re_match_date(field):
     """
     Does field start with a date?
 

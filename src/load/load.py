@@ -101,7 +101,8 @@ def main():
     rootLogger = logging.getLogger('')
     rootLogger.setLevel(logging.INFO)
     socketHandler = logging.handlers.SocketHandler('localhost',
-            logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+                                                   logging.handlers.
+                                                   DEFAULT_TCP_LOGGING_PORT)
     # don't bother with a formatter here, since a socket handler sends the
     # event as an unformatted pickle
     rootLogger.addHandler(socketHandler)

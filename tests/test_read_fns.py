@@ -11,7 +11,7 @@ import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile, lines_in_weeks_out
-from src.extract.read_fns import _check_for_date, _handle_start_of_night
+from src.extract.read_fns import _re_match_date, _handle_start_of_night
 from src.extract.read_fns import _append_week_header, _append_day_header
 from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
 from src.extract.read_fns import _manage_output_buffer, _get_events
@@ -210,17 +210,17 @@ def test_open_infile(infile_wrapper):
 
 def test__check_for_date_matches_date_in_correct_format():
     date_string = '12/34/5678'
-    good_match = _check_for_date(date_string)
+    good_match = _re_match_date(date_string)
     assert good_match
 
 
 def test__check_for_date_rejects_date_with_hyphens():
     date_string = '12-34-5678'
-    good_match = _check_for_date(date_string)
+    good_match = _re_match_date(date_string)
     assert not good_match
 
 
 def test__check_for_date_rejects_date_with_alpha():
     date_string = 'a2/34/5678'
-    good_match = _check_for_date(date_string)
+    good_match = _re_match_date(date_string)
     assert not good_match
