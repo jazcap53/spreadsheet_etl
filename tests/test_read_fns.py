@@ -2,10 +2,7 @@
 # andrew jarcho
 # 2017-01-28
 
-# pytest 3.0.7
-
 import io
-# from collections import namedtuple
 import datetime
 import pytest
 
@@ -15,6 +12,7 @@ from src.extract.read_fns import _re_match_date, _handle_start_of_night
 from src.extract.read_fns import _append_week_header, _append_day_header
 from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
 from src.extract.read_fns import _manage_output_buffer, _get_events
+from src.extract.read_fns import _look_for_week
 from src.extract.container_objs import Event, Day, Week
 
 
@@ -225,3 +223,9 @@ def test__check_for_date_rejects_date_with_alpha():
     date_string = 'a2/34/5678'
     good_match = _re_match_date(date_string)
     assert not good_match
+
+
+def test__look_for_week_returns_falsy_values_on_non_sunday_input():
+    non_sunday_match = _re_match_date('11/14/2017')
+    assert non_sunday_match
+    assert _look_for_week(non_sunday_match) == (None, None, False)
