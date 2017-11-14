@@ -41,7 +41,8 @@ A central problem is to extract data from the .csv file so that data
 relating to each calendar day are grouped together.
 
 A second problem is that the database cares about 'nights', which may
-begin and end with arbitrary data points 'x'.
+begin and end with arbitrary data points 'x'. Each night is associated
+with a calendar day in the db.
 
 A third problem is that we must discard data points 'x' that are part
 of a 'night' for which we do not have complete data.
@@ -122,6 +123,8 @@ def open_outfile(file_write_wrapper):
     return file_write_wrapper.open()
 
 
+# TODO: does not check that the date found by _re_match_date() is a Sunday
+# TODO: should log a warning if not
 def lines_in_weeks_out(infile):
     """
     Read lines from .csv file; write Weeks, Days, and Events.
@@ -143,10 +146,10 @@ def lines_in_weeks_out(infile):
     output_buffer = []
     for line in infile:
         line_as_list = line.strip().split(',')[:22]
-        is_date_match_found = _re_match_date(line_as_list[0])  # start of week
+        date_match_found = _re_match_date(line_as_list[0])  # start of week
         if not are_in_week:
             sunday_date, new_week, are_in_week = \
-                _look_for_week(is_date_match_found)
+                _look_for_week(date_match_found)
         if are_in_week:  # *not* else: _look_for_week() may alter are_in_week
             # _handle_week() outputs good data and discards bad data
             are_events, are_in_week, sunday_date = \
@@ -157,31 +160,66 @@ def lines_in_weeks_out(infile):
         _handle_leftovers(output_buffer, new_week)
 
 
-# TODO: write docstring
 def _look_for_week(date_match_found):
-    if not date_match_found:
-        return None, None, False  # sunday_date, new_week, in_week
-    else:
+    """
+    Determine whether the current input line represents the start of a week.
+
+    :param date_match_found: an re match object -- the result of checking for
+                             a date in an input field
+    :return:
+        if date_match_found represents a Sunday:
+            an implicit 3-element tuple holding:
+                1) date_match_found converted to a datetime.date
+                2) an new Week object that starts with that date
+                3) a boolean indicating whether we are now in a week: True iff
+                   date_match_found was non-null
+        else:
+            None, None, and False
+    Called by: _lines_in_weeks_out()
+    """
+    sunday_date = None
+    new_week = None
+    in_week = False
+    if date_match_found:
         sunday_date = _match_to_date_obj(date_match_found)
-        # set up a Week
-        day_list = [Day(sunday_date +
-                        datetime.timedelta(days=x), [])
-                    for x in range(7)]
-        new_week = Week(*day_list)
-        in_week = True
-        return sunday_date, new_week, in_week
+        if _is_a_sunday(sunday_date):
+            # set up a Week
+            day_list = [Day(sunday_date +
+                            datetime.timedelta(days=x), [])
+                        for x in range(7)]
+            new_week = Week(*day_list)
+            in_week = True
+        else:
+            # TODO: write a test for this
+            read_logger.warning('Non-Sunday date {} found in input'.
+                                format(sunday_date))
+            sunday_date = None
+    return sunday_date, new_week, in_week
+
+
+def _is_a_sunday(dt_date):
+    """
+    Tell whether the parameter represents a Sunday
+    :param dt_date: a datetime.date object
+    :return: bool: is dt_date a Sunday
+    """
+    return dt_date.weekday() == 6
 
 
 # TODO: write docstring
 def _handle_week(line_as_list, new_week, output_buffer, sunday_date):
+    have_events = False
+    in_week = False
     if any(line_as_list):
-        # True: have_events
-        return _get_events(line_as_list[1:], new_week), True, sunday_date
+        have_events = _get_events(line_as_list[1:], new_week)
+        if have_events:
+            in_week = True
     else:  # a blank line: our week has ended
         _manage_output_buffer(output_buffer, new_week)
-        return False, False, None  # have_events, in_week, sunday_date
+    return have_events, in_week, sunday_date
 
 
+# TODO: write docstring
 def _handle_leftovers(output_buffer, new_week):
     _manage_output_buffer(output_buffer, new_week)
 
@@ -215,6 +253,8 @@ def _get_events(shorter_line, new_week):
     :param shorter_line: line_as_list, from lines_in_weeks_out(),
         without its first field
     :param new_week: a Week object
+    :return find_events: True iff there is at least one valid event in
+                         shorter_line
     Called by: lines_in_weeks_out()
     """
     find_events = False
