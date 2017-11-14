@@ -2,15 +2,11 @@
 # andrew jarcho
 # 2016-01-08
 
-# pytest: 3.0.7
-
 
 from datetime import date, timedelta
 import pytest
-import io
 
 from src.extract.container_objs import validate_segment, Event, Day, Week
-from src.extract.container_objs import print_event
 
 
 # test validate_segment()
@@ -74,24 +70,6 @@ def test_Event_ctor_creates_valid_Event_with_valid_hours_empty_input_segment():
     assert my_event.action == 's'
     assert my_event.mil_time == '13:15'
     assert my_event.hours == ''
-
-
-def test_print_event_outputs_valid_string_on_valid_input_segment():
-    segment = ['b', '0:45', '6.30']
-    my_event = Event(*segment)
-    my_output = io.StringIO()
-    print_event(my_event, my_output)
-    my_string = my_output.getvalue()
-    assert my_string == u'action: b, time: 0:45, hours: 6.30\n'
-
-
-def test_print_event_outputs_valid_string_on_valid_short_input_segment():
-    segment = ['s', '11:15', '']
-    my_event = Event(*segment)
-    my_output = io.StringIO()
-    print_event(my_event, my_output)
-    my_string = my_output.getvalue()
-    assert my_string == u'action: s, time: 11:15\n'
 
 
 # test Day class

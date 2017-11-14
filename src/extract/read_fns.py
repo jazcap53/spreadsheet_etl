@@ -390,7 +390,7 @@ def _handle_start_of_night(buffer, action_b_event, datetime_date,
     """
     if action_b_event.hours:  # we have complete data for the preceding night
         for line in buffer:  # note: action_b_event is *not* in buffer
-            out.write(line + '\n')
+            print(line, file=out)
         buffer.clear()
     else:
         read_logger.info('Incomplete night(s) before {}'.format(datetime_date))

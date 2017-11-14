@@ -35,30 +35,6 @@ def check_segment_0(segment):
     return True
 
 
-# TODO: refactor these functions as members of the namedtuple subclasses (?)
-def print_event(e, out):
-    out_str = 'action: {}, time: {}'.format(e.action, e.mil_time)
-    if e.hours:
-        out_str += ', hours: {:.2f}'.format(float(e.hours))
-    out.write(out_str + u'\n')
-
-
-def print_day(d, out):
-    out.write('{}\n'.format(d.dt_date))
-    for item in d.events:
-        print_event(item, out)
-
-
-def print_week(w, out):
-    header = '\nWeek of Sunday, {}:\n'.format(w[0].dt_date)
-    underscores = '=' * (len(header) - 2) + '\n'
-    out.write(header + underscores)
-    for d in w:
-        out.write('    ')
-        print_day(d, out)
-    print()
-
-
 class Event(namedtuple('EventTuple', 'action, mil_time, hours')):
     """
     Each EventTuple holds:
@@ -92,8 +68,8 @@ class Week(namedtuple('WeekTuple',
     """ Each WeekTuple holds seven named Day tuples """
     def __init__(self, *day_list):
         """ Ctor used just to filter input """
-        param_list = day_list
-        for ix, p in enumerate(param_list):
+        self.day_list = day_list
+        for ix, p in enumerate(self.day_list):
             if not isinstance(p, Day):
                 raise TypeError('Week ctor with non-Day in param list')
             if not ix and p.dt_date.weekday() != 6:
