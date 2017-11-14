@@ -51,7 +51,7 @@ of a 'night' for which we do not have complete data.
 Functions
 ---------
 
-_lines_in_weeks_out() structures the data into an intermediate format
+lines_in_weeks_out() structures the data into an intermediate format
 consisting of Weeks, Days, and Events. A Week has 7 consecutive (calendar)
 Days, beginning with a Sunday. The Events from each Day are grouped
 together (note that this is *not* the case in the .csv file).
@@ -123,7 +123,7 @@ def open_outfile(file_write_wrapper):
     return file_write_wrapper.open()
 
 
-def _lines_in_weeks_out(infile):
+def lines_in_weeks_out(infile):
     """
     Read lines from .csv file; write Weeks, Days, and Events.
 
@@ -173,7 +173,7 @@ def _look_for_week(date_match_found):
                    date_match_found was non-null
         else:
             None, None, and False
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     sunday_date = None
     new_week = None
@@ -188,7 +188,6 @@ def _look_for_week(date_match_found):
             new_week = Week(*day_list)
             in_week = True
         else:
-            # TODO: write a test for this
             read_logger.warning('Non-Sunday date {} found in input'.
                                 format(sunday_date))
             sunday_date = None
@@ -222,7 +221,7 @@ def _handle_week(line_as_list, new_week, output_buffer):
                              events in line_as_list
              2) in_week: a boolean that is True iff a week has started but not
                          ended
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     have_events = False
     in_week = False
@@ -235,8 +234,20 @@ def _handle_week(line_as_list, new_week, output_buffer):
     return have_events, in_week
 
 
-# TODO: write docstring
 def _handle_leftovers(output_buffer, new_week):
+    """
+    Just calls _manage_output_buffer(). This function exists solely to
+    improve readability in the calling function.
+
+    :param output_buffer: a list, possibly empty, of header strings and event
+                          strings.
+    :param new_week: a Week object, holding seven Day objects beginning
+                     with a Sunday. Each Day may have zero or more bedtime
+                     (action == 'b') Events, as well as zero or more other
+                     Events.
+    :return: None
+    Called by: lines_in_weeks_out()
+    """
     _manage_output_buffer(output_buffer, new_week)
 
 
@@ -245,7 +256,7 @@ def _re_match_date(field):
     Does field start with a date?
 
     :param field: a string
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
     return m if m else None
@@ -254,7 +265,7 @@ def _re_match_date(field):
 def _match_to_date_obj(m):
     """
     Convert a successful regex match to a datetime.date object
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     # group(3) is the year, group(1) is the month, group(2) is the day
     dt = [int(m.group(x)) for x in (3, 1, 2)]
@@ -266,12 +277,12 @@ def _get_events(shorter_line, new_week):
     """
     Add each valid event in shorter_line to new_week.
 
-    :param shorter_line: line_as_list, from _lines_in_weeks_out(),
+    :param shorter_line: line_as_list, from lines_in_weeks_out(),
         without its first field
     :param new_week: a Week object
     :return find_events: True iff there is at least one valid event in
                          shorter_line
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     find_events = False
     for ix in range(7):
@@ -303,7 +314,7 @@ def _manage_output_buffer(buffer, wk):
                (action == 'b') Events, as well as zero or more other
                Events.
     :return: None
-    Called by: _lines_in_weeks_out()
+    Called by: lines_in_weeks_out()
     """
     _append_week_header(buffer, wk)
     for day in wk:

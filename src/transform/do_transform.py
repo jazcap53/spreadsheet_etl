@@ -81,7 +81,6 @@ class Transform:
         else:
             Transform.transform_logger.warning('Bad value {} in input'.
                                                format(cur_l))
-            # raise IndexError  # TODO: remove this line
         if self.out_val is not None:
             print(self.out_val)
         self.out_val = None
