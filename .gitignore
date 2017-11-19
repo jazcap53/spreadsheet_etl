@@ -7,13 +7,14 @@ xtraneous
 .cache
 .idea
 sheet_*.csv
-mcv
-structure_choice
 *.log
 __pycache__
-.flake8
 .tox/
 MANIFEST
 REDIRECT*
 requirements.txt.*
 select_n*_output_*.txt
+*.old
+src/count_lines*.py
+sql_queries/
+sql_backup_*/
