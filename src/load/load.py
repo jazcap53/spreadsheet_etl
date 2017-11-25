@@ -117,6 +117,16 @@ def main():
     Set up root (network) logger and load logger
     Called by: client code
     """
+    setup_network_logger()
+    return setup_load_logger()
+
+
+def setup_network_logger():
+    """
+    Set up a logger to handle messages from all processes
+    :return: None
+    Called by: main()
+    """
     # https://docs.python.org/3/howto/logging-cookbook.html#network-logging
     root_logger = logging.getLogger('')
     root_logger.setLevel(logging.INFO)
@@ -128,6 +138,13 @@ def main():
     root_logger.addHandler(socket_handler)
     # end of logging-cookbook code
 
+
+def setup_load_logger():
+    """
+    Setup a logger for messages from the load process only
+    :return: the load logger
+    Called by: main()
+    """
     # load_logger will need a formatter since it is writing to file
     load_logger = logging.getLogger('load.load')
     load_logger.setLevel(logging.DEBUG)
