@@ -4,8 +4,6 @@
 # andrew jarcho
 # 2017-02-20
 
-# python: 3.5, 3.6
-
 
 import logging
 import logging.handlers
@@ -18,8 +16,8 @@ import sys
 def decimal_to_interval(dec_str):
     """
     Convert duration from a decimal string to an interval string
-    (E.g., '3.25' for 3 1/4 hours becomes '0 03:15:00').
-    Called by: load_nights_naps()
+    (E.g., '3.25' for 3 1/4 hours becomes '03:15').
+    Called by: read_nights_naps()
     """
     dec_mins_to_mins = {'00': '00', '25': '15', '50': '30', '75': '45'}
     hrs, dec_mins = dec_str.split('.')
@@ -33,9 +31,14 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def load_nights_naps(engine, infile_name):
+def read_nights_naps(engine, infile_name=sys.stdin):
     """
-    Load NIGHT and NAP data from stdin into database.
+    Read NIGHT and NAP data from stdin;
+    call function to load that data into database.
+
+    :param engine: the db engine
+    :param infile_name: read data from file or stdout
+    :return: None
     Called by: connect()
     """
     with fileinput.input(infile_name) as data_source:
@@ -53,14 +56,27 @@ def load_nights_naps(engine, infile_name):
 
 
 def store_nights_naps(connection, my_line):
-    if not my_line:
-        return False
+    """
+    Insert a line of data into the db
+
+    If the line starts with 'NIGHT':
+        insert a night into sl_night
+    If the line starts with 'NAP':
+        insert a nap into sl_nap
+
+    :param connection: an open db connection
+    :param my_line: a line of data from the transform stage
+    :return: True if the line was inserted, else False
+    Called by read_nights_naps()
+    """
+    success = False
     line_list = my_line.rstrip().split(', ')
     if line_list[0] == 'NIGHT':
         result = connection.execute(
             func.sl_insert_night(line_list[1], line_list[2])
         )
         load_logger.debug(result)
+        success = True
     elif line_list[0] == 'NAP':
         result = connection.execute(
             func.sl_insert_nap(line_list[1],
@@ -68,13 +84,17 @@ def store_nights_naps(connection, my_line):
                                )
         )
         load_logger.debug(result)
-    return True
+        success = True
+    return success
 
 
 def connect(url):
     """
-    Connect to the PostgreSQL database server;
-    invoke load_nights_naps() to load data from stdin to db_s_etl.
+    Connect to the PostgreSQL db server;
+    invoke read_nights_naps() to load data from input to db_s_etl.
+
+    :param url: the db url
+    :return: None
     Called by: client code
     """
     engine = create_engine(url)
@@ -87,7 +107,7 @@ def connect(url):
         #         read from stdin
         sys.argv.remove('True')
         infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
-        load_nights_naps(engine, infile_name)
+        read_nights_naps(engine, infile_name)
     except ValueError:
         pass  # don't touch the db
 
@@ -98,14 +118,14 @@ def main():
     Called by: client code
     """
     # https://docs.python.org/3/howto/logging-cookbook.html#network-logging
-    rootLogger = logging.getLogger('')
-    rootLogger.setLevel(logging.INFO)
-    socketHandler = logging.handlers.SocketHandler('localhost',
+    root_logger = logging.getLogger('')
+    root_logger.setLevel(logging.INFO)
+    socket_handler = logging.handlers.SocketHandler('localhost',
                                                    logging.handlers.
                                                    DEFAULT_TCP_LOGGING_PORT)
     # don't bother with a formatter here, since a socket handler sends the
     # event as an unformatted pickle
-    rootLogger.addHandler(socketHandler)
+    root_logger.addHandler(socket_handler)
     # end of logging-cookbook code
 
     # load_logger will need a formatter since it is writing to file
