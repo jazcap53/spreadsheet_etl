@@ -51,7 +51,8 @@ def test_inserting_a_nap_adds_one_to_nap_count(my_setup):
     orig_ct = result.fetchone()[0]
     sql = text("INSERT INTO slt_nap(start_time, duration, night_id) "
                "VALUES (:start_time_now, :duration, :night_id_result)")
-    data = {'start_time_now': start_time_now, 'duration': duration, 'night_id_result': night_id}
+    data = {'start_time_now': start_time_now, 'duration': duration,
+            'night_id_result': night_id}
     connection.execute(sql, data)
     result = connection.execute("SELECT max(nap_id) FROM slt_nap")
     new_ct = result.fetchone()[0]
