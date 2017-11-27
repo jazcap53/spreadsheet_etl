@@ -8,15 +8,16 @@ import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile
-from src.extract.read_fns import _re_match_date, _handle_start_of_night
-from src.extract.read_fns import _append_week_header, _append_day_header
-from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
-from src.extract.read_fns import _manage_output_buffer, _get_events
-from src.extract.read_fns import _look_for_week
+# from src.extract.read_fns import _re_match_date, _handle_start_of_night
+# from src.extract.read_fns import _append_week_header, _append_day_header
+# from src.extract.read_fns import _is_complete_b_event_line, _is_event_line
+# from src.extract.read_fns import _manage_output_buffer, _get_events
+# from src.extract.read_fns import _look_for_week
+from src.extract.read_fns import Extract
 from src.extract.container_objs import Event, Day, Week
 
 
-# TODO: at present, the 'fixture' is used in only one test
+# TODO: at present, this fixture is used in only one test
 @pytest.fixture
 def infile_wrapper():
     return FakeFileReadWrapper(
@@ -36,170 +37,183 @@ def infile_wrapper():
 ''')
 
 
-def test__get_events_creates_events_from_non_empty_line_segments():
+@pytest.fixture
+def extract():
+    return Extract(FakeFileReadWrapper(''))
+
+
+# TODO: just fixed -- rename
+def test__get_events_creates_events_from_non_empty_line_segments(extract):
     # shorter_line holds an 's' event for Thu and Fri, and a 'w' event for Sat
-    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
-                    's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
-    sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(sunday_date +
+    extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '', '', '', '',
+                            's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
+    extract.sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    new_week = Week(*day_list)
-    _get_events(shorter_line, new_week)
-    assert new_week[0].events == []
-    assert isinstance(new_week[4].events[-1], Event)
-    assert isinstance(new_week[6].events[-1], Event)
+    extract.new_week = Week(*day_list)
+    extract._get_events()
+    assert extract.new_week[0].events == []
+    assert isinstance(extract.new_week[4].events[-1], Event)
+    assert isinstance(extract.new_week[6].events[-1], Event)
 
 
-def test__get_events_returns_true_on_valid_non_empty_line_input():
-    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
-                    's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
-    sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(sunday_date +
+# TODO: just fixed -- rename
+def test__get_events_returns_true_on_valid_non_empty_line_input(extract):
+    extract.line_as_list = ['12/11/2016', '', '', '', '', '', '', '', '', '', '', '', '',
+                            's', '4:45', '', 's', '3:30', '', 'w', '5:15', '5.25']
+    extract.sunday_date = datetime.date(2016, 12, 11)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    new_week = Week(*day_list)
-    assert _get_events(shorter_line, new_week)
+    extract.new_week = Week(*day_list)
+    extract._get_events()
+    assert extract.have_events
 
 
-def test__get_events_returns_false_on_empty_line_input():
-    shorter_line = ['', '', '', '', '', '', '', '', '', '', '', '',
-                    '', '', '', '', '', '', '', '', '']
-    sunday_date = datetime.date(2017, 11, 5)
-    day_list = [Day(sunday_date +
+# TODO: just fixed -- rename
+def test__get_events_returns_false_on_empty_line_input(extract):
+    extract.line_as_list = ['', '', '', '', '', '', '', '', '', '', '', '', '',
+                            '', '', '', '', '', '', '', '', '']
+    extract.sunday_date = datetime.date(2017, 11, 5)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    new_week = Week(*day_list)
-    assert not _get_events(shorter_line, new_week)
+    extract.new_week = Week(*day_list)
+    assert not extract.have_events
 
 
-def test__manage_output_buffer_leaves_last_event_in_buffer():
-    buffer = []
-    sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(sunday_date +
+# TODO: just fixed -- rename
+def test__manage_output_buffer_leaves_last_event_in_buffer(extract):
+    extract.output_buffer = []
+    extract.sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    wk = Week(*day_list)
-    wk[6].events.append(Event('w', '13:15', '6.5'))
-    _manage_output_buffer(buffer, wk)
-    assert buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
+    extract.new_week = Week(*day_list)
+    extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
+    extract._manage_output_buffer()
+    assert extract.output_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
-def test__manage_output_buffer_leaves_last_date_in_buffer_if_no_events():
-    buffer = []
-    sunday_date = datetime.date(2016, 4, 10)
-    day_list = [Day(sunday_date +
+# TODO: just fixed -- rename
+def test__manage_output_buffer_leaves_last_date_in_buffer_if_no_events(extract):
+    extract.output_buffer = []
+    extract.sunday_date = datetime.date(2016, 4, 10)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    wk = Week(*day_list)
-    _manage_output_buffer(buffer, wk)
-    assert buffer[-1] == '    2016-04-16'
+    extract.new_week = Week(*day_list)
+    extract._manage_output_buffer()
+    assert extract.output_buffer[-1] == '    2016-04-16'
 
 
-def test__append_week_header():
-    buffer = []
-    sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(sunday_date +
+# TODO: just fixed -- rename
+def test__append_week_header(extract):
+    extract.output_buffer = []
+    extract.sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    wk = Week(*day_list)
-    _append_week_header(buffer, wk)
-    assert buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + '=' * 26
+    extract.new_week = Week(*day_list)
+    extract._append_week_header()
+    assert extract.output_buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + '=' * 26
 
 
-def test__append_day_header():
-    buffer = []
+# TODO: just fixed -- rename
+def test__append_day_header(extract):
+    extract.output_buffer = []
     dy = Day(datetime.date(2015, 5, 5), [])
-    _append_day_header(buffer, dy)
-    assert buffer[-1] == '    2015-05-05'
+    extract._append_day_header(dy)
+    assert extract.output_buffer[-1] == '    2015-05-05'
 
 
-def test__handle_start_of_night_3_element_b_event_output_and_empty_buffer():
+# TODO: just fixed -- rename
+def test__handle_start_of_night_3_element_b_event_output_and_empty_buffer(extract):
     output = io.StringIO()
-    buffer = ['bongo', 'Hello World']
-    _handle_start_of_night(buffer,
-                           Event(action='b', mil_time='8:15', hours='4.25'),
+    extract.output_buffer = ['bongo', 'Hello World']
+    extract._handle_start_of_night(Event(action='b', mil_time='8:15', hours='4.25'),
                            datetime.date(2017, 10, 12),
                            output)
     assert output.getvalue() == 'bongo\nHello World\n'
-    assert buffer == []
+    assert extract.output_buffer == []
 
 
-def test__handle_start_of_night_2_element_b_event_no_output_pops_actions():
+# TODO: just fixed -- rename
+def test__handle_start_of_night_2_element_b_event_no_output_pops_actions(extract):
     output = io.StringIO()
-    buffer = ['bongobongo', 'action: s, time: 19:00']
-    _handle_start_of_night(buffer,
-                           Event(action='b', mil_time='10:00', hours=''),
+    extract.output_buffer = ['bongobongo', 'action: s, time: 19:00']
+    extract._handle_start_of_night(Event(action='b', mil_time='10:00', hours=''),
                            datetime.date(2017, 5, 17),
                            output)
     assert output.getvalue() == ''
-    assert buffer == ['bongobongo']
+    assert extract.output_buffer == ['bongobongo']
 
 
-def test__handle_start_of_night_2_element_b_event_long_b_string_in_buffer():
+# TODO: just fixed -- rename
+def test__handle_start_of_night_2_element_b_event_long_b_string_in_buffer(extract):
     output = io.StringIO()
-    buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
-    _handle_start_of_night(buffer,
-                           Event(action='b', mil_time='23:15', hours=''),
+    extract.output_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
+    extract._handle_start_of_night(Event(action='b', mil_time='23:15', hours=''),
                            datetime.date(2017, 3, 19),
                            output)
     assert output.getvalue() == ''
-    assert buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+    assert extract.output_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
 def test__is_complete_b_event_line_returns_true_on_complete_b_event_line():
     line = 'action: b, time: 21:45, hours: 3.75'
-    assert bool(_is_complete_b_event_line(line))
+    assert bool(Extract._is_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line():
     line = 'action: b, time: 17:25'
-    assert not bool(_is_complete_b_event_line(line))
+    assert not bool(Extract._is_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_non_b_event_line_input():
     line = 'action: s, time: 17:25'
-    assert not bool(_is_complete_b_event_line(line))
+    assert not bool(Extract._is_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_non_event_line_input():
     line = 'cowabunga!!!'
-    assert not bool(_is_complete_b_event_line(line))
+    assert not bool(Extract._is_complete_b_event_line(line))
 
 
 def test__is_event_line_returns_true_on_2_element_b_line_input():
     line = 'action: b, time: 4:25'
-    assert bool(_is_event_line(line))
+    assert bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_true_on_3_element_b_line_input():
     line = 'action: b, time: 4:25, hours: 6.00'
-    assert bool(_is_event_line(line))
+    assert bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_true_on_2_element_s_line_input():
     line = 'action: s, time: 4:25'
-    assert bool(_is_event_line(line))
+    assert bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_true_on_3_element_w_line_input():
     line = 'action: w, time: 11:00, hours: 10.50'
-    assert bool(_is_event_line(line))
+    assert bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_false_on_3_element_s_line_input():
     line = 'action: s, time: 12:00, hours: 6.00'
-    assert not bool(_is_event_line(line))
+    assert not bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_false_on_2_element_w_line_input():
     line = 'action: w, time: 11:45'
-    assert not bool(_is_event_line(line))
+    assert not bool(Extract._is_event_line(line))
 
 
 def test__is_event_line_returns_false_on_non_action_input():
     line = '=' * 18
-    assert not bool(_is_event_line(line))
+    assert not bool(Extract._is_event_line(line))
 
 
 def test_open_infile(infile_wrapper):
@@ -207,25 +221,31 @@ def test_open_infile(infile_wrapper):
     assert isinstance(infile, io.StringIO)
 
 
-def test__check_for_date_matches_date_in_correct_format():
+# TODO: just fixed -- rename
+def test__check_for_date_matches_date_in_correct_format(extract):
     date_string = '12/34/5678'
-    good_match = _re_match_date(date_string)
-    assert good_match
+    extract._re_match_date(date_string)
+    assert extract.date_match_found
 
 
-def test__check_for_date_rejects_date_with_hyphens():
+# TODO: just fixed -- rename
+def test__check_for_date_rejects_date_with_hyphens(extract):
     date_string = '12-34-5678'
-    good_match = _re_match_date(date_string)
-    assert not good_match
+    extract._re_match_date(date_string)
+    assert not extract.date_match_found
 
 
-def test__check_for_date_rejects_date_with_alpha():
+# TODO: just fixed -- rename
+def test__check_for_date_rejects_date_with_alpha(extract):
     date_string = 'a2/34/5678'
-    good_match = _re_match_date(date_string)
-    assert not good_match
+    extract._re_match_date(date_string)
+    assert not extract.date_match_found
 
 
-def test__look_for_week_returns_falsy_values_on_non_sunday_input():
-    non_sunday_match = _re_match_date('11/14/2017')
-    assert non_sunday_match
-    assert _look_for_week(non_sunday_match) == (None, None, False)
+# TODO: just fixed -- rename
+def test__look_for_week_returns_falsy_values_on_non_sunday_input(extract):
+    extract._re_match_date('11/14/2017')  # date is not a Sunday
+    extract._look_for_week()
+    assert not extract.sunday_date
+    assert not extract.new_week
+    assert not extract.we_are_in_week

@@ -178,12 +178,11 @@ class Extract:
         """
         Determine whether the current input line represents the start of a week.
 
-                                 a date in an input field
         :return:
             if date_match_found represents a Sunday:
                 an implicit 3-element tuple holding:
                     1) date_match_found converted to a datetime.date
-                    2) an new Week object that starts with that date
+                    2) a new Week object that starts with that date
                     3) a boolean indicating whether we are now in a week: True iff
                        date_match_found was non-null
             else:
@@ -251,17 +250,6 @@ class Extract:
         Called by: lines_in_weeks_out()
         """
         self._manage_output_buffer()
-
-    # @staticmethod
-    # def _re_match_date(field):
-    #     """
-    #     Does field start with a date?
-    #
-    #     :param field: a string
-    #     Called by: lines_in_weeks_out()
-    #     """
-    #     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
-    #     return m if m else None
 
     @staticmethod
     def _match_to_date_obj(m):
