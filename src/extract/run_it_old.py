@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 
-# file: src/extract/run_it_rf_class.py
+# file: src/extract/run_it.py
 # andrew jarcho
 # 2017-01-21
 
@@ -37,7 +37,7 @@ def main():
     # read_logger will need a formatter since it is writing to file
     read_logger = logging.getLogger('extract.read_fns')
     read_logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler('read_fns.log', mode='w')
+    file_handler = logging.FileHandler('src/extract/read_fns.log', mode='w')
     formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
@@ -52,6 +52,5 @@ if __name__ == '__main__':
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
     infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
-    extract = read_fns.Extract(infile)
-    extract.lines_in_weeks_out()
+    read_fns.lines_in_weeks_out(infile)
     logging.info('extract finish')

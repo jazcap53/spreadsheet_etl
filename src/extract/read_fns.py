@@ -1,4 +1,4 @@
-# file: src/extract/read_fns.py
+# file: src/extract/read_fns_class.py
 # andrew jarcho
 # 2017-01-25
 
@@ -123,305 +123,280 @@ def open_outfile(file_write_wrapper):
     return file_write_wrapper.open()
 
 
-def lines_in_weeks_out(infile):
-    """
-    Read lines from .csv file; write Weeks, Days, and Events.
+class Extract:
+    def __init__(self, infile):
+        """
 
-    While there is data to read:
-        Read and ignore lines until we see the start of a week
-        Call _handle_week() to collect and output a week of data
-    If a partial week remains in output buffer:
-        Call _handle_leftovers() to output it
+        :param infile: A file handle open for read
+        """
+        self.infile = infile
+        self.sunday_date = None
+        self.new_week = None
+        self.we_are_in_week = False
+        self.have_events = False
+        self.output_buffer = []
+        self.line_as_list = []
+        self.date_match_found = False
 
-    :param infile: a file handle open for read
-    :return: None
-    Called by: client code
-    """
-    sunday_date = None
-    new_week = None
-    are_in_week = False
-    are_events = False
-    output_buffer = []
-    for line in infile:
-        line_as_list = line.strip().split(',')[:22]
-        date_match_found = _re_match_date(line_as_list[0])  # start of week
-        if not are_in_week:
-            sunday_date, new_week, are_in_week = \
-                _look_for_week(date_match_found)
-        # if *not* else or elif here: _look_for_week() may alter are_in_week
-        if are_in_week:
-            # _handle_week() outputs good data and discards bad data
-            are_events, are_in_week = \
-                _handle_week(line_as_list, new_week, output_buffer)
-    # handle any data left in buffer
-    if sunday_date and are_events and new_week:
-        _handle_leftovers(output_buffer, new_week)
+    def lines_in_weeks_out(self):
+        """
+        Read lines from .csv file; write Weeks, Days, and Events.
 
+        While there is data to read:
+            Read and ignore lines until we see the start of a week
+            Call _handle_week() to collect and output a week of data
+        If a partial week remains in output buffer:
+            Call _handle_leftovers() to output it
 
-def _look_for_week(date_match_found):
-    """
-    Determine whether the current input line represents the start of a week.
+        :return: None
+        Called by: client code
+        """
+        for line in self.infile:
+            self.line_as_list = line.strip().split(',')[:22]
+            self._re_match_date(self.line_as_list[0])  # start of week
+            if not self.we_are_in_week:
+                self._look_for_week()
+            # if *not* else or elif here: _look_for_week() may alter we_are_in_week
+            if self.we_are_in_week:
+                # _handle_week() outputs good data and discards bad data
+                self._handle_week()
+        # handle any data left in buffer
+        if self.sunday_date and self.have_events and self.new_week:
+            self._handle_leftovers()
 
-    :param date_match_found: an re match object -- the result of checking for
-                             a date in an input field
-    :return:
-        if date_match_found represents a Sunday:
-            an implicit 3-element tuple holding:
-                1) date_match_found converted to a datetime.date
-                2) an new Week object that starts with that date
-                3) a boolean indicating whether we are now in a week: True iff
-                   date_match_found was non-null
+    def _re_match_date(self, field):
+        """
+        Does field start with a date?
+
+        :param field: a string
+        Called by: lines_in_weeks_out()
+        """
+        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
+        self.date_match_found = m if m else None
+
+    def _look_for_week(self):
+        """
+        Determine whether the current input line represents the start of a week.
+
+                                 a date in an input field
+        :return:
+            if date_match_found represents a Sunday:
+                an implicit 3-element tuple holding:
+                    1) date_match_found converted to a datetime.date
+                    2) an new Week object that starts with that date
+                    3) a boolean indicating whether we are now in a week: True iff
+                       date_match_found was non-null
+            else:
+                None, None, and False
+        Called by: lines_in_weeks_out()
+        """
+        self.sunday_date = None
+        self.new_week = None
+        self.we_are_in_week = False
+        if self.date_match_found:
+            self.sunday_date = self._match_to_date_obj(self.date_match_found)
+            if self._is_a_sunday(self.sunday_date):
+                # set up a Week
+                day_list = [Day(self.sunday_date +
+                                datetime.timedelta(days=x), [])
+                            for x in range(7)]
+                self.new_week = Week(*day_list)
+                self.we_are_in_week = True
+            else:
+                read_logger.warning('Non-Sunday date {} found in input'.
+                                    format(self.sunday_date))
+                self.sunday_date = None
+
+    @staticmethod
+    def _is_a_sunday(dt_date):
+        """
+        Tell whether the parameter represents a Sunday
+        :param dt_date: a datetime.date object
+        :return: bool: is dt_date a Sunday
+        Called by: _look_for_week()
+        """
+        return dt_date.weekday() == 6
+
+    def _handle_week(self):
+        """
+        if there are valid events in line_as_list:
+            call _get_events() to store them as Event objects in Week object
+            new_week
         else:
-            None, None, and False
-    Called by: lines_in_weeks_out()
-    """
-    sunday_date = None
-    new_week = None
-    in_week = False
-    if date_match_found:
-        sunday_date = _match_to_date_obj(date_match_found)
-        if _is_a_sunday(sunday_date):
-            # set up a Week
-            day_list = [Day(sunday_date +
-                            datetime.timedelta(days=x), [])
-                        for x in range(7)]
-            new_week = Week(*day_list)
-            in_week = True
+            call _manage_output_buffer() to write good data, discard incomplete
+            data from output_buffer
+
+        :return: an (implicit) tuple holding
+                 1) have_events: a boolean that is True iff we have found > 0 valid
+                                 events in line_as_list
+                 2) in_week: a boolean that is True iff a week has started but not
+                             ended
+        Called by: lines_in_weeks_out()
+        """
+        self.have_events = False
+        self.we_are_in_week = False
+        if any(self.line_as_list):
+            self._get_events()
+            if self.have_events:
+                self.we_are_in_week = True
+        else:  # a blank line: our week has ended
+            self._manage_output_buffer()
+
+    def _handle_leftovers(self):
+        """
+        Just calls _manage_output_buffer(). This function exists solely to
+        improve readability in the calling function.
+
+        :return: None
+        Called by: lines_in_weeks_out()
+        """
+        self._manage_output_buffer()
+
+    # @staticmethod
+    # def _re_match_date(field):
+    #     """
+    #     Does field start with a date?
+    #
+    #     :param field: a string
+    #     Called by: lines_in_weeks_out()
+    #     """
+    #     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
+    #     return m if m else None
+
+    @staticmethod
+    def _match_to_date_obj(m):
+        """
+        Convert a successful regex match to a datetime.date object
+        Called by: lines_in_weeks_out()
+        """
+        # group(3) is the year, group(1) is the month, group(2) is the day
+        dt = [int(m.group(x)) for x in (3, 1, 2)]
+        dt_obj = datetime.date(dt[0], dt[1], dt[2])  # year, month, day
+        return dt_obj
+
+    def _get_events(self):
+        """
+        Add each valid event in shorter_line to new_week.
+
+        :return find_events: True iff there is at least one valid event in
+                             shorter_line
+        Called by: lines_in_weeks_out()
+        """
+        shorter_line = self.line_as_list[1:]
+        self.have_events = False
+        for ix in range(7):
+            # a segment is a list of 3 consecutive fields from the .csv file
+            segment = shorter_line[3 * ix: 3 * ix + 3]
+            if validate_segment(segment):
+                an_event = Event(*segment)
+            elif segment == ['', '', '']:
+                an_event = None
+            else:
+                read_logger.warning('segment {} not valid in _get_events()\n'
+                                    '\tsegment date is {}'.
+                                    format(segment, self.new_week[ix].dt_date))
+                continue
+            if self.new_week and an_event and an_event.action:
+                self.new_week[ix].events.append(an_event)
+                self.have_events = True
+
+    def _manage_output_buffer(self):
+        """
+        Convert the Events in wk into strings and place strings into buffer.
+
+        :return: None
+        Called by: lines_in_weeks_out()
+        """
+        self._append_week_header()
+        for day in self.new_week:
+            self._append_day_header(day)
+            for event in day.events:
+                event_str = 'action: {}, time: {}'.format(event.action,
+                                                          event.mil_time)
+                if event.hours:
+                    event_str += ', hours: {:.2f}'.format(float(event.hours))
+                if event.action == 'b':
+                    self._handle_start_of_night(event, day.dt_date)
+                self.output_buffer.append(event_str)
+
+    def _append_week_header(self):
+        """
+        :return: None
+        Called by: _manage_output_buffer()
+        """
+        wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
+        wk_header += '\n' + '=' * (len(wk_header) - 2)
+        self.output_buffer.append(wk_header)
+
+    def _append_day_header(self, day):
+        """
+        :return: None
+        Called by: _manage_output_buffer()
+        """
+        dy_header = '    {}'.format(day.dt_date)  # four leading spaces
+        self.output_buffer.append(dy_header)
+
+    def _handle_start_of_night(self, action_b_event, datetime_date,
+                               out=sys.stdout):
+        """
+        Write (only) complete nights from buffer to out.
+
+        A 'b' action Event starts each night of data.
+        If any data from the *previous* night are missing, this Event will
+            have exactly two key/value elements.
+        Otherwise, 'b' action Events have exactly three key/value elements.
+
+        if the Event parameter action_b_event has 3 elements:
+            output the entire buffer
+            clear() the buffer
         else:
-            read_logger.warning('Non-Sunday date {} found in input'.
-                                format(sunday_date))
-            sunday_date = None
-    return sunday_date, new_week, in_week
+            do not output anything
+            pop() lines from the buffer:
+                start with the last line that represents an Event
+                leave any header lines intact
+                stop pop()ping after removing a 3-element 'b' Event
 
-
-def _is_a_sunday(dt_date):
-    """
-    Tell whether the parameter represents a Sunday
-    :param dt_date: a datetime.date object
-    :return: bool: is dt_date a Sunday
-    Called by: _look_for_week()
-    """
-    return dt_date.weekday() == 6
-
-
-def _handle_week(line_as_list, new_week, output_buffer):
-    """
-    if there are valid events in line_as_list:
-        call _get_events() to store them as Event objects in Week object
-        new_week
-    else:
-        call _manage_output_buffer() to write good data, discard incomplete
-        data from output_buffer
-    :param line_as_list: the current input line, converted from csv to a list
-    :param new_week: a Week object that possibly does not yet hold any Events
-    :param output_buffer: a list of text lines representing events, along with
-                          (possibly) header lines
-    :return: an (implicit) tuple holding
-             1) have_events: a boolean that is True iff we have found > 0 valid
-                             events in line_as_list
-             2) in_week: a boolean that is True iff a week has started but not
-                         ended
-    Called by: lines_in_weeks_out()
-    """
-    have_events = False
-    in_week = False
-    if any(line_as_list):
-        have_events = _get_events(line_as_list[1:], new_week)
-        if have_events:
-            in_week = True
-    else:  # a blank line: our week has ended
-        _manage_output_buffer(output_buffer, new_week)
-    return have_events, in_week
-
-
-def _handle_leftovers(output_buffer, new_week):
-    """
-    Just calls _manage_output_buffer(). This function exists solely to
-    improve readability in the calling function.
-
-    :param output_buffer: a list, possibly empty, of header strings and event
-                          strings.
-    :param new_week: a Week object, holding seven Day objects beginning
-                     with a Sunday. Each Day may have zero or more bedtime
-                     (action == 'b') Events, as well as zero or more other
-                     Events.
-    :return: None
-    Called by: lines_in_weeks_out()
-    """
-    _manage_output_buffer(output_buffer, new_week)
-
-
-def _re_match_date(field):
-    """
-    Does field start with a date?
-
-    :param field: a string
-    Called by: lines_in_weeks_out()
-    """
-    m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
-    return m if m else None
-
-
-def _match_to_date_obj(m):
-    """
-    Convert a successful regex match to a datetime.date object
-    Called by: lines_in_weeks_out()
-    """
-    # group(3) is the year, group(1) is the month, group(2) is the day
-    dt = [int(m.group(x)) for x in (3, 1, 2)]
-    dt_obj = datetime.date(dt[0], dt[1], dt[2])  # year, month, day
-    return dt_obj
-
-
-def _get_events(shorter_line, new_week):
-    """
-    Add each valid event in shorter_line to new_week.
-
-    :param shorter_line: line_as_list, from lines_in_weeks_out(),
-        without its first field
-    :param new_week: a Week object
-    :return find_events: True iff there is at least one valid event in
-                         shorter_line
-    Called by: lines_in_weeks_out()
-    """
-    find_events = False
-    for ix in range(7):
-        # a segment is a list of 3 consecutive fields from the .csv file
-        segment = shorter_line[3 * ix: 3 * ix + 3]
-        if validate_segment(segment):
-            an_event = Event(*segment)
-        elif segment == ['', '', '']:
-            an_event = None
+        :param action_b_event: is the first Event for some night.
+                               action_b_event will have an 'hours' field <=>
+                               we have complete data for the preceding night.
+        :param datetime_date: a datetime.date
+        :return: None
+        Called by: _manage_output_buffer()
+        """
+        if action_b_event.hours:  # we have complete data for the preceding night
+            for line in self.output_buffer:  # note: action_b_event is *not* in buffer
+                print(line, file=out)
+            self.output_buffer.clear()
         else:
-            read_logger.warning('segment {} not valid in _get_events()\n'
-                                '\tsegment date is {}'.
-                                format(segment, new_week[ix].dt_date))
-            continue
-        if new_week and an_event and an_event.action:
-            new_week[ix].events.append(an_event)
-            find_events = True
-    return find_events
+            read_logger.info('Incomplete night(s) before {}'.format(datetime_date))
+            for buf_ix in range(len(self.output_buffer) - 1, -1, -1):
+                this_line = self.output_buffer[buf_ix]
+                # if we see a 3-element 'b' event, there's good data preceding it
+                if self._is_complete_b_event_line(this_line):
+                    self.output_buffer.pop(buf_ix)  # pop one last time
+                    break
+                elif self._is_event_line(this_line):  # pop only Event lines:
+                    self.output_buffer.pop(buf_ix)          # leave headers in buffer
 
+    @staticmethod
+    def _is_complete_b_event_line(line):
+        """
+        Called by: _handle_start_of_night()
+        """
+        return re.match(r'action: b, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$',
+                        line)
 
-def _manage_output_buffer(buffer, wk):
-    """
-    Convert the Events in wk into strings and place strings into buffer.
-
-    :param buffer: a list, possibly empty, of header strings and event
-                   strings.
-    :param wk: a Week object, holding seven Day objects beginning
-               with a Sunday. Each Day may have zero or more bedtime
-               (action == 'b') Events, as well as zero or more other
-               Events.
-    :return: None
-    Called by: lines_in_weeks_out()
-    """
-    _append_week_header(buffer, wk)
-    for day in wk:
-        _append_day_header(buffer, day)
-        for event in day.events:
-            event_str = 'action: {}, time: {}'.format(event.action,
-                                                      event.mil_time)
-            if event.hours:
-                event_str += ', hours: {:.2f}'.format(float(event.hours))
-            if event.action == 'b':
-                _handle_start_of_night(buffer, event, day.dt_date)
-            buffer.append(event_str)
-
-
-def _append_week_header(buffer, wk):
-    """
-    :param buffer: a list, possibly empty, of header strings and event
-                   strings.
-    :param wk: a Week object, holding seven Day objects beginning
-               with a Sunday. Each Day may have zero or more bedtime
-               (action == 'b') Events, as well as zero or more other
-               Events.
-    :return: None
-    Called by: _manage_output_buffer()
-    """
-    wk_header = '\nWeek of Sunday, {}:'.format(wk[0].dt_date)
-    wk_header += '\n' + '=' * (len(wk_header) - 2)
-    buffer.append(wk_header)
-
-
-def _append_day_header(buffer, dy):
-    """
-    :param buffer: a list, possibly empty, of header strings and event
-                   strings.
-    :param dy: a Day object, which may have zero or more bedtime
-               (action == 'b') Events, as well as zero or more other
-               Events.
-    :return: None
-    Called by: _manage_output_buffer()
-    """
-    dy_header = '    {}'.format(dy.dt_date)  # four leading spaces
-    buffer.append(dy_header)
-
-
-def _handle_start_of_night(buffer, action_b_event, datetime_date,
-                           out=sys.stdout):
-    """
-    Write (only) complete nights from buffer to out.
-
-    A 'b' action Event starts each night of data.
-    If any data from the *previous* night are missing, this Event will
-        have exactly two key/value elements.
-    Otherwise, 'b' action Events have exactly three key/value elements.
-
-    if the Event parameter action_b_event has 3 elements:
-        output the entire buffer
-        clear() the buffer
-    else:
-        do not output anything
-        pop() lines from the buffer:
-            start with the last line that represents an Event
-            leave any header lines intact
-            stop pop()ping after removing a 3-element 'b' Event
-
-    :param buffer: a list of strings. May contain header lines and/or
-                   event lines. Event lines start with 'action: '.
-    :param action_b_event: is the first Event for some night.
-                           action_b_event will have an 'hours' field <=>
-                           we have complete data for the preceding night.
-    :param datetime_date: a datetime.date
-    :return: None
-    Called by: _manage_output_buffer()
-    """
-    if action_b_event.hours:  # we have complete data for the preceding night
-        for line in buffer:  # note: action_b_event is *not* in buffer
-            print(line, file=out)
-        buffer.clear()
-    else:
-        read_logger.info('Incomplete night(s) before {}'.format(datetime_date))
-        for buf_ix in range(len(buffer) - 1, -1, -1):
-            this_line = buffer[buf_ix]
-            # if we see a 3-element 'b' event, there's good data preceding it
-            if _is_complete_b_event_line(this_line):
-                buffer.pop(buf_ix)  # pop one last time
-                break
-            elif _is_event_line(this_line):  # pop only Event lines:
-                buffer.pop(buf_ix)          # leave headers in buffer
-
-
-def _is_complete_b_event_line(line):
-    """
-    Called by: _handle_start_of_night()
-    """
-    return re.match(r'action: b, time: \d{1,2}:\d{2}, hours: \d{1,2}\.\d{2}$',
-                    line)
-
-
-def _is_event_line(line):
-    """
-    Called by: _handle_start_of_night()
-    """
-    # b events may have 2 or 3 elements
-    matchline = r'(?:action: b, time: \d{1,2}:\d{2})' + \
-                r'(?:, hours: \d{1,2}\.\d{2})?$'
-    # s events may have only 2 elements
-    matchline += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
-    # w events may have only 3 elements
-    matchline += r'|(?:action: w, time: \d{1,2}:\d{2}, ' + \
-                 r'hours: \d{1,2}\.\d{2}$)'
-    return re.match(matchline, line)
+    @staticmethod
+    def _is_event_line(line):
+        """
+        Called by: _handle_start_of_night()
+        """
+        # b events may have 2 or 3 elements
+        match_line = r'(?:action: b, time: \d{1,2}:\d{2})' + \
+                     r'(?:, hours: \d{1,2}\.\d{2})?$'
+        # s events may have only 2 elements
+        match_line += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
+        # w events may have only 3 elements
+        match_line += r'|(?:action: w, time: \d{1,2}:\d{2}, ' + \
+                      r'hours: \d{1,2}\.\d{2}$)'
+        return re.match(match_line, line)
