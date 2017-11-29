@@ -153,57 +153,57 @@ def test__handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
 
 def test__is_complete_b_event_line_returns_true_on_complete_b_event_line():
     line = 'action: b, time: 21:45, hours: 3.75'
-    assert bool(Extract._is_complete_b_event_line(line))
+    assert bool(Extract._match_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line():
     line = 'action: b, time: 17:25'
-    assert not bool(Extract._is_complete_b_event_line(line))
+    assert not bool(Extract._match_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_non_b_event_line_input():
     line = 'action: s, time: 17:25'
-    assert not bool(Extract._is_complete_b_event_line(line))
+    assert not bool(Extract._match_complete_b_event_line(line))
 
 
 def test__is_complete_b_event_line_returns_false_on_non_event_line_input():
     line = 'cowabunga!!!'
-    assert not bool(Extract._is_complete_b_event_line(line))
+    assert not bool(Extract._match_complete_b_event_line(line))
 
 
 def test__is_event_line_returns_true_on_2_element_b_line_input():
     line = 'action: b, time: 4:25'
-    assert bool(Extract._is_event_line(line))
+    assert bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_true_on_3_element_b_line_input():
     line = 'action: b, time: 4:25, hours: 6.00'
-    assert bool(Extract._is_event_line(line))
+    assert bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_true_on_2_element_s_line_input():
     line = 'action: s, time: 4:25'
-    assert bool(Extract._is_event_line(line))
+    assert bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_true_on_3_element_w_line_input():
     line = 'action: w, time: 11:00, hours: 10.50'
-    assert bool(Extract._is_event_line(line))
+    assert bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_false_on_3_element_s_line_input():
     line = 'action: s, time: 12:00, hours: 6.00'
-    assert not bool(Extract._is_event_line(line))
+    assert not bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_false_on_2_element_w_line_input():
     line = 'action: w, time: 11:45'
-    assert not bool(Extract._is_event_line(line))
+    assert not bool(Extract._match_event_line(line))
 
 
 def test__is_event_line_returns_false_on_non_action_input():
     line = '=' * 18
-    assert not bool(Extract._is_event_line(line))
+    assert not bool(Extract._match_event_line(line))
 
 
 def test_open_infile(infile_wrapper):
@@ -214,24 +214,24 @@ def test_open_infile(infile_wrapper):
 def test__check_for_date_matches_date_in_correct_format(extract):
     date_string = '12/34/5678'
     extract._re_match_date(date_string)
-    assert extract.date_match_found
+    assert extract.date_match
 
 
 def test__check_for_date_rejects_date_with_hyphens(extract):
     date_string = '12-34-5678'
     extract._re_match_date(date_string)
-    assert not extract.date_match_found
+    assert not extract.date_match
 
 
 def test__check_for_date_rejects_date_with_alpha(extract):
     date_string = 'a2/34/5678'
     extract._re_match_date(date_string)
-    assert not extract.date_match_found
+    assert not extract.date_match
 
 
 def test__look_for_week_finds_no_week_on_non_sunday_input(extract):
     extract._re_match_date('11/14/2017')  # date is not a Sunday
     extract._look_for_week()
-    assert not extract.sunday_date
+    assert extract.sunday_date == Extract.NULL_DATE
     assert not extract.new_week
     assert not extract.we_are_in_week

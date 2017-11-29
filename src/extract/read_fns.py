@@ -170,15 +170,7 @@ class Extract:
         """
         Determine whether current input line represents the start of a week.
 
-        :return:
-            if date_match represents a Sunday:
-                an implicit 3-element tuple holding:
-                    1) date_match converted to a datetime.date
-                    2) a new Week object that starts with that date
-                    3) a boolean indicating whether we are now in a week:
-                       True iff date_match was non-null
-            else:
-                None, None, and False
+        :return: None
         Called by: lines_in_weeks_out()
         """
         self.sunday_date = Extract.NULL_DATE
@@ -202,6 +194,7 @@ class Extract:
     def _is_a_sunday(dt_date):
         """
         Tell whether the parameter represents a Sunday
+
         :param dt_date: a datetime.date object
         :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
@@ -212,18 +205,14 @@ class Extract:
 
     def _handle_week(self):
         """
-        if there are valid events in line_as_list:
-            call _get_events() to store them as Event objects in Week object
-            new_week
+        if there are valid events in self.line_as_list:
+            call self._get_events() to store them as Event objects in Week
+                    object new_week
         else:
-            call _manage_output_buffer() to write good data, discard
-            incomplete data from output_buffer
+            call self._manage_output_buffer() to write good data, discard
+                    incomplete data from self.output_buffer
 
-        :return: an (implicit) tuple holding
-                 1) have_events: a boolean that is True iff we have found > 0
-                                 valid events in line_as_list
-                 2) in_week: a boolean that is True iff a week has started but
-                             not ended
+        :return: None
         Called by: lines_in_weeks_out()
         """
         self.have_events = False
@@ -232,13 +221,13 @@ class Extract:
             self._get_events()
             if self.have_events:
                 self.we_are_in_week = True
-        else:  # a blank line: our week has ended
+        else:  # we saw a blank line: our week has ended
             self._manage_output_buffer()
 
     def _handle_leftovers(self):
         """
-        Just calls _manage_output_buffer(). This function exists solely to
-        improve readability in the calling function.
+        If there is data left in self.output_buffer, calls
+                self._manage_output_buffer().
 
         :return: None
         Called by: lines_in_weeks_out()
@@ -250,6 +239,8 @@ class Extract:
     def _match_to_date_obj(m):
         """
         Convert a successful regex match to a datetime.date object
+
+        :return: a datetime.date object
         Called by: lines_in_weeks_out()
         """
         if m:
@@ -262,8 +253,7 @@ class Extract:
         """
         Add each valid event in shorter_line to new_week.
 
-        :return find_events: True iff there is at least one valid event in
-                             shorter_line
+        :return: None
         Called by: lines_in_weeks_out()
         """
         shorter_line = self.line_as_list[1:]
@@ -287,7 +277,7 @@ class Extract:
 
     def _manage_output_buffer(self):
         """
-        Convert the Events in wk into strings and place strings into buffer.
+        Convert the Events in wk into strings and place strings in buffer.
 
         :return: None
         Called by: lines_in_weeks_out()
@@ -345,6 +335,7 @@ class Extract:
                                action_b_event will have an 'hours' field <=>
                                we have complete data for the preceding night.
         :param datetime_date: a datetime.date
+        :param out: output destination
         :return: None
         Called by: _manage_output_buffer()
         """
@@ -358,14 +349,14 @@ class Extract:
             for buf_ix in range(len(self.output_buffer) - 1, -1, -1):
                 this_line = self.output_buffer[buf_ix]
                 # if we see a 3-element 'b' event, there's good data before it
-                if self._is_complete_b_event_line(this_line):
+                if self._match_complete_b_event_line(this_line):
                     self.output_buffer.pop(buf_ix)  # pop one last time
                     break
-                elif self._is_event_line(this_line):  # pop only Event lines:
+                elif self._match_event_line(this_line):  # pop only Event lines
                     self.output_buffer.pop(buf_ix)  # leave headers in buffer
 
     @staticmethod
-    def _is_complete_b_event_line(line):
+    def _match_complete_b_event_line(line):
         """
         Called by: _handle_start_of_night()
         """
@@ -374,16 +365,16 @@ class Extract:
                         line)
 
     @staticmethod
-    def _is_event_line(line):
+    def _match_event_line(line):
         """
         Called by: _handle_start_of_night()
         """
         # b events may have 2 or 3 elements
         match_line = r'(?:action: b, time: \d{1,2}:\d{2})' + \
                      r'(?:, hours: \d{1,2}\.\d{2})?$'
-        # s events may have only 2 elements
+        # s events may only have 2 elements
         match_line += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
-        # w events may have only 3 elements
+        # w events may only have 3 elements
         match_line += r'|(?:action: w, time: \d{1,2}:\d{2}, ' + \
                       r'hours: \d{1,2}\.\d{2}$)'
         return re.match(match_line, line)
