@@ -213,25 +213,25 @@ def test_open_infile(infile_wrapper):
 
 def test__check_for_date_matches_date_in_correct_format(extract):
     date_string = '12/34/5678'
-    extract._re_match_date(date_string)
-    assert extract.date_match
+    date_match = extract._re_match_date(date_string)
+    assert date_match
 
 
 def test__check_for_date_rejects_date_with_hyphens(extract):
     date_string = '12-34-5678'
-    extract._re_match_date(date_string)
-    assert not extract.date_match
+    date_match = extract._re_match_date(date_string)
+    assert not date_match
 
 
 def test__check_for_date_rejects_date_with_alpha(extract):
     date_string = 'a2/34/5678'
-    extract._re_match_date(date_string)
-    assert not extract.date_match
+    date_match = extract._re_match_date(date_string)
+    assert not date_match
 
 
 def test__look_for_week_finds_no_week_on_non_sunday_input(extract):
-    extract._re_match_date('11/14/2017')  # date is not a Sunday
-    extract._look_for_week()
+    date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
+    extract._look_for_week(date_match)
     assert extract.sunday_date == Extract.NULL_DATE
     assert not extract.new_week
     assert not extract.we_are_in_week
