@@ -137,7 +137,6 @@ class Extract:
         self.have_events = False
         self.output_buffer = []
         self.line_as_list = []
-        self.date_match = None
 
     def lines_in_weeks_out(self):
         """
@@ -148,36 +147,39 @@ class Extract:
         """
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
-            self._re_match_date(self.line_as_list[0])
+            date_match = self._re_match_date(self.line_as_list[0])
             if not self.we_are_in_week:
-                self._look_for_week()
+                self._look_for_week(date_match)
             if self.we_are_in_week:  # 'if' is correct here
                 # output good data and discard bad data
                 self._handle_week()
         # handle any data left in buffer
         self._handle_leftovers()
 
-    def _re_match_date(self, field):
+    @staticmethod
+    def _re_match_date(field):
         """
         Does param 'field' start with a date?
 
         :param field: a string
+        :return: a match object for a date in format dd/mm/yyyy
         Called by: lines_in_weeks_out()
         """
-        self.date_match = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
+        return re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
 
-    def _look_for_week(self):
+    def _look_for_week(self, date_match):
         """
         Determine whether current input line represents the start of a week.
 
+        :param date_match: a match object for a date in format dd/mm/yyyy
         :return: None
         Called by: lines_in_weeks_out()
         """
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
         self.we_are_in_week = False
-        if self.date_match:
-            self.sunday_date = self._match_to_date_obj(self.date_match)
+        if date_match:
+            self.sunday_date = self._match_to_date_obj(date_match)
             if self._is_a_sunday(self.sunday_date):
                 # set up a Week
                 day_list = [Day(self.sunday_date +
