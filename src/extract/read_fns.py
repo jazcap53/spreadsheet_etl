@@ -129,13 +129,13 @@ class Extract:
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.sunday_date = None
+        self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
         self.new_week = None
         self.we_are_in_week = False
         self.have_events = False
         self.output_buffer = []
         self.line_as_list = []
-        self.date_match_found = False
+        self.date_match = None
 
     def lines_in_weeks_out(self):
         """
@@ -162,29 +162,28 @@ class Extract:
         :param field: a string
         Called by: lines_in_weeks_out()
         """
-        m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
-        self.date_match_found = m if m else None
+        self.date_match = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
 
     def _look_for_week(self):
         """
         Determine whether current input line represents the start of a week.
 
         :return:
-            if date_match_found represents a Sunday:
+            if date_match represents a Sunday:
                 an implicit 3-element tuple holding:
-                    1) date_match_found converted to a datetime.date
+                    1) date_match converted to a datetime.date
                     2) a new Week object that starts with that date
                     3) a boolean indicating whether we are now in a week:
-                       True iff date_match_found was non-null
+                       True iff date_match was non-null
             else:
                 None, None, and False
         Called by: lines_in_weeks_out()
         """
-        self.sunday_date = None
+        self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
         self.new_week = None
         self.we_are_in_week = False
-        if self.date_match_found:
-            self.sunday_date = self._match_to_date_obj(self.date_match_found)
+        if self.date_match:
+            self.sunday_date = self._match_to_date_obj(self.date_match)
             if self._is_a_sunday(self.sunday_date):
                 # set up a Week
                 day_list = [Day(self.sunday_date +
@@ -195,7 +194,7 @@ class Extract:
             else:
                 read_logger.warning('Non-Sunday date {} found in input'.
                                     format(self.sunday_date))
-                self.sunday_date = None
+                self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -205,6 +204,8 @@ class Extract:
         :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
         """
+        if dt_date == datetime.date(datetime.MINYEAR, 1, 1):
+            return False
         return dt_date.weekday() == 6
 
     def _handle_week(self):
@@ -249,10 +250,11 @@ class Extract:
         Convert a successful regex match to a datetime.date object
         Called by: lines_in_weeks_out()
         """
-        # group(3) is the year, group(1) is the month, group(2) is the day
-        dt = [int(m.group(x)) for x in (3, 1, 2)]
-        dt_obj = datetime.date(dt[0], dt[1], dt[2])  # year, month, day
-        return dt_obj
+        if m:
+            # group(3) is the year, group(1) is the month, group(2) is the day
+            dt = [int(m.group(x)) for x in (3, 1, 2)]
+            return datetime.date(dt[0], dt[1], dt[2])  # year, month, day
+        return datetime.date(datetime.MINYEAR, 1, 1)  # sentinel value
 
     def _get_events(self):
         """
