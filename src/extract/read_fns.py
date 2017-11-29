@@ -126,7 +126,6 @@ def open_outfile(file_write_wrapper):
 class Extract:
     def __init__(self, infile):
         """
-
         :param infile: A file handle open for read
         """
         self.infile = infile
@@ -140,32 +139,25 @@ class Extract:
 
     def lines_in_weeks_out(self):
         """
-        Read lines from .csv file; write Weeks, Days, and Events.
-
-        While there is data to read:
-            Read and ignore lines until we see the start of a week
-            Call _handle_week() to collect and output a week of data
-        If a partial week remains in output buffer:
-            Call _handle_leftovers() to output it
+        Read lines from .csv file; output weeks, days, and events
 
         :return: None
         Called by: client code
         """
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
-            self._re_match_date(self.line_as_list[0])  # start of week
+            self._re_match_date(self.line_as_list[0])
             if not self.we_are_in_week:
                 self._look_for_week()
             if self.we_are_in_week:  # 'if' is correct here
-                # _handle_week() outputs good data and discards bad data
+                # output good data and discard bad data
                 self._handle_week()
         # handle any data left in buffer
-        if self.sunday_date and self.have_events and self.new_week:
-            self._handle_leftovers()
+        self._handle_leftovers()
 
     def _re_match_date(self, field):
         """
-        Does field start with a date?
+        Does param 'field' start with a date?
 
         :param field: a string
         Called by: lines_in_weeks_out()
@@ -248,7 +240,8 @@ class Extract:
         :return: None
         Called by: lines_in_weeks_out()
         """
-        self._manage_output_buffer()
+        if self.sunday_date and self.have_events and self.new_week:
+            self._manage_output_buffer()
 
     @staticmethod
     def _match_to_date_obj(m):
