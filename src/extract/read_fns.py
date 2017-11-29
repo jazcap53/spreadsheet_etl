@@ -1,13 +1,13 @@
-# file: src/extract/read_fns_class.py
+# file: src/extract/read_fns.py
 # andrew jarcho
 # 2017-01-25
 
 """
 SUMMARY:
 =======
-read_fns.py contains functions which read the raw input,
-extract and format the data of interest, discard incomplete data, and
-write the remaining formatted data of interest to stdout.
+Class Extract in read_fns.py reads the raw input, extracts and formats
+the data of interest, discards incomplete data, and writes the remaining data
+of interest to stdout.
 
 DETAIL:
 ======
@@ -48,19 +48,16 @@ A third problem is that we must discard data points 'x' that are part
 of a 'night' for which we do not have complete data.
 
 
-Functions
----------
+Principal methods
+-----------------
 
 lines_in_weeks_out() structures the data into an intermediate format
 consisting of Weeks, Days, and Events. A Week has 7 consecutive (calendar)
 Days, beginning with a Sunday. The Events from each Day are grouped
-together (note that this is *not* the case in the .csv file).
+together.
 
-_manage_output_buffer() converts the Weeks, Days, and Events into strings
-and puts the strings into a buffer one Week at a time.
-
-The main unit of interest to the database is a *night*, not a day. We
-must discard any night for which we do not have complete data.
+_manage_output_buffer() converts the Weeks, Days, and Events into strings,
+and puts the strings into the output buffer one Week at a time.
 
 _handle_start_of_night() makes sure that only complete nights are written
 to output
@@ -70,24 +67,19 @@ Week, Day, Event
 ----------------
 
 Each Event has either 2 or 3 fields; each field is a key/value pair. The
-key of the first field of each Event is 'action'. If the value for the
-'action' field is 'b' (bedtime), then that Event starts a night.
+key of the first field of each Event is 'action'. If the value for an
+'action' field is 'b', then that Event starts a night.
 
-The first two fields of any key 'action' / value 'b' Event hold data for
-the night being started. The third field, with key 'hours', when present,
-indicates that the data for the *preceding* night (if there was one) are
-complete.
+The first two fields of any <'action': 'b'> Event hold data for
+the night being started. If a third field is present, this
+indicates that the data for the *preceding* night (if there was one)
+are complete.
 
-If an 'action: b' event string (i.e., an Event converted to a string) has
-NO 'hours' substring, then the data for the preceding night or nights is NOT
-complete. In that case, event strings are discarded *in reverse order*
-starting with the event string before the current 'action: b' string,
-up to and including the most recent 'action: b' event string that *does*
-have an 'hours' substring.
-
-The selection of event strings to be discarded is done by the
-_handle_start_of_night() member function, as described in the "Functions"
-section above.
+If an <'action: b'> event has NO third field, then the data for the
+preceding night or nights are NOT complete. In that case, events are
+discarded *in reverse order* starting with the event before the current
+<'action: b'> event, up to and including the most recent <'action: b'>
+event string that *does* have a third field.
 
 Event strings not discarded, along with header strings for each calendar
 week and day, are written to sys.stdout by default.
@@ -177,7 +169,6 @@ class Extract:
         """
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
-        self.we_are_in_week = False
         if date_match:
             self.sunday_date = self._match_to_date_obj(date_match)
             if self._is_a_sunday(self.sunday_date):
@@ -209,10 +200,10 @@ class Extract:
         """
         if there are valid events in self.line_as_list:
             call self._get_events() to store them as Event objects in Week
-                    object new_week
+            object new_week
         else:
             call self._manage_output_buffer() to write good data, discard
-                    incomplete data from self.output_buffer
+            incomplete data from self.output_buffer
 
         :return: None
         Called by: lines_in_weeks_out()
@@ -336,7 +327,7 @@ class Extract:
                 stop pop()ping after removing a 3-element 'b' Event
 
         :param action_b_event: is the first Event for some night.
-                               action_b_event will have an 'hours' field <=>
+                               action_b_event will have an 'hours' field iff
                                we have complete data for the preceding night.
         :param datetime_date: a datetime.date
         :param out: output destination
