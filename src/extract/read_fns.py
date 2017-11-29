@@ -247,11 +247,12 @@ class Extract:
             # group(3) is the year, group(1) is the month, group(2) is the day
             dt = [int(m.group(x)) for x in (3, 1, 2)]
             return datetime.date(dt[0], dt[1], dt[2])  # year, month, day
-        return Extract.NULL_DATE
+        else:
+            return Extract.NULL_DATE
 
     def _get_events(self):
         """
-        Add each valid event in shorter_line to new_week.
+        Add each valid event in self.line_as_list to self.new_week.
 
         :return: None
         Called by: lines_in_weeks_out()
@@ -277,7 +278,8 @@ class Extract:
 
     def _manage_output_buffer(self):
         """
-        Convert the Events in wk into strings and place strings in buffer.
+        Convert the Events in self.new_week into strings and place the strings
+        in output buffer.
 
         :return: None
         Called by: lines_in_weeks_out()
