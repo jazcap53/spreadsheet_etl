@@ -124,12 +124,14 @@ def open_outfile(file_write_wrapper):
 
 
 class Extract:
+    NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)
+
     def __init__(self, infile):
         """
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
+        self.sunday_date = Extract.NULL_DATE
         self.new_week = None
         self.we_are_in_week = False
         self.have_events = False
@@ -179,7 +181,7 @@ class Extract:
                 None, None, and False
         Called by: lines_in_weeks_out()
         """
-        self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
+        self.sunday_date = Extract.NULL_DATE
         self.new_week = None
         self.we_are_in_week = False
         if self.date_match:
@@ -194,7 +196,7 @@ class Extract:
             else:
                 read_logger.warning('Non-Sunday date {} found in input'.
                                     format(self.sunday_date))
-                self.sunday_date = datetime.date(datetime.MINYEAR, 1, 1)
+                self.sunday_date = Extract.NULL_DATE
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -204,7 +206,7 @@ class Extract:
         :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
         """
-        if dt_date == datetime.date(datetime.MINYEAR, 1, 1):
+        if dt_date == Extract.NULL_DATE:
             return False
         return dt_date.weekday() == 6
 
@@ -254,7 +256,7 @@ class Extract:
             # group(3) is the year, group(1) is the month, group(2) is the day
             dt = [int(m.group(x)) for x in (3, 1, 2)]
             return datetime.date(dt[0], dt[1], dt[2])  # year, month, day
-        return datetime.date(datetime.MINYEAR, 1, 1)  # sentinel value
+        return Extract.NULL_DATE
 
     def _get_events(self):
         """
