@@ -139,7 +139,6 @@ def test__handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     assert extract.output_buffer == ['bongobongo']
 
 
-# TODO: just fixed -- rename
 def test__handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
     output = io.StringIO()
     extract.output_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
