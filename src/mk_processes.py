@@ -44,6 +44,8 @@ transform_process = subprocess.Popen(
     stdout=subprocess.PIPE,
 )
 
+time.sleep(5)
+
 load_process = subprocess.Popen(
     ['./src/load/load.py', store_in_db],
     stdin=transform_process.stdout,
