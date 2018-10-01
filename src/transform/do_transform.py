@@ -115,7 +115,7 @@ class Transform:
         """
         w_time_list = list(map(int, w_time.split(':')))
         s_time_list = list(map(int, s_time.split(':')))
-        if w_time_list[1] < s_time_list[1]:  # wake minit < sleep minit
+        if w_time_list[1] < s_time_list[1]:  # wake minute < sleep minute
             w_time_list[1] += 60
             w_time_list[0] -= 1
         if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
@@ -125,7 +125,7 @@ class Transform:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        duration += Transform.quarter_hour_to_decimal(s_time_list[1])
+        duration += Transform.quarter_hour_to_decimal(dur_list[1])
         return duration
 
     @staticmethod
