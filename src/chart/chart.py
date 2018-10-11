@@ -15,6 +15,10 @@ class Chart:
         return Chart.ASLEEP
 
     @staticmethod
+    def quarters_to_glyph_code(hi_bit, lo_bit):
+        return hi_bit << 1 | lo_bit
+
+    @staticmethod
     def make_glyph(code):
         return Chart.to_glyph[code]
 

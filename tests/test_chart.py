@@ -19,6 +19,34 @@ def test_quarter_to_sleep_digit(make_chart):
     assert quarter == make_chart.ASLEEP
 
 
+def test_quarters_to_glyph_code_00(make_chart):
+    hi = make_chart.ASLEEP
+    lo = make_chart.ASLEEP
+    code = make_chart.quarters_to_glyph_code(hi, lo)
+    assert code == 0
+
+
+def test_quarters_to_glyph_code_01(make_chart):
+    hi = make_chart.ASLEEP
+    lo = make_chart.AWAKE
+    code = make_chart.quarters_to_glyph_code(hi, lo)
+    assert code == 1
+
+
+def test_quarters_to_glyph_code_10(make_chart):
+    hi = make_chart.AWAKE
+    lo = make_chart.ASLEEP
+    code = make_chart.quarters_to_glyph_code(hi, lo)
+    assert code == 2
+
+
+def test_quarters_to_glyph_code_00(make_chart):
+    hi = make_chart.AWAKE
+    lo = make_chart.AWAKE
+    code = make_chart.quarters_to_glyph_code(hi, lo)
+    assert code == 3
+
+
 def test_make_glyph_if_0(make_chart):
     assert make_chart.make_glyph(0) == '\u0020'
 
