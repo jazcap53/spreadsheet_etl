@@ -11,11 +11,14 @@ class Chart:
 
     @staticmethod
     def make_out_string(line_in):
+        assert len(line_in)
         temp = [Chart.get_half_hr(int(i)) for i in line_in.decode()]
         line_out = ''.join(temp)
         return line_out
 
 
-Chart.make_out_string(bytearray
-                      ('771333200013332000133320001333200013332000133320',
-                       'utf-8'))
+if __name__ == '__main__':
+    print(Chart.make_out_string
+          (bytearray
+           ('771333200013332000133320001333200013332000133320',
+            'utf-8')))

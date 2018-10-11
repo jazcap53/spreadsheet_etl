@@ -28,10 +28,24 @@ def test_get_half_hr_if_7(make_chart):
 
 
 def test_make_out_string_with_valid_input(make_chart):
-    line_in = bytearray('771333200013332000133320001333200013332000133320', 'utf-8')
+    line_in = bytearray('771333200013332000133320001333200013332000133320',
+                        'utf-8')
     assert len(line_in) == 48
     temp2 = make_chart.make_out_string(line_in)
     line_out = '|' + temp2 + '|\n'
     assert len(line_out) == 51
     assert line_out == '|░░▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌ |\n'
 
+
+def test_make_out_string_with_invalid_char(make_chart):
+    with pytest.raises(KeyError):
+        # '8' in line_in
+        line_in = bytearray(
+            '771333200013332000133320801333200013332000133320', 'utf-8')
+        make_chart.make_out_string(line_in)
+
+
+def test_make_out_string_with_empty_string(make_chart):
+    with pytest.raises(AssertionError):
+        line_in = bytearray('', 'utf-8')
+        make_chart.make_out_string(line_in)
