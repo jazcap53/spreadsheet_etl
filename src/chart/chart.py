@@ -1,18 +1,18 @@
 class Chart:
-    to_unicode = {0: '\u0020', 1: '\u2590', 2: '\u258c',
+    to_glyph = {0: '\u0020', 1: '\u2590', 2: '\u258c',
                   3: '\u2588', 7: '\u2591'}
 
     def __init__(self):
         pass
 
     @staticmethod
-    def get_half_hr(code):
-        return Chart.to_unicode[code]
+    def make_glyph(code):
+        return Chart.to_glyph[code]
 
     @staticmethod
     def make_out_string(line_in):
         assert len(line_in)
-        temp = [Chart.get_half_hr(int(i)) for i in line_in.decode()]
+        temp = [Chart.make_glyph(int(i)) for i in line_in.decode()]
         line_out = ''.join(temp)
         return line_out
 

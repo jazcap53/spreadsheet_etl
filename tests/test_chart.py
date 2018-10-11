@@ -7,24 +7,24 @@ def make_chart():
     return Chart()
 
 
-def test_get_half_hr_if_0(make_chart):
-    assert make_chart.get_half_hr(0) == '\u0020'
+def test_make_glyph_if_0(make_chart):
+    assert make_chart.make_glyph(0) == '\u0020'
 
 
-def test_get_half_hr_if_1(make_chart):
-    assert make_chart.get_half_hr(1) == '\u2590'
+def test_make_glyph_if_1(make_chart):
+    assert make_chart.make_glyph(1) == '\u2590'
 
 
-def test_get_half_hr_if_2(make_chart):
-    assert make_chart.get_half_hr(2) == '\u258c'
+def test_make_glyph_if_2(make_chart):
+    assert make_chart.make_glyph(2) == '\u258c'
 
 
-def test_get_half_hr_if_3(make_chart):
-    assert make_chart.get_half_hr(3) == '\u2588'
+def test_make_glyph_if_3(make_chart):
+    assert make_chart.make_glyph(3) == '\u2588'
 
 
-def test_get_half_hr_if_7(make_chart):
-    assert make_chart.get_half_hr(7) == '\u2591'
+def test_make_glyph_if_7(make_chart):
+    assert make_chart.make_glyph(7) == '\u2591'
 
 
 def test_make_out_string_with_valid_input(make_chart):
@@ -37,7 +37,7 @@ def test_make_out_string_with_valid_input(make_chart):
     assert line_out == '|░░▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌ |\n'
 
 
-def test_make_out_string_with_invalid_char(make_chart):
+def test_make_out_string_with_invalid_digit(make_chart):
     with pytest.raises(KeyError):
         # '8' in line_in
         line_in = bytearray(
