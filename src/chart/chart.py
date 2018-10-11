@@ -1,9 +1,18 @@
 class Chart:
     to_glyph = {0: '\u0020', 1: '\u2590', 2: '\u258c',
-                  3: '\u2588', 7: '\u2591'}
+                3: '\u2588', 7: '\u2591'}
+
+    AWAKE = 0b1
+    ASLEEP = 0b0
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def quarter_to_digit(q):
+        if q:
+            return Chart.AWAKE
+        return Chart.ASLEEP
 
     @staticmethod
     def make_glyph(code):

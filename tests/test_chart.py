@@ -7,6 +7,18 @@ def make_chart():
     return Chart()
 
 
+def test_quarter_to_wake_digit(make_chart):
+    q = True
+    quarter = make_chart.quarter_to_digit(q)
+    assert quarter == make_chart.AWAKE
+
+
+def test_quarter_to_sleep_digit(make_chart):
+    q = False
+    quarter = make_chart.quarter_to_digit(q)
+    assert quarter == make_chart.ASLEEP
+
+
 def test_make_glyph_if_0(make_chart):
     assert make_chart.make_glyph(0) == '\u0020'
 
