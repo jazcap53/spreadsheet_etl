@@ -40,7 +40,7 @@ def test_quarters_to_glyph_code_10(make_chart):
     assert code == 2
 
 
-def test_quarters_to_glyph_code_00(make_chart):
+def test_quarters_to_glyph_code_11(make_chart):
     hi = make_chart.AWAKE
     lo = make_chart.AWAKE
     code = make_chart.quarters_to_glyph_code(hi, lo)
@@ -48,19 +48,19 @@ def test_quarters_to_glyph_code_00(make_chart):
 
 
 def test_make_glyph_if_0(make_chart):
-    assert make_chart.make_glyph(0) == '\u0020'
+    assert make_chart.make_glyph(0) == '\u2588'
 
 
 def test_make_glyph_if_1(make_chart):
-    assert make_chart.make_glyph(1) == '\u2590'
+    assert make_chart.make_glyph(1) == '\u258c'
 
 
 def test_make_glyph_if_2(make_chart):
-    assert make_chart.make_glyph(2) == '\u258c'
+    assert make_chart.make_glyph(2) == '\u2590'
 
 
 def test_make_glyph_if_3(make_chart):
-    assert make_chart.make_glyph(3) == '\u2588'
+    assert make_chart.make_glyph(3) == '\u0020'
 
 
 def test_make_glyph_if_7(make_chart):
@@ -74,7 +74,7 @@ def test_make_out_string_with_valid_input(make_chart):
     temp2 = make_chart.make_out_string(line_in)
     line_out = '|' + temp2 + '|\n'
     assert len(line_out) == 51
-    assert line_out == '|░░▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌ |\n'
+    assert line_out == '|░░▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐███▌   ▐█|\n'
 
 
 def test_make_out_string_with_invalid_digit(make_chart):
