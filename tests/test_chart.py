@@ -89,3 +89,7 @@ def test_make_out_string_with_empty_string(make_chart):
     with pytest.raises(AssertionError):
         line_in = bytearray('', 'utf-8')
         make_chart.make_out_string(line_in)
+
+
+def test_append_line_to_file(make_chart):
+    assert False
