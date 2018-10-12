@@ -1,15 +1,12 @@
 class Chart:
-    # to_glyph = {0: '\u0020', 1: '\u2590', 2: '\u258c',
-    #             3: '\u2588', 7: '\u2591'}
-
     to_glyph = {0: '\u2588', 1: '\u258c', 2: '\u2590',
                 3: '\u0020', 7: '\u2591'}
 
-    AWAKE = 0b1
     ASLEEP = 0b0
+    AWAKE = 0b1
 
-    def __init__(self):
-        pass
+    def __init__(self, outfile_name='outfile_test_name.txt'):
+        self.outfile_name = outfile_name
 
     @staticmethod
     def quarter_to_digit(q):

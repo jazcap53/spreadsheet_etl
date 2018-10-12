@@ -7,6 +7,17 @@ def make_chart():
     return Chart()
 
 
+def test_ctor_creates_class_vars(make_chart):
+    assert make_chart.to_glyph == {0: '\u2588', 1: '\u258c', 2: '\u2590',
+                                   3: '\u0020', 7: '\u2591'}
+    assert make_chart.ASLEEP == 0b0
+    assert make_chart.AWAKE == 0b1
+
+
+def test_ctor_creates_instance_vars(make_chart):
+    assert make_chart.outfile_name == 'outfile_test_name.txt'
+
+
 def test_quarter_to_wake_digit(make_chart):
     q = True
     quarter = make_chart.quarter_to_digit(q)
@@ -91,5 +102,6 @@ def test_make_out_string_with_empty_string(make_chart):
         make_chart.make_out_string(line_in)
 
 
-def test_append_line_to_file(make_chart):
-    assert False
+# @pytest.mark.xfail(reason='files not yet implemented')
+# def test_append_line_to_file(make_chart):
+#     assert False
