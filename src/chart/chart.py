@@ -13,8 +13,17 @@ class Chart:
     ASLEEP = 0b0
     AWAKE = 0b1
 
-    def __init__(self, outfile_name='outfile_test_name.txt'):
+    def __init__(self, infile_name='chart_raw_data.txt',
+                 outfile_name='outfile_test_name.txt'):
+        self.infile_name = infile_name
         self.outfile_name = outfile_name
+        self.infile_obj = None
+        self.outfile_obj = None
+        self.current_line = None
+        self.line_count = 0
+
+    def open_infile(self):
+        self.infile_obj = open(self.infile_name)
 
     @staticmethod
     def quarter_to_digit(q):
@@ -62,3 +71,10 @@ if __name__ == '__main__':
           (bytearray
            ('771333200013332000133320001333200013332000133320',
             'utf-8')))
+    print(Chart.make_out_string
+          (bytearray
+           ('000000000000000000000000000000000000000000000000',
+            'utf-8')))
+    chart = Chart()
+    chart.infile_obj = open(chart.infile_name)
+    chart.infile_obj.close()

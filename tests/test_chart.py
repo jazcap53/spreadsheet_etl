@@ -9,7 +9,14 @@ from src.chart.chart import Chart
 
 @pytest.fixture()
 def make_chart():
-    return Chart()
+    return Chart('src/chart/chart_raw_data.txt')
+
+
+# @pytest.fixture()
+# def infile_wrapper():
+#     return FakeFileReadWrapper(
+#
+#     )
 
 
 def test_ctor_creates_class_vars(make_chart):
@@ -21,6 +28,18 @@ def test_ctor_creates_class_vars(make_chart):
 
 def test_ctor_creates_instance_vars(make_chart):
     assert make_chart.outfile_name == 'outfile_test_name.txt'
+    assert make_chart.infile_name == 'src/chart/chart_raw_data.txt'
+
+
+def test_open_infile(make_chart):
+    make_chart.infile_obj = open(make_chart.infile_name)
+    make_chart.open_infile()
+    assert not make_chart.infile_obj.closed
+    make_chart.infile_obj.close()
+
+
+def test_read_first_line_from_infile(make_chart):
+    pass  # N.Y.I.
 
 
 def test_quarter_to_wake_digit(make_chart):
