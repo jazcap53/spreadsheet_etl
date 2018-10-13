@@ -1,3 +1,8 @@
+# file: test_chart.py
+# andrew jarcho
+# 10/2018
+
+
 import pytest
 from src.chart.chart import Chart
 
