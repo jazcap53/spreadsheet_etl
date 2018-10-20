@@ -5,18 +5,32 @@
 
 import pytest
 from src.chart.chart import Chart
+from tests.file_access_wrappers import FakeFileReadWrapper
 
 
 @pytest.fixture()
 def make_chart():
-    return Chart('src/chart/chart_raw_data.txt')
-
-
-# @pytest.fixture()
-# def infile_wrapper():
-#     return FakeFileReadWrapper(
-#
-#     )
+    return Chart(FakeFileReadWrapper('''
+ sleep_date | nap_time | duration | nap_id 
+------------+----------+----------+--------
+ 2016-12-07 | 23:45:00 | 04:00:00 |      1
+ 2016-12-07 | 04:45:00 | 01:30:00 |      2
+ 2016-12-07 | 11:30:00 | 00:45:00 |      3
+ 2016-12-07 | 16:45:00 | 00:45:00 |      4
+ 2016-12-07 | 21:00:00 | 00:30:00 |      5
+ 2016-12-08 | 23:15:00 | 02:45:00 |      6
+ 2016-12-08 | 03:30:00 | 05:15:00 |      7
+ 2016-12-08 | 19:30:00 | 01:00:00 |      8
+ 2016-12-09 |          |          |       
+ 2016-12-10 | 00:00:00 | 05:15:00 |      9
+ 2016-12-10 | 10:30:00 | 01:00:00 |     10
+ 2016-12-10 | 16:00:00 | 01:00:00 |     11
+ 2016-12-10 | 22:30:00 | 01:45:00 |     12
+ 2016-12-10 | 02:30:00 | 02:45:00 |     13
+ 2016-12-10 | 11:00:00 | 01:00:00 |     14
+ 2016-12-10 | 17:15:00 | 00:45:00 |     15
+ 2016-12-10 | 19:15:00 | 01:00:00 |     16    
+    '''))
 
 
 def test_ctor_creates_class_vars(make_chart):
@@ -27,19 +41,7 @@ def test_ctor_creates_class_vars(make_chart):
 
 
 def test_ctor_creates_instance_vars(make_chart):
-    assert make_chart.outfile_name == 'outfile_test_name.txt'
-    assert make_chart.infile_name == 'src/chart/chart_raw_data.txt'
-
-
-def test_open_infile(make_chart):
-    make_chart.infile_obj = open(make_chart.infile_name)
-    make_chart.open_infile()
-    assert not make_chart.infile_obj.closed
-    make_chart.infile_obj.close()
-
-
-def test_read_first_line_from_infile(make_chart):
-    pass  # N.Y.I.
+    assert make_chart.infile is not None
 
 
 def test_quarter_to_wake_digit(make_chart):
@@ -124,8 +126,3 @@ def test_make_out_string_with_empty_string(make_chart):
     with pytest.raises(AssertionError):
         line_in = bytearray('', 'utf-8')
         make_chart.make_out_string(line_in)
-
-
-# @pytest.mark.xfail(reason='files not yet implemented')
-# def test_append_line_to_file(make_chart):
-#     assert False
