@@ -27,7 +27,7 @@ def test_ctor_creates_class_vars(make_chart):
 
 
 def test_ctor_creates_instance_vars(make_chart):
-    assert make_chart.outfile_name == 'outfile_test_name.txt'
+    assert make_chart.outfile_name == 'src/chart/outfile_test_name.txt'
     assert make_chart.infile_name == 'src/chart/chart_raw_data.txt'
 
 

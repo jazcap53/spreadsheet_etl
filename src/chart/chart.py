@@ -13,8 +13,8 @@ class Chart:
     ASLEEP = 0b0
     AWAKE = 0b1
 
-    def __init__(self, infile_name='chart_raw_data.txt',
-                 outfile_name='outfile_test_name.txt'):
+    def __init__(self, infile_name='src/chart/chart_raw_data.txt',
+                 outfile_name='src/chart/outfile_test_name.txt'):
         self.infile_name = infile_name
         self.outfile_name = outfile_name
         self.infile_obj = None
