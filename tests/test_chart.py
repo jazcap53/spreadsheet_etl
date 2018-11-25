@@ -8,6 +8,13 @@ from src.chart.chart import Chart
 from tests.file_access_wrappers import FakeFileReadWrapper
 
 
+'''
+Note:
+    ASLEEP = 0b0  # the printed color (black ink)
+    AWAKE = 0b1  # the background color (white paper)
+'''
+
+
 @pytest.fixture()
 def make_chart():
     return Chart(FakeFileReadWrapper('''

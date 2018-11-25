@@ -13,8 +13,8 @@ class Chart:
     to_glyph = {0: '\u2588', 1: '\u258c', 2: '\u2590',
                 3: '\u0020', 7: '\u2591'}
 
-    ASLEEP = 0b0
-    AWAKE = 0b1
+    ASLEEP = 0b0  # the printed color (black ink)
+    AWAKE = 0b1  # the background color (white paper)
 
     def __init__(self, infile):
         self.infile = infile
