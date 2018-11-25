@@ -49,6 +49,7 @@ def test_ctor_creates_class_vars(make_chart):
 
 def test_ctor_creates_instance_vars(make_chart):
     assert make_chart.infile is not None
+    assert make_chart.cur_line is ''
 
 
 def test_quarter_to_wake_digit(make_chart):
@@ -133,3 +134,7 @@ def test_make_out_string_with_empty_string(make_chart):
     with pytest.raises(AssertionError):
         line_in = bytearray('', 'utf-8')
         make_chart.make_out_string(line_in)
+
+
+def test_get_a_line(make_chart):
+    """Return next input line that starts with a date"""

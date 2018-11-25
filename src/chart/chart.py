@@ -18,6 +18,7 @@ class Chart:
 
     def __init__(self, infile):
         self.infile = infile
+        self.cur_line = ''
 
     def get_a_line(self):
         pass  # TODO: NYI
