@@ -21,10 +21,13 @@ class Chart:
         self.filename = filename
         self.infile = None
         self.cur_line = ''
+        self.prev_line = ''
 
-    def get_a_line(self):  # TODO: always gets the same line
-        while not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
+    def get_a_line(self):
+        while self.prev_line == self.cur_line or \
+                not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
             self.cur_line = self.infile.readline().rstrip()
+        self.prev_line = self.cur_line
         return self.cur_line
 
     @staticmethod
