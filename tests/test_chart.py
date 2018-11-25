@@ -40,6 +40,12 @@ def make_chart():
     '''))
 
 
+@pytest.fixture()
+def open_input_file(filename='/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt'):
+    infile = open(filename)
+    return infile
+
+
 def test_ctor_creates_class_vars(make_chart):
     assert make_chart.to_glyph == {0: '\u2588', 1: '\u258c', 2: '\u2590',
                                    3: '\u0020', 7: '\u2591'}
@@ -48,7 +54,7 @@ def test_ctor_creates_class_vars(make_chart):
 
 
 def test_ctor_creates_instance_vars(make_chart):
-    assert make_chart.infile is not None
+    assert make_chart.filename is not None
     assert make_chart.cur_line is ''
 
 
@@ -136,5 +142,13 @@ def test_make_out_string_with_empty_string(make_chart):
         make_chart.make_out_string(line_in)
 
 
-def test_get_a_line(make_chart):
-    """Return next input line that starts with a date"""
+def test_get_a_line(open_input_file, make_chart):
+    """Get first input line that starts with a date"""
+    make_chart.infile = open_input_file
+    make_chart.cur_line = make_chart.get_a_line()
+    assert make_chart.cur_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
+
+
+# def test_open_file(open_input_file):
+#     make_chart.open_file()
+#     pass

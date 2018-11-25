@@ -4,6 +4,7 @@
 
 
 from tests.file_access_wrappers import FileReadAccessWrapper
+import re
 
 
 class Chart:
@@ -16,12 +17,15 @@ class Chart:
     ASLEEP = 0b0  # the printed color (black ink)
     AWAKE = 0b1  # the background color (white paper)
 
-    def __init__(self, infile):
-        self.infile = infile
+    def __init__(self, filename):
+        self.filename = filename
+        self.infile = None
         self.cur_line = ''
 
-    def get_a_line(self):
-        pass  # TODO: NYI
+    def get_a_line(self):  # TODO: always gets the same line
+        while not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
+            self.cur_line = self.infile.readline().rstrip()
+        return self.cur_line
 
     @staticmethod
     def quarter_to_digit(q):
@@ -63,6 +67,9 @@ class Chart:
         assert len(line_in)
         return ''.join([Chart.make_glyph(int(i)) for i in line_in.decode()])
 
+    def open_file(self):
+        self.infile = open(self.filename)
+
 
 if __name__ == '__main__':
     print(Chart.make_out_string
@@ -74,3 +81,4 @@ if __name__ == '__main__':
            ('000000000000000000000000000000000000000000000000',
             'utf-8')))
     chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
+    chart.open_file()
