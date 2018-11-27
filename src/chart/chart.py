@@ -3,6 +3,10 @@
 # 10/2018
 
 
+from tests.file_access_wrappers import FileReadAccessWrapper
+import re
+
+
 class Chart:
     """
     Create a sleep chart from input data
@@ -13,17 +17,18 @@ class Chart:
     ASLEEP = 0b0  # the printed color (black ink)
     AWAKE = 0b1  # the background color (white paper)
 
-    def __init__(self, infile_name='src/chart/chart_raw_data.txt',
-                 outfile_name='src/chart/outfile_test_name.txt'):
-        self.infile_name = infile_name
-        self.outfile_name = outfile_name
-        self.infile_obj = None
-        self.outfile_obj = None
-        self.current_line = None
-        self.line_count = 0
+    def __init__(self, filename):
+        self.filename = filename
+        self.infile = None
+        self.cur_line = ''
+        self.prev_line = ''
 
-    def open_infile(self):
-        self.infile_obj = open(self.infile_name)
+    def get_a_line(self):  # TODO: what happens when all input has been read ?
+        while self.prev_line == self.cur_line or \
+                not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
+            self.cur_line = self.infile.readline().rstrip()
+        self.prev_line = self.cur_line
+        return self.cur_line
 
     @staticmethod
     def quarter_to_digit(q):
@@ -65,6 +70,9 @@ class Chart:
         assert len(line_in)
         return ''.join([Chart.make_glyph(int(i)) for i in line_in.decode()])
 
+    def open_file(self):
+        self.infile = open(self.filename)
+
 
 if __name__ == '__main__':
     print(Chart.make_out_string
@@ -75,6 +83,5 @@ if __name__ == '__main__':
           (bytearray
            ('000000000000000000000000000000000000000000000000',
             'utf-8')))
-    chart = Chart()
-    chart.infile_obj = open(chart.infile_name)
-    chart.infile_obj.close()
+    chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
+    chart.open_file()
