@@ -23,7 +23,7 @@ class Chart:
         self.cur_line = ''
         self.prev_line = ''
 
-    def get_a_line(self):
+    def get_a_line(self):  # TODO: what happens when all input has been read ?
         while self.prev_line == self.cur_line or \
                 not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
             self.cur_line = self.infile.readline().rstrip()
