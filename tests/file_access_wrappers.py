@@ -15,10 +15,6 @@ class FileReadAccessWrapper:
     def open(self):
         return open(self.filename, 'r')
 
-    def readline(self):
-        for line in self.open():
-            yield line[:-1]
-
 
 class FakeFileReadWrapper:
     def __init__(self, text):
@@ -28,6 +24,4 @@ class FakeFileReadWrapper:
         return io.StringIO(self.text)
 
     def input(self):
-        for line in self.open().readline():
-            yield line[:-1]
-
+        return self.open()
