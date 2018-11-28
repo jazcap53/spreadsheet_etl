@@ -184,7 +184,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    logging.info('transform class start')
+    logging.info('transform start')
     t = Transform()
     t.read_each_line()
-    logging.info('transform class finish')
+    logging.info('transform finish')
