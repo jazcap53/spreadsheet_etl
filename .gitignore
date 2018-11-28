@@ -21,3 +21,6 @@ sql_queries*
 sql_backup_*/
 .coverage*
 coverage*
+*.txt
+!LICENSE.txt
+!requirements.txt
