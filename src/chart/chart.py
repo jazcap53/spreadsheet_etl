@@ -83,5 +83,6 @@ if __name__ == '__main__':
           (bytearray
            ('000000000000000000000000000000000000000000000000',
             'utf-8')))
-    chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
+    # chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
+    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
     chart.open_file()

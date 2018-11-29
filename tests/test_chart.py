@@ -6,6 +6,7 @@
 import pytest
 from src.chart.chart import Chart
 from tests.file_access_wrappers import FakeFileReadWrapper
+import _io
 
 
 '''
@@ -41,7 +42,8 @@ def make_chart():
 
 
 @pytest.fixture()
-def open_input_file(filename='/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt'):
+def open_input_file(filename='/home/jazcap53/python_projects/' +
+                             'spreadsheet_etl/src/chart/chart_raw_data.txt'):
     infile = open(filename)
     return infile
 
@@ -156,6 +158,10 @@ def test_get_a_line_again(open_input_file, make_chart):
     make_chart.cur_line = make_chart.get_a_line()
     assert make_chart.cur_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
 
-# def test_open_file(open_input_file):
-#     make_chart.open_file()
-#     pass
+
+def test_open_file(input_file='/home/jazcap53/python_projects/' +
+                              'spreadsheet_etl/src/chart/chart_raw_data.txt'):
+    my_chart = Chart(input_file)
+    my_chart.open_file()
+    assert isinstance(my_chart.infile, _io.TextIOWrapper)
+    my_chart.infile.close()
