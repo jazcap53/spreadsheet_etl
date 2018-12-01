@@ -147,15 +147,15 @@ def test_make_out_string_with_empty_string(make_chart):
 def test_get_a_line(open_input_file, make_chart):
     """Get first input line that starts with a date"""
     make_chart.infile = open_input_file
-    make_chart.cur_line = make_chart.get_a_line()
+    make_chart.get_a_line()
     assert make_chart.cur_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
 
 
 def test_get_a_line_again(open_input_file, make_chart):
     """Get second input line that starts with a date"""
     make_chart.infile = open_input_file
-    make_chart.cur_line = make_chart.get_a_line()
-    make_chart.cur_line = make_chart.get_a_line()
+    make_chart.get_a_line()
+    make_chart.get_a_line()
     assert make_chart.cur_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
 
 

@@ -28,7 +28,6 @@ class Chart:
                 not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
             self.cur_line = self.infile.readline().rstrip()
         self.prev_line = self.cur_line
-        return self.cur_line
 
     @staticmethod
     def quarter_to_digit(q):
