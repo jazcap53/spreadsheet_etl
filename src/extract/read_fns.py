@@ -95,26 +95,13 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
-# TODO: 'file_read_wrapper' arg misleading: should be filename
-def open_infile(file_read_wrapper):
+def open_infile(filename):
     """
-    :param file_read_wrapper: allows reading from a fake instead of
-                              a real file during testing.
+    :param filename: name of file to be read
     :return: a file handle open for read
     Called by: client code
     """
-    return file_read_wrapper.open()
-
-
-# TODO: eliminate function 'open_outfile()' ?
-def open_outfile(file_write_wrapper):
-    """
-    :param file_write_wrapper: allows writing to a fake instead of
-                               a real file during testing.
-    :return: a file handle open for write
-    Called by: client code
-    """
-    return file_write_wrapper.open()
+    return filename.open()
 
 
 class Extract:
