@@ -95,6 +95,7 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
+# TODO: 'file_read_wrapper' arg misleading: should be filename
 def open_infile(file_read_wrapper):
     """
     :param file_read_wrapper: allows reading from a fake instead of
@@ -105,6 +106,7 @@ def open_infile(file_read_wrapper):
     return file_read_wrapper.open()
 
 
+# TODO: eliminate function 'open_outfile()' ?
 def open_outfile(file_write_wrapper):
     """
     :param file_write_wrapper: allows writing to a fake instead of
