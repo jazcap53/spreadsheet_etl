@@ -89,7 +89,7 @@ import re
 import logging
 import sys
 
-from src.extract.container_objs import validate_segment, Week, Day, Event
+from container_objs import validate_segment, Week, Day, Event
 
 
 read_logger = logging.getLogger('extract.read_fns')

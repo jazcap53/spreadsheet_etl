@@ -8,7 +8,7 @@ import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import Extract
-from src.extract.container_objs import Event, Day, Week
+from container_objs import Event, Day, Week
 
 
 # TODO: at present, this fixture is used in only one test
