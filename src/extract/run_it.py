@@ -17,9 +17,7 @@ import argparse
 import logging
 import logging.handlers
 
-# import container_objs
 import read_fns
-from tests.file_access_wrappers import FileReadAccessWrapper
 
 
 def main():
@@ -51,7 +49,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     args = parser.parse_args()
-    infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
+    infile = args.infile_name
     extract = read_fns.Extract(infile)
     extract.lines_in_weeks_out()
     logging.info('extract finish')

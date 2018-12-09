@@ -31,7 +31,7 @@ logging_process = subprocess.Popen(
     ['./src/logging/receiver.py'],
 )
 
-time.sleep(3)
+time.sleep(2)
 
 extract_process = subprocess.Popen(
     ['./src/extract/run_it.py', args.infile_name],
@@ -43,8 +43,6 @@ transform_process = subprocess.Popen(
     stdin=extract_process.stdout,
     stdout=subprocess.PIPE,
 )
-
-time.sleep(5)
 
 load_process = subprocess.Popen(
     ['./src/load/load.py', store_in_db],

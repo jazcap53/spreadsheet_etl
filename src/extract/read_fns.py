@@ -95,15 +95,6 @@ from src.extract.container_objs import validate_segment, Week, Day, Event
 read_logger = logging.getLogger('extract.read_fns')
 
 
-def open_infile(filename):
-    """
-    :param filename: name of file to be read
-    :return: a file handle open for read
-    Called by: client code
-    """
-    return filename.open()
-
-
 class Extract:
     NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)
 

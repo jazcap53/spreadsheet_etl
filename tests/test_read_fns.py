@@ -7,7 +7,6 @@ import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
-from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
 from src.extract.container_objs import Event, Day, Week
 
@@ -203,11 +202,6 @@ def test__is_event_line_returns_false_on_2_element_w_line_input():
 def test__is_event_line_returns_false_on_non_action_input():
     line = '=' * 18
     assert not bool(Extract._match_event_line(line))
-
-
-def test_open_infile(infile_wrapper):
-    infile = open_infile(infile_wrapper)
-    assert isinstance(infile, io.StringIO)
 
 
 def test__check_for_date_matches_date_in_correct_format(extract):
