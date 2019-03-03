@@ -7,6 +7,7 @@ import datetime
 import pytest
 
 from tests.file_access_wrappers import FakeFileReadWrapper
+from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
@@ -36,7 +37,7 @@ def extract():
     return Extract(FakeFileReadWrapper(''))
 
 
-def test__get_events_creates_events_from_non_empty_line_segments(extract):
+def test_get_events_creates_events_from_non_empty_line_segments(extract):
     # shorter_line holds an 's' event for Thu and Fri, and a 'w' event for Sat
     extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '',
                             '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
@@ -52,7 +53,7 @@ def test__get_events_creates_events_from_non_empty_line_segments(extract):
     assert isinstance(extract.new_week[6].events[-1], Event)
 
 
-def test__get_events_creates_events_on_valid_non_empty_line_input(extract):
+def test_get_events_creates_events_on_valid_non_empty_line_input(extract):
     extract.line_as_list = ['12/11/2016', '', '', '', '', '', '', '', '', '',
                             '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
                             '5:15', '5.25']
@@ -65,7 +66,7 @@ def test__get_events_creates_events_on_valid_non_empty_line_input(extract):
     assert extract.have_events
 
 
-def test__get_events_creates_no_events_on_empty_line_input(extract):
+def test_get_events_creates_no_events_on_empty_line_input(extract):
     extract.line_as_list = ['', '', '', '', '', '', '', '', '', '', '', '',
                             '', '', '', '', '', '', '', '', '', '']
     extract.sunday_date = datetime.date(2017, 11, 5)
@@ -76,7 +77,7 @@ def test__get_events_creates_no_events_on_empty_line_input(extract):
     assert not extract.have_events
 
 
-def test__manage_output_buffer_leaves_last_event_in_buffer(extract):
+def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     extract.output_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
     day_list = [Day(extract.sunday_date +
@@ -88,7 +89,7 @@ def test__manage_output_buffer_leaves_last_event_in_buffer(extract):
     assert extract.output_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
-def test__manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
+def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     extract.output_buffer = []
     extract.sunday_date = datetime.date(2016, 4, 10)
     day_list = [Day(extract.sunday_date +
@@ -99,7 +100,7 @@ def test__manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     assert extract.output_buffer[-1] == '    2016-04-16'
 
 
-def test__append_week_header(extract):
+def test_append_week_header(extract):
     extract.output_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
     day_list = [Day(extract.sunday_date +
@@ -111,14 +112,14 @@ def test__append_week_header(extract):
                                         '=' * 26
 
 
-def test__append_day_header(extract):
+def test_append_day_header(extract):
     extract.output_buffer = []
     dy = Day(datetime.date(2015, 5, 5), [])
     extract._append_day_header(dy)
     assert extract.output_buffer[-1] == '    2015-05-05'
 
 
-def test__handle_start_of_night_3_element_b_event_flushes_buffer(extract):
+def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
     output = io.StringIO()
     extract.output_buffer = ['bongo', 'Hello World']
     extract._handle_start_of_night(Event(action='b', mil_time='8:15',
@@ -128,7 +129,7 @@ def test__handle_start_of_night_3_element_b_event_flushes_buffer(extract):
     assert extract.output_buffer == []
 
 
-def test__handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
+def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     output = io.StringIO()
     extract.output_buffer = ['bongobongo', 'action: s, time: 19:00']
     extract._handle_start_of_night(Event(action='b', mil_time='10:00',
@@ -138,7 +139,7 @@ def test__handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     assert extract.output_buffer == ['bongobongo']
 
 
-def test__handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
+def test_handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
     output = io.StringIO()
     extract.output_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
                              'action: s, time: 17:00']
@@ -149,80 +150,85 @@ def test__handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
     assert extract.output_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
-def test__is_complete_b_event_line_returns_true_on_complete_b_event_line():
+def test_is_complete_b_event_line_returns_true_on_complete_b_event_line():
     line = 'action: b, time: 21:45, hours: 3.75'
     assert bool(Extract._match_complete_b_event_line(line))
 
 
-def test__is_complete_b_event_line_returns_false_on_incomplete_b_event_line():
+def test_is_complete_b_event_line_returns_false_on_incomplete_b_event_line():
     line = 'action: b, time: 17:25'
     assert not bool(Extract._match_complete_b_event_line(line))
 
 
-def test__is_complete_b_event_line_returns_false_on_non_b_event_line_input():
+def test_is_complete_b_event_line_returns_false_on_non_b_event_line_input():
     line = 'action: s, time: 17:25'
     assert not bool(Extract._match_complete_b_event_line(line))
 
 
-def test__is_complete_b_event_line_returns_false_on_non_event_line_input():
+def test_is_complete_b_event_line_returns_false_on_non_event_line_input():
     line = 'cowabunga!!!'
     assert not bool(Extract._match_complete_b_event_line(line))
 
 
-def test__is_event_line_returns_true_on_2_element_b_line_input():
+def test_is_event_line_returns_true_on_2_element_b_line_input():
     line = 'action: b, time: 4:25'
     assert bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_true_on_3_element_b_line_input():
+def test_is_event_line_returns_true_on_3_element_b_line_input():
     line = 'action: b, time: 4:25, hours: 6.00'
     assert bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_true_on_2_element_s_line_input():
+def test_is_event_line_returns_true_on_2_element_s_line_input():
     line = 'action: s, time: 4:25'
     assert bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_true_on_3_element_w_line_input():
+def test_is_event_line_returns_true_on_3_element_w_line_input():
     line = 'action: w, time: 11:00, hours: 10.50'
     assert bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_false_on_3_element_s_line_input():
+def test_is_event_line_returns_false_on_3_element_s_line_input():
     line = 'action: s, time: 12:00, hours: 6.00'
     assert not bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_false_on_2_element_w_line_input():
+def test_is_event_line_returns_false_on_2_element_w_line_input():
     line = 'action: w, time: 11:45'
     assert not bool(Extract._match_event_line(line))
 
 
-def test__is_event_line_returns_false_on_non_action_input():
+def test_is_event_line_returns_false_on_non_action_input():
     line = '=' * 18
     assert not bool(Extract._match_event_line(line))
 
 
-def test__check_for_date_matches_date_in_correct_format(extract):
+def test_open_infile(infile_wrapper):
+    infile = open_infile(infile_wrapper)
+    assert isinstance(infile, io.StringIO)
+
+
+def test_check_for_date_matches_date_in_correct_format(extract):
     date_string = '12/34/5678'
     date_match = extract._re_match_date(date_string)
     assert date_match
 
 
-def test__check_for_date_rejects_date_with_hyphens(extract):
+def test_check_for_date_rejects_date_with_hyphens(extract):
     date_string = '12-34-5678'
     date_match = extract._re_match_date(date_string)
     assert not date_match
 
 
-def test__check_for_date_rejects_date_with_alpha(extract):
+def test_check_for_date_rejects_date_with_alpha(extract):
     date_string = 'a2/34/5678'
     date_match = extract._re_match_date(date_string)
     assert not date_match
 
 
-def test__look_for_week_finds_no_week_on_non_sunday_input(extract):
+def test_look_for_week_finds_no_week_on_non_sunday_input(extract):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
     extract._look_for_week(date_match)
     assert extract.sunday_date == Extract.NULL_DATE
