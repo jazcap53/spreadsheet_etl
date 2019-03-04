@@ -5,6 +5,7 @@
 
 from tests.file_access_wrappers import FileReadAccessWrapper
 import re
+import sys
 
 
 class Chart:
@@ -22,12 +23,14 @@ class Chart:
         self.infile = None
         self.cur_line = ''
         self.prev_line = ''
+        self.sleeping = self.AWAKE
 
-    def get_a_line(self):  # TODO: what happens when all input has been read ?
-        while self.prev_line == self.cur_line or \
+    def get_a_line(self):
+        self.cur_line = self.infile.readline().rstrip()
+        while self.cur_line and \
                 not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
             self.cur_line = self.infile.readline().rstrip()
-        self.prev_line = self.cur_line
+        return bool(self.cur_line)
 
     @staticmethod
     def quarter_to_digit(q):
@@ -70,18 +73,20 @@ class Chart:
         return ''.join([Chart.make_glyph(int(i)) for i in line_in.decode()])
 
     def open_file(self):
-        self.infile = open(self.filename)
+        with open(self.filename) as self.infile:
+            while self.get_a_line():
+                print(self.cur_line)
 
 
 if __name__ == '__main__':
-    print(Chart.make_out_string
-          (bytearray
-           ('771333200013332000133320001333200013332000133320',
-            'utf-8')))
-    print(Chart.make_out_string
-          (bytearray
-           ('000000000000000000000000000000000000000000000000',
-            'utf-8')))
+    # print(Chart.make_out_string
+    #       (bytearray
+    #        ('771333200013332000133320001333200013332000133320',
+    #         'utf-8')))
+    # print(Chart.make_out_string
+    #       (bytearray
+    #        ('000000000000000000000000000000000000000000000000',
+    #         'utf-8')))
     # chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
     chart.open_file()
