@@ -24,11 +24,11 @@ class Chart:
         self.cur_line = ''
         self.prev_line = ''
         self.sleeping = self.AWAKE
+        self.date_checker = None
 
     def get_a_line(self):
         self.cur_line = self.infile.readline().rstrip()
-        while self.cur_line and \
-                not re.match(r' \d{4}-\d{2}-\d{2} \|', self.cur_line):
+        while self.cur_line and not self.date_checker.match(self.cur_line):
             self.cur_line = self.infile.readline().rstrip()
         return bool(self.cur_line)
 
@@ -77,8 +77,11 @@ class Chart:
             while self.get_a_line():
                 print(self.cur_line)
 
+    def compile_date_checker(self):
+        self.date_checker = re.compile(r' \d{4}-\d{2}-\d{2} \|')
 
-if __name__ == '__main__':
+
+def main():
     # print(Chart.make_out_string
     #       (bytearray
     #        ('771333200013332000133320001333200013332000133320',
@@ -87,6 +90,13 @@ if __name__ == '__main__':
     #       (bytearray
     #        ('000000000000000000000000000000000000000000000000',
     #         'utf-8')))
-    # chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
+    chart.compile_date_checker()
     chart.open_file()
+
+
+if __name__ == '__main__':
+    # chart = Chart(FileReadAccessWrapper('chart_raw_data.txt'))
+    # chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
+    # chart.open_file()
+    main()
