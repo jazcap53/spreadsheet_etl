@@ -7,6 +7,7 @@ from tests.file_access_wrappers import FileReadAccessWrapper
 import re
 import sys
 from datetime import datetime, timedelta
+import copy
 
 
 class Chart:
@@ -15,6 +16,12 @@ class Chart:
     """
     ASLEEP = u'\u2588'  # the printed color (black ink)
     AWAKE = u'\u0020'   # the background color (white paper)
+
+    hours = []
+    for h in range(24):
+        hours.extend([str(h).zfill(2)] * 4)
+    minutes = [str(m).zfill(2) for m in range(0, 60, 15)] * 24
+    intervals = list(map(lambda h, m: h + ':' + m, hours, minutes))
 
     def __init__(self, filename):
         self.filename = filename
@@ -30,7 +37,6 @@ class Chart:
         self.cur_time = None
         self.cur_datetime = None
         self.cur_interval = None
-        # self.cur_nap_id = 0
         self.days_carried = False
         self.day_row = self.AWAKE * 24 * 4
         self.header_seen = False
@@ -84,7 +90,9 @@ class Chart:
 
     def make_output_line(self, quarters_count):
         my_date = self.cur_datetime.strftime('%b %d, %Y')
-        my_interval = self.cur_interval
+        my_cur_datetime_copy = copy.copy(self.cur_datetime)
+        # my_interval = self.cur_interval
+        my_start_time = self.cur_datetime.strftime('%H:%M:%S')
         my_day_row = self.day_row[:]
         my_output_line = my_date + ': |' + my_day_row + '|'
         return my_output_line
