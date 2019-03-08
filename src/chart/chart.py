@@ -13,8 +13,8 @@ class Chart:
     """
     Create a sleep chart from input data
     """
-    ASLEEP = 1  # the printed color (black ink)
-    AWAKE = 0   # the background color (white paper)
+    ASLEEP = u'\u2588'  # the printed color (black ink)
+    AWAKE = u'\u0020'   # the background color (white paper)
 
     def __init__(self, filename):
         self.filename = filename
@@ -30,9 +30,9 @@ class Chart:
         self.cur_time = None
         self.cur_datetime = None
         self.cur_interval = None
-        self.cur_nap_id = 0
-        self.days_carried = 0
-        self.day_row = [self.AWAKE] * 24 * 4
+        # self.cur_nap_id = 0
+        self.days_carried = False
+        self.day_row = self.AWAKE * 24 * 4
         self.header_seen = False
 
     def get_a_line(self):
@@ -58,13 +58,12 @@ class Chart:
         """
         with open(self.filename) as self.infile:
             while self.get_a_line():
-                parsed_line = self.parse_line()  # a 2-tuple
-                if any(parsed_line):
-                    self.cur_datetime, self.cur_interval = parsed_line
-                    print(self.cur_datetime, self.cur_interval,
-                          self.interval_str_to_int(self.cur_interval), sep='   ')
+                parsed_input_line = self.parse_input_line()  # gets a 2-tuple
+                if any(parsed_input_line):
+                    self.cur_datetime, self.cur_interval = parsed_input_line
+                    yield self.interval_str_to_int(self.cur_interval)
 
-    def parse_line(self):
+    def parse_input_line(self):
         line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:
@@ -80,9 +79,20 @@ class Chart:
         return my_datetime, interval
 
     @staticmethod
+    def day_row_to_str(my_day_row):
+        row_str = str(my_day_row)
+
+    def make_output_line(self, quarters_count):
+        my_date = self.cur_datetime.strftime('%b %d, %Y')
+        my_interval = self.cur_interval
+        my_day_row = self.day_row[:]
+        my_output_line = my_date + ': |' + my_day_row + '|'
+        return my_output_line
+
+    @staticmethod
     def interval_str_to_int(my_interval):
         """
-        Convert my_interval to the number of 15-second chunks it contains
+        Convert my_interval to the number of 15-minute chunks it contains
         :param my_interval:
         :return: int:w
         Called by: read_file()
@@ -101,7 +111,12 @@ class Chart:
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
     chart.compile_date_re()
-    chart.read_file()
+    file_iterator = chart.read_file()
+    while True:
+        try:
+            print(chart.make_output_line(next(file_iterator)))
+        except StopIteration:
+            break
 
 
 if __name__ == '__main__':
