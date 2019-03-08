@@ -80,6 +80,6 @@ def test_open_file(input_file='/home/jazcap53/python_projects/' +
                               'spreadsheet_etl/src/chart/chart_raw_data.txt'):
     my_chart = Chart(input_file)
     my_chart.compile_date_re()
-    my_chart.open_file()
+    my_chart.read_file()
     assert isinstance(my_chart.infile, _io.TextIOWrapper)
     my_chart.infile.close()

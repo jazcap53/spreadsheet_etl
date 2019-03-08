@@ -39,7 +39,7 @@ class Chart:
         """
 
         :return: bool
-        Called by: open_file()
+        Called by: read_file()
         """
         self.cur_line = self.infile.readline().rstrip()
         if not self.header_seen:
@@ -51,36 +51,35 @@ class Chart:
             self.cur_line = self.infile.readline().rstrip()
         self.header_seen = True
 
-    def open_file(self):
+    def read_file(self):
         """
         :return: None
         Called by: main()
         """
         with open(self.filename) as self.infile:
             while self.get_a_line():
-                parsed_line = self.parse_line()  # a 3-tuple
+                parsed_line = self.parse_line()  # a 2-tuple
                 if any(parsed_line):
-                    self.cur_datetime, self.cur_interval, self.cur_nap_id = \
-                        parsed_line
+                    self.cur_datetime, self.cur_interval = parsed_line
                     print(self.cur_datetime, self.cur_interval,
-                          self.cur_nap_id)
+                          sep='   ')
 
     def parse_line(self):
         line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:
             return None, None, None
-        nap_id = 0
+        # nap_id = 0
         date_str = line_array[0].strip()
         time_str = line_array[1].strip()
         interval = line_array[2].strip()
-        if line_array[3]:
-            nap_id = int(line_array[3].strip())
+        # if line_array[3]:
+        #     nap_id = int(line_array[3].strip())
         date_time_str = date_str + ((' ' + time_str) if time_str else '')
         my_datetime = datetime.strptime(date_time_str,
                                         ('%Y-%m-%d %H:%M:%S' if
                                          time_str else '%Y-%m-%d'))
-        return my_datetime, interval, nap_id
+        return my_datetime, interval  # , nap_id
 
     def compile_date_re(self):
         """
@@ -93,7 +92,7 @@ class Chart:
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
     chart.compile_date_re()
-    chart.open_file()
+    chart.read_file()
 
 
 if __name__ == '__main__':
