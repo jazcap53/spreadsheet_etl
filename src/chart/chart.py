@@ -6,7 +6,7 @@
 from tests.file_access_wrappers import FileReadAccessWrapper
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Chart:
@@ -62,7 +62,7 @@ class Chart:
                 if any(parsed_line):
                     self.cur_datetime, self.cur_interval = parsed_line
                     print(self.cur_datetime, self.cur_interval,
-                          sep='   ')
+                          self.interval_str_to_int(self.cur_interval), sep='   ')
 
     def parse_line(self):
         line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
@@ -76,7 +76,19 @@ class Chart:
         my_datetime = datetime.strptime(date_time_str,
                                         ('%Y-%m-%d %H:%M:%S' if
                                          time_str else '%Y-%m-%d'))
+        # my_interval = timedelta(hours=int(interval[:2]), minutes=int(interval[3:5]))
         return my_datetime, interval
+
+    @staticmethod
+    def interval_str_to_int(my_interval):
+        """
+        Convert my_interval to the number of 15-second chunks it contains
+        :param my_interval:
+        :return: int:w
+        Called by: read_file()
+        """
+        if my_interval:
+            return int(my_interval[:2]) * 4 + int(my_interval[3:5]) // 15
 
     def compile_date_re(self):
         """
