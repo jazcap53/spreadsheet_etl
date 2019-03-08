@@ -69,17 +69,14 @@ class Chart:
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:
             return None, None, None
-        # nap_id = 0
         date_str = line_array[0].strip()
         time_str = line_array[1].strip()
         interval = line_array[2].strip()
-        # if line_array[3]:
-        #     nap_id = int(line_array[3].strip())
         date_time_str = date_str + ((' ' + time_str) if time_str else '')
         my_datetime = datetime.strptime(date_time_str,
                                         ('%Y-%m-%d %H:%M:%S' if
                                          time_str else '%Y-%m-%d'))
-        return my_datetime, interval  # , nap_id
+        return my_datetime, interval
 
     def compile_date_re(self):
         """
