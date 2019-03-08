@@ -37,7 +37,7 @@ class Chart:
         self.cur_time = None
         self.cur_datetime = None
         self.cur_interval = None
-        self.days_carried = False
+        self.quarters_carried = 0
         self.day_row = self.AWAKE * 24 * 4
         self.header_seen = False
 
@@ -67,7 +67,7 @@ class Chart:
                 parsed_input_line = self.parse_input_line()  # gets a 2-tuple
                 if any(parsed_input_line):
                     self.cur_datetime, self.cur_interval = parsed_input_line
-                    yield self.interval_str_to_int(self.cur_interval)
+                    yield self.interval_str_to_int()
 
     def parse_input_line(self):
         line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
@@ -97,16 +97,16 @@ class Chart:
         my_output_line = my_date + ': |' + my_day_row + '|'
         return my_output_line
 
-    @staticmethod
-    def interval_str_to_int(my_interval):
+    def interval_str_to_int(self):
         """
         Convert my_interval to the number of 15-minute chunks it contains
-        :param my_interval:
-        :return: int:w
+        :return: int
         Called by: read_file()
         """
-        if my_interval:
-            return int(my_interval[:2]) * 4 + int(my_interval[3:5]) // 15
+        # if my_interval:
+        if self.cur_interval:
+            return int(self.cur_interval[:2]) * 4 + \
+                   int(self.cur_interval[3:5]) // 15
 
     def compile_date_re(self):
         """
