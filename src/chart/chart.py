@@ -42,6 +42,7 @@ class Chart:
         self.quarters_carried = 0
         self.day_row = [Chart.AWAKE] * 24 * 4
         self.header_seen = False
+        self.start_from_0 = False
 
     def get_a_line(self):
         """
@@ -71,11 +72,12 @@ class Chart:
                     self.cur_datetime, self.cur_interval = parsed_input_line
                     yield self.interval_str_to_int()
 
+
     def parse_input_line(self):
         line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:
-            return None, None, None
+            return None, None
         date_str = line_array[0].strip()
         time_str = line_array[1].strip()
         interval = line_array[2].strip()
@@ -89,29 +91,31 @@ class Chart:
     def make_output_line(self, quarters_count):
         my_date = self.cur_datetime.strftime('%b %d, %Y')
         if self.quarters_carried:
-            print(f'{self.quarters_carried} quarters carried on date {my_date}')
-            self.handle_quarters_carried(my_date)
+            # print(f'{self.quarters_carried} quarters carried on date {my_date}')
+            self.handle_quarters_carried()
+            self.start_from_0 = True
         my_cur_datetime_copy = copy.copy(self.cur_datetime)
         my_interval = self.cur_interval
-        my_start_time = self.cur_datetime.strftime('%H:%M:%S')
+        my_start_time = '00:00:00' if self.start_from_0 else \
+            self.cur_datetime.strftime('%H:%M:%S')
+        self.start_from_0 = False
+        my_start_time_offset = Chart.intervals_to_positions[my_start_time]
         my_day_row = self.day_row[:]
-        my_day_row_offset = Chart.intervals_to_positions[my_interval]
-        # my_day_row[Chart.intervals_to_positions[my_interval]] = Chart.ASLEEP
-        my_day_row[my_day_row_offset] = Chart.ASLEEP
-        quarters_count -= 1
-        while quarters_count and my_day_row_offset < 24 * 4:
-            my_day_row_offset += 1
-            quarters_count -= 1
-            my_day_row[my_day_row_offset] = Chart.ASLEEP
-
-
-        # my_interval += timedelta(minutes=15)
-
+        for i in range(quarters_count):
+            if my_start_time_offset + i >= 24 * 4:
+                # self.quarters_carried = my_start_time_offset + i - 24 * 4
+                self.quarters_carried = quarters_count - i
+                return my_date + ': |' + "".join(my_day_row) + '|'  # NEW LINE HERE
+            my_day_row[my_start_time_offset + i] = Chart.ASLEEP
         my_output_line = my_date + ': |' + "".join(my_day_row) + '|'
         return my_output_line
 
-    def handle_quarters_carried(self, my_date):
-        self.quarters_carried = 0  # TODO: N.Y.I.
+    def handle_quarters_carried(self):
+        self.cur_datetime += timedelta(days=1)
+        my_day_row = self.day_row[:]
+        for i in range(self.quarters_carried):
+            my_day_row[i] = Chart.ASLEEP
+        self.quarters_carried = 0
 
     def interval_str_to_int(self):
         """
@@ -122,6 +126,8 @@ class Chart:
         if self.cur_interval:
             return int(self.cur_interval[:2]) * 4 + \
                    int(self.cur_interval[3:5]) // 15
+        else:
+            return 0
 
     def compile_date_re(self):
         """
@@ -132,7 +138,7 @@ class Chart:
 
 
 def main():
-    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data.txt')
+    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data_new.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     while True:

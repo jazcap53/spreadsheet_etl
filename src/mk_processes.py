@@ -31,14 +31,14 @@ logging_process = subprocess.Popen(
     ['./src/logging/receiver.py'],
 )
 
-time.sleep(.1)
+time.sleep(1)
 
 extract_process = subprocess.Popen(
     ['./src/extract/run_it.py', args.infile_name],
     stdout=subprocess.PIPE,
 )
 
-# time.sleep(5)
+time.sleep(5)
 
 transform_process = subprocess.Popen(
     ['./src/transform/do_transform.py'],
@@ -53,7 +53,7 @@ load_process = subprocess.Popen(
     stdin=transform_process.stdout,
 )
 
-time.sleep(6)
+time.sleep(10)
 
 extract_process.terminate()
 transform_process.terminate()
