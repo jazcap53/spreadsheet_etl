@@ -37,6 +37,13 @@ def test_read_good_date_sets_last_date():
     assert my_transform.last_date == '2017-01-02'
 
 
+def test_read_bad_date_does_not_set_last_date():
+    file_wrapper = FakeFileReadWrapper('   2017-01-02\n')  # missing a space
+    my_transform = Transform(file_wrapper)
+    my_transform.read_each_line()
+    assert not my_transform.last_date
+
+
 def test_read_date_b_action_date_w_action_sets_last_sleep_time():
     file_wrapper = FakeFileReadWrapper('    2016-12-07\n'
                                        'action: b, time: 23:45\n'

@@ -16,6 +16,7 @@ processing, and will hold all relevant data from the input.
 import fileinput
 import logging
 import logging.handlers
+import re
 
 
 class Transform:
@@ -32,6 +33,7 @@ class Transform:
         self.out_val = None
         self.last_date = ''
         self.last_sleep_time = ''
+        self.date_checker = None
 
     def read_each_line(self):
         """
@@ -43,6 +45,7 @@ class Transform:
 
         Called by: __main__()
         """
+        self.date_checker = re.compile(' {4}\d{4}-\d{2}-\d{2}')
         with self.data_source.input() as infile:
             for curr_line in infile:
                 self.process_curr(curr_line.rstrip('\n'))
@@ -60,21 +63,17 @@ class Transform:
            'NAP, time, duration'
         Returns: None
         """
-        if cur_l == '':
+        if not cur_l or cur_l.startswith('Week of ') or cur_l.startswith('======='):
             pass
-        elif cur_l[0] == 'W':  # 'Week of ...'
-            pass
-        elif cur_l[0] == '=':  # '========...'
-            pass
-        elif cur_l[0] == ' ':  # a date in the format '    yyyy-mm-dd'
+        elif self.date_checker.match(cur_l):
             self.last_date = cur_l[4:]
-        elif cur_l[: 9] == 'action: b':
+        elif cur_l.startswith('action: b'):
             self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
             self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
                                                   self.last_sleep_time)
-        elif cur_l[: 9] == 'action: s':
+        elif cur_l.startswith('action: s'):
             self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
-        elif cur_l[: 9] == 'action: w':
+        elif cur_l.startswith('action: w'):
             wake_time = self.get_wake_or_last_sleep(cur_l)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
