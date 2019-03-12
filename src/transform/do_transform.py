@@ -64,24 +64,37 @@ class Transform:
         Returns: None
         """
         if not cur_l or cur_l.startswith('Week of ') or cur_l.startswith('======='):
-            pass
+            self.handle_header_line()
         elif self.date_checker.match(cur_l):
-            self.last_date = cur_l[4:]
-        elif cur_l.startswith('action: b'):
-            self.last_sleep_time = self.get_time_part_from(cur_l)
-            self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
-                                                  self.last_sleep_time)
-        elif cur_l.startswith('action: s'):
-            self.last_sleep_time = self.get_time_part_from(cur_l)
-        elif cur_l.startswith('action: w'):
-            wake_time = self.get_time_part_from(cur_l)
-            duration = self.get_duration(wake_time, self.last_sleep_time)
-            self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
+            self.handle_date_line(cur_l)
+        elif cur_l.startswith('action: '):
+            self.handle_action_line(cur_l)
         else:
             Transform.transform_logger.warning('Bad value {} in input'.
                                                format(cur_l))
         if self.out_val is not None:
-            print(self.out_val)
+            self.output_val()
+
+    def handle_header_line(self):
+        self.out_val = None
+
+    def handle_date_line(self, line):
+        self.last_date = line[4:]
+
+    def handle_action_line(self, line):
+        if line.startswith('action: b'):
+            self.last_sleep_time = self.get_time_part_from(line)
+            self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
+                                                      self.last_sleep_time)
+        elif line.startswith('action: s'):
+            self.last_sleep_time = self.get_time_part_from(line)
+        elif line.startswith('action: w'):
+            wake_time = self.get_time_part_from(line)
+            duration = self.get_duration(wake_time, self.last_sleep_time)
+            self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
+
+    def output_val(self):
+        print(self.out_val)
         self.out_val = None
 
     @staticmethod
