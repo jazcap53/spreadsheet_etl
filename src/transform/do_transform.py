@@ -68,13 +68,13 @@ class Transform:
         elif self.date_checker.match(cur_l):
             self.last_date = cur_l[4:]
         elif cur_l.startswith('action: b'):
-            self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
+            self.last_sleep_time = self.get_time_part_from(cur_l)
             self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
                                                   self.last_sleep_time)
         elif cur_l.startswith('action: s'):
-            self.last_sleep_time = self.get_wake_or_last_sleep(cur_l)
+            self.last_sleep_time = self.get_time_part_from(cur_l)
         elif cur_l.startswith('action: w'):
-            wake_time = self.get_wake_or_last_sleep(cur_l)
+            wake_time = self.get_time_part_from(cur_l)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
         else:
@@ -85,7 +85,7 @@ class Transform:
         self.out_val = None
 
     @staticmethod
-    def get_wake_or_last_sleep(cur_l):
+    def get_time_part_from(cur_l):
         """
         Extract and return the time part of its string argument.
 
