@@ -122,7 +122,8 @@ class Chart:
             my_day_row[offset] = self.ASLEEP
             offset += 1
             self.qs_carried -= 1
-        while offset < Chart.QS_IN_DAY:  # while some qs are unset
+        # while offset < Chart.QS_IN_DAY:  # while some qs are unset
+        while True:
             # my_date, my_time, my_interval = next(read_file_iterator)
             while offset < my_time:
                 my_day_row[offset] = self.AWAKE
@@ -132,18 +133,10 @@ class Chart:
                 offset += 1
                 if offset == Chart.QS_IN_DAY:
                     self.qs_carried = my_time + my_interval - offset
-                    break
+                    # break
+                    joined_row = ''.join(my_day_row)
+                    return f'{my_date}: {joined_row}'
             my_date, my_time, my_interval = next(read_file_iterator)
-        return my_day_row
-
-        # for i in range(self.qs_carried):
-        #     if my_start_time_offset + i >= Chart.QS_IN_DAY:
-        #         # self.quarters_carried = my_start_time_offset + i - Chart.QS_IN_DAY
-        #         self.quarters_carried = self.qs_carried - i
-        #         return my_date + ': |' + "".join(my_day_row) + '|'  # NEW LINE HERE
-        #     my_day_row[my_start_time_offset + i] = Chart.ASLEEP
-        # my_output_line = my_date + ': |' + "".join(my_day_row) + '|'
-        # return my_output_line
 
     def handle_quarters_carried(self):
         self.cur_datetime += timedelta(days=1)
@@ -176,9 +169,17 @@ def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data_new.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
+    lines_printed = 0
+    ruler = ''.join(list(map(lambda x: str(x) + ' | ', range(10)))) + \
+        '0 | 1 | '
+    ruler_line = ' ' * 12 + ruler * 2
+
     while True:
+        if not lines_printed % 7:
+            print(ruler_line)
         try:
-            print(''.join(chart.make_output_line(read_file_iterator)))
+            print(chart.make_output_line(read_file_iterator))
+            lines_printed += 1
         except StopIteration:
             break
 
