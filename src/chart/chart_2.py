@@ -118,10 +118,8 @@ class Chart:
         my_day_row = self.day_row[:]
         offset = 0
         my_date, my_time, my_interval = next(read_file_iterator)
-        while self.qs_carried:  # 1) set first self.qs_carried qs to Chart.ASLEEP
-            my_day_row[offset] = self.ASLEEP
-            offset += 1
-            self.qs_carried -= 1
+        if self.qs_carried:
+            my_day_row, offset = self.handle_qs_carried(my_day_row, offset)
         # while offset < Chart.QS_IN_DAY:  # while some qs are unset
         while True:
             # my_date, my_time, my_interval = next(read_file_iterator)
@@ -138,12 +136,16 @@ class Chart:
                     return f'{my_date}: {joined_row}'
             my_date, my_time, my_interval = next(read_file_iterator)
 
-    def handle_quarters_carried(self):
-        self.cur_datetime += timedelta(days=1)
-        my_day_row = self.day_row[:]
-        for i in range(self.quarters_carried):
-            my_day_row[i] = Chart.ASLEEP
-        self.quarters_carried = 0
+    def handle_qs_carried(self, my_day_row, offset):
+        while self.qs_carried:
+            my_day_row[offset] = self.ASLEEP
+            offset += 1
+            self.qs_carried -= 1
+        return my_day_row, offset
+
+
+
+
 
     def time_or_interval_str_to_int(self, my_str):
         """
