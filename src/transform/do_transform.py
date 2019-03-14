@@ -85,7 +85,7 @@ class Transform:
         if line.startswith('action: b'):
             self.last_sleep_time = self.get_time_part_from(line)
             self.out_val = 'NIGHT, {}, {}'.format(self.last_date,
-                                                      self.last_sleep_time)
+                                                  self.last_sleep_time)
         elif line.startswith('action: s'):
             self.last_sleep_time = self.get_time_part_from(line)
         elif line.startswith('action: w'):
