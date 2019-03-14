@@ -75,8 +75,6 @@ class Chart:
             while self.get_a_line():
                 parsed_input_line = self.parse_input_line()  # gets a 3-tuple
                 if all(parsed_input_line):
-                    # self.cur_datetime, self.cur_interval = parsed_input_line
-                    # yield self.interval_str_to_int()
                     yield parsed_input_line
 
     def parse_input_line(self):
@@ -97,13 +95,6 @@ class Chart:
         my_date = date.fromisoformat(date_str)
         my_time = self.time_or_interval_str_to_int(time_str)
         my_interval = self.time_or_interval_str_to_int(interval_str)
-
-        # date_time_str = date_str + ((' ' + time_str) if time_str else '')
-        # my_datetime = datetime.strptime(date_time_str,
-        #                                 ('%Y-%m-%d %H:%M:%S' if
-        #                                  time_str else '%Y-%m-%d'))
-        # my_interval = timedelta(hours=int(interval[:2]), minutes=int(interval[3:5]))
-
         return my_date, my_time, my_interval
 
     def make_output_line(self, read_file_iterator):
@@ -122,7 +113,6 @@ class Chart:
             my_day_row, offset = self.handle_qs_carried(my_day_row, offset)
         # while offset < Chart.QS_IN_DAY:  # while some qs are unset
         while True:
-            # my_date, my_time, my_interval = next(read_file_iterator)
             while offset < my_time:
                 my_day_row[offset] = self.AWAKE
                 offset += 1
@@ -131,7 +121,6 @@ class Chart:
                 offset += 1
                 if offset == Chart.QS_IN_DAY:
                     self.qs_carried = my_time + my_interval - offset
-                    # break
                     joined_row = ''.join(my_day_row)
                     return f'{my_date}: {joined_row}'
             my_date, my_time, my_interval = next(read_file_iterator)
@@ -142,10 +131,6 @@ class Chart:
             offset += 1
             self.qs_carried -= 1
         return my_day_row, offset
-
-
-
-
 
     def time_or_interval_str_to_int(self, my_str):
         """
@@ -188,19 +173,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# NOTES
-# >>> import datetime
-# >>> my_date = '2016-12-07'
-# >>> my_time = '23:45:00'
-# >>> my_datetime = my_date + ' ' + my_time
-# >>> my_datetime
-# '2016-12-07 23:45:00'
-# >>> my_date_and_time = my_date + ' ' + my_time
-# >>> my_datetime = datetime.datetime.strptime(my_date_and_time, '%Y-%m-%d %H:%M:%S')
-# >>> my_datetime
-# datetime.datetime(2016, 12, 7, 23, 45)
-# >>> my_newer_datetime = my_datetime + datetime.timedelta(minutes=15)
-# >>> my_newer_datetime
-# datetime.datetime(2016, 12, 8, 0, 0)
