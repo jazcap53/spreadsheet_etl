@@ -74,8 +74,9 @@ class Chart:
         with open(self.filename) as self.infile:
             while self.get_a_line():
                 parsed_input_line = self.parse_input_line()  # gets a 3-tuple
-                if all(parsed_input_line):
-                    yield parsed_input_line
+                # if all(parsed_input_line):
+                # if parsed_input_line[2]:
+                yield parsed_input_line
 
     def parse_input_line(self):
         """
@@ -105,7 +106,6 @@ class Chart:
         :return:
         Called by: main()
         """
-        # read_file_iterator = self.read_file()
         my_day_row = self.day_row[:]
         offset = 0
         my_date, my_time, my_interval = next(read_file_iterator)
@@ -113,6 +113,9 @@ class Chart:
             my_day_row, offset = self.handle_qs_carried(my_day_row, offset)
         # while offset < Chart.QS_IN_DAY:  # while some qs are unset
         while True:
+            pass
+            # if my_time == 0 and my_interval == 0:
+            #     return f'{my_date}: {"".join(self.day_row)} :{my_date}'
             while offset < my_time:
                 my_day_row[offset] = self.AWAKE
                 offset += 1
@@ -121,9 +124,17 @@ class Chart:
                 offset += 1
                 if offset == Chart.QS_IN_DAY:
                     self.qs_carried = my_time + my_interval - offset
-                    joined_row = ''.join(my_day_row)
-                    return f'{my_date}: {joined_row}'
+                    output_row = []
+                    for ix, val in enumerate(my_day_row):
+                        if ix % 4 == 3:
+                            output_row.extend([val, '|'])
+                        else:
+                            output_row.append(val)
+                    joined_row = ''.join(output_row)
+                    return f'{my_date}: {joined_row} :{my_date}'
             my_date, my_time, my_interval = next(read_file_iterator)
+            if not any([my_date, my_time, my_interval]):
+                return ''
 
     def handle_qs_carried(self, my_day_row, offset):
         while self.qs_carried:
@@ -157,9 +168,14 @@ def main():
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     lines_printed = 0
-    ruler = ''.join(list(map(lambda x: str(x) + ' | ', range(10)))) + \
-        '0 | 1 | '
-    ruler_line = ' ' * 12 + ruler * 2
+    ruler = list(str(x) for x in range(12)) * 2  # TODO: make ruler in a method
+    for ix, val in enumerate(ruler):
+        if ix == 0:
+            ruler[ix] = '12a'
+        elif ix == 12:
+            ruler[ix] = '12p'
+
+    ruler_line = ' ' * 12 + ''.join(v.ljust(5, ' ') for v in ruler)
 
     while True:
         if not lines_printed % 7:
