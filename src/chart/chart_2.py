@@ -162,20 +162,25 @@ class Chart:
         """
         self.date_re = re.compile(r' \d{4}-\d{2}-\d{2} \|')
 
+    @staticmethod
+    def create_ruler():
+        ruler = list(str(x) for x in range(12)) * 2
+        for ix, val in enumerate(ruler):
+            if ix == 0:
+                ruler[ix] = '12a'
+            elif ix == 12:
+                ruler[ix] = '12p'
+
+        ruler_line = ' ' * 12 + ''.join(v.ljust(5, ' ') for v in ruler)
+        return ruler_line
+
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data_new.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     lines_printed = 0
-    ruler = list(str(x) for x in range(12)) * 2  # TODO: make ruler in a method
-    for ix, val in enumerate(ruler):
-        if ix == 0:
-            ruler[ix] = '12a'
-        elif ix == 12:
-            ruler[ix] = '12p'
-
-    ruler_line = ' ' * 12 + ''.join(v.ljust(5, ' ') for v in ruler)
+    ruler_line = chart.create_ruler()
 
     while True:
         if not lines_printed % 7:
