@@ -121,29 +121,35 @@ class Chart:
         Called by: main()
         """
         self.cur_day_row = self.day_row[:]
-        my_triple = Triple(0, 0, self.AWAKE)
+        # my_triple = Triple(0, 0, self.AWAKE)
 
         if self.qs_carried:
             carried_triple = Triple(0, self.qs_carried, self.ASLEEP)
             self.insert_to_day_row(carried_triple)
+            self.qs_carried = 0
         else:
             carried_triple = Triple(0, 0, 0)
 
-        my_start, my_finish, my_symbol = next(read_file_iterator)  # yielded from read_file()
-        my_triple = Triple(my_start, my_finish, my_symbol)
-        if carried_triple.finish < my_start:
-            self.insert_to_day_row(Triple(carried_triple.finish, my_triple.start, self.AWAKE))
+        while True:
+            my_start, my_finish, my_symbol = next(read_file_iterator)  # yielded from read_file()
+            if my_start is not None and my_start > carried_triple.finish:
+                my_triple = Triple(my_start, my_finish, my_symbol)
+                # if carried_triple.finish < my_start:
+                self.insert_to_day_row(Triple(carried_triple.finish, my_triple.start, self.AWAKE))
+
+                self.insert_to_day_row(my_triple)
 
 
 
-        self.insert_to_day_row(my_triple)
-
-        print(''.join(self.cur_day_row))
+        # print(''.join(self.cur_day_row))
 
     def insert_to_day_row(self, triple):
+        if triple.finish > 24 * 4:
+            self.qs_carried = triple.finish - 24 * 4
+            triple = triple._replace(finish=24 * 4)
+
         for i in range(triple.start, triple.finish):
             self.cur_day_row[i] = triple.symbol
-
 
     def handle_qs_carried(self, my_day_row, offset):
         while self.qs_carried:
@@ -195,7 +201,9 @@ def main():
         if not lines_printed % 7:
             print(ruler_line)
         try:
-            print(chart.make_output(read_file_iterator))
+            chart.make_output(read_file_iterator)
+            output_line = ''.join(chart.cur_day_row)
+            print(output_line)
             lines_printed += 1
         except StopIteration:
             break
