@@ -37,22 +37,23 @@ class Chart:
     def __init__(self, filename):
         self.filename = filename
         self.infile = None
-        self.cur_line = ''
+        self.current_line = ''
         self.prev_line = ''
         self.sleep_state = self.AWAKE
         self.date_re = None
-        self.cur_date_str = ''
-        self.cur_time_str = ''
-        self.cur_date_time_str = ''
-        self.cur_date = None
-        self.cur_time = None
-        self.cur_datetime = None
-        self.cur_interval = None
-        self.qs_carried = 0
-        self.day_row = [Chart.UNKNOWN] * Chart.QS_IN_DAY
-        self.cur_day_row = []
+        self.current_date_str = ''
+        self.current_time_str = ''
+        self.current_date_time_str = ''
+        self.current_date = None
+        self.current_time = None
+        self.current_datetime = None
+        self.current_interval = None
+        self.quarters_carried = 0
+        self.output_row = [Chart.UNKNOWN] * Chart.QS_IN_DAY
+        self.current_output_row = []
         self.header_seen = False
         self.start_from_0 = False
+        self.spaces_left = 24 * 4
 
     def read_file(self):
         """
@@ -64,7 +65,7 @@ class Chart:
         """
         with open(self.filename) as self.infile:
             while self.get_a_line():
-                parsed_input_line = self.parse_input_line()  # gets a 3-tuple
+                parsed_input_line = self.parse_input_line()  # gets a Triple
                 yield parsed_input_line
 
     def get_a_line(self):
@@ -74,12 +75,12 @@ class Chart:
         :return: bool
         Called by: read_file()
         """
-        self.cur_line = self.infile.readline().rstrip()
+        self.current_line = self.infile.readline().rstrip()
         if not self.header_seen:
             self.skip_header()
-        while self.cur_line[14:22] == ' ' * 8:
-            self.cur_line = self.infile.readline().rstrip()
-        return bool(self.cur_line)
+        while self.current_line[14:22] == ' ' * 8:
+            self.current_line = self.infile.readline().rstrip()
+        return bool(self.current_line)
 
     def skip_header(self):
         """
@@ -88,8 +89,8 @@ class Chart:
         :return:
         Called by: get_a_line()
         """
-        while self.cur_line and not self.date_re.match(self.cur_line):
-            self.cur_line = self.infile.readline().rstrip()
+        while self.current_line and not self.date_re.match(self.current_line):
+            self.current_line = self.infile.readline().rstrip()
         self.header_seen = True
 
     def parse_input_line(self):
@@ -101,7 +102,7 @@ class Chart:
                      a unicode character (ASLEEP, AWAKE, UNKNOWN)
         Called by: read_file()
         """
-        line_array = self.cur_line.split('|')  # cur_line[-1] may be '|'
+        line_array = self.current_line.split('|')  # current_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:
             return Triple(None, None, None)
@@ -120,47 +121,76 @@ class Chart:
         :return:
         Called by: main()
         """
-        self.cur_day_row = self.day_row[:]
-        # my_triple = Triple(0, 0, self.AWAKE)
-
-        if self.qs_carried:
-            carried_triple = Triple(0, self.qs_carried, self.ASLEEP)
-            self.insert_to_day_row(carried_triple)
-            self.qs_carried = 0
-        else:
-            carried_triple = Triple(0, 0, 0)
-
+        self.current_output_row = self.output_row[:]
+        self.spaces_left = 24 * 4
+        
         while True:
-            my_start, my_finish, my_symbol = next(read_file_iterator)  # yielded from read_file()
-            if my_start is not None and my_start > carried_triple.finish:
-                my_triple = Triple(my_start, my_finish, my_symbol)
-                # if carried_triple.finish < my_start:
-                self.insert_to_day_row(Triple(carried_triple.finish, my_triple.start, self.AWAKE))
+            if self.quarters_carried:
+                carried_triple = Triple(0, self.quarters_carried, self.ASLEEP)
+                self.insert_to_output_row(carried_triple)
+                self.quarters_carried = 0
+            else:
+                carried_triple = Triple(0, 0, 0)
+            try:
+                current_triple = Triple(*next(read_file_iterator))  # yielded from read_file()
+                if current_triple.start is None:
+                    return
+            except RuntimeError:
+                return
+            len_segment = current_triple.finish - current_triple.start
+            # fill gap between carried and current triples
+            if carried_triple.finish < current_triple.start:
+                self.insert_to_output_row(Triple(carried_triple.finish,
+                                          current_triple.start, self.AWAKE))
+            if len_segment < self.spaces_left:
+                self.insert_to_output_row(current_triple)
+            elif len_segment == self.spaces_left:
+                self.insert_to_output_row(current_triple)
+                # print(''.join(self.current_output_row))
+                self.output(self.current_output_row)
+                self.current_output_row = self.output_row[:]
+                self.spaces_left = 24 * 4
+            else:
+                self.insert_to_output_row(current_triple)
+                # print(''.join(self.current_output_row))
+                self.output(self.current_output_row)
+                self.current_output_row = self.output_row[:]
+                self.spaces_left = 24 * 4
 
-                self.insert_to_day_row(my_triple)
 
 
-
-        # print(''.join(self.cur_day_row))
-
-    def insert_to_day_row(self, triple):
+    def insert_to_output_row(self, triple):
         if triple.finish > 24 * 4:
-            self.qs_carried = triple.finish - 24 * 4
+            self.quarters_carried = triple.finish - 24 * 4
             triple = triple._replace(finish=24 * 4)
 
         for i in range(triple.start, triple.finish):
-            self.cur_day_row[i] = triple.symbol
+            self.current_output_row[i] = triple.symbol
+        self.spaces_left -= triple.finish - triple.start
+        if self.spaces_left < 0:
+            self.spaces_left = 0
 
-    def handle_qs_carried(self, my_day_row, offset):
-        while self.qs_carried:
-            my_day_row[offset] = self.ASLEEP
+    def output(self, my_output_row):
+        extended_output_row = []
+        for ix, val in enumerate(my_output_row):
+            if ix and not ix % 4 and ix != 24 * 4:
+                extended_output_row.extend(['|', val])
+            else:
+                extended_output_row.append(val)
+        print('01-01-2001: ' + ''.join(extended_output_row))
+
+
+
+    def handle_quarters_carried(self, my_output_row, offset):
+        while self.quarters_carried:
+            my_output_row[offset] = self.ASLEEP
             offset += 1
-            self.qs_carried -= 1
-        return my_day_row, offset
+            self.quarters_carried -= 1
+        return my_output_row, offset
 
     def time_or_interval_str_to_int(self, my_str):
         """
-        Obtain from self.cur_interval the number of 15-minute chunks it contains
+        Obtain from self.current_interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
         Called by: read_file()
         """
@@ -202,7 +232,7 @@ def main():
             print(ruler_line)
         try:
             chart.make_output(read_file_iterator)
-            output_line = ''.join(chart.cur_day_row)
+            output_line = ''.join(chart.current_output_row)
             print(output_line)
             lines_printed += 1
         except StopIteration:
