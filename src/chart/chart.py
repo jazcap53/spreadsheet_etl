@@ -156,12 +156,13 @@ class Chart:
     def write_output(self, my_output_row):
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
-            if ix and not ix % 4 and ix != QS_IN_DAY:
-                extended_output_row.extend(['|', val])
-            else:
-                extended_output_row.append(val)
+            # if ix and not ix % 4 and ix != QS_IN_DAY:
+            #     extended_output_row.extend(['|', val])
+            # else:
+            #     extended_output_row.append(val)
+            extended_output_row.append(val)
         self.advance_date()
-        print(f'{self.current_date} |{"".join(extended_output_row)}| {self.current_date}')
+        print(f'{self.current_date} |{"".join(extended_output_row)}|')
 
     def advance_date(self):
         date_as_datetime = datetime.strptime(self.current_date, '%Y-%m-%d')
@@ -198,7 +199,7 @@ class Chart:
                 ruler[ix] = '12a'
             elif ix == 12:
                 ruler[ix] = '12p'
-        ruler_line = ' ' * 12 + ''.join(v.ljust(5, ' ') for v in ruler)
+        ruler_line = ' ' * 12 + ''.join(v.ljust(4, ' ') for v in ruler)
         return ruler_line
 
 
