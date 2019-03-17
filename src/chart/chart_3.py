@@ -130,7 +130,7 @@ class Chart:
                 self.insert_to_output_row(carried_triple)
                 self.quarters_carried = 0
             else:
-                carried_triple = Triple(0, 0, 0)
+                carried_triple = Triple(0, 24 * 4, self.UNKNOWN)
             try:
                 current_triple = Triple(*next(read_file_iterator))  # yielded from read_file()
                 if current_triple.start is None:
@@ -139,8 +139,10 @@ class Chart:
                 return
             len_segment = current_triple.finish - current_triple.start
             # fill gap between carried and current triples
-            if carried_triple.finish < current_triple.start:
-                self.insert_to_output_row(Triple(carried_triple.finish,
+            # if carried_triple.finish < current_triple.start:
+            spaces_used = self.get_spaces_used()
+            if spaces_used < current_triple.start:
+                self.insert_to_output_row(Triple(spaces_used,
                                           current_triple.start, self.AWAKE))
             if len_segment < self.spaces_left:
                 self.insert_to_output_row(current_triple)
@@ -166,9 +168,13 @@ class Chart:
 
         for i in range(triple.start, triple.finish):
             self.current_output_row[i] = triple.symbol
-        self.spaces_left -= triple.finish - triple.start
-        if self.spaces_left < 0:
-            self.spaces_left = 0
+            self.spaces_left -= 1
+        # self.spaces_left -= triple.finish - triple.start
+        # if self.spaces_left < 0:
+        #     self.spaces_left =
+
+    def get_spaces_used(self):
+        return 24 * 4 - self.spaces_left
 
     def output(self, my_output_row):
         extended_output_row = []
@@ -241,3 +247,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+'''
+spaces_used = self.get_spaces_used()
+if spaces_used < current_triple.start:
+    self.insert_to_output_row(Triple(spaces_used,
+                                     current_triple.start, self.AWAKE))
+'''
