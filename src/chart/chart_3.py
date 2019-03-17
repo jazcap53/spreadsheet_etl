@@ -11,18 +11,19 @@ import copy
 from collections import namedtuple
 
 
-Triple = namedtuple('Triple', ['start', 'finish', 'symbol'], defaults=[0, 0, 0])
+Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
+QS_IN_DAY = 96  # 24 * 4
+ASLEEP = u'\u2588'  # the printed color (black ink)
+AWAKE = u'\u0020'  # the background color (white paper)
+UNKNOWN = u'\u2591'  # no data
 
 
 class Chart:
     """
     Create a sleep chart from input data
     """
-    ASLEEP = u'\u2588'   # the printed color (black ink)
-    AWAKE = u'\u0020'    # the background color (white paper)
-    UNKNOWN = u'\u2591'  # no data
 
-    QS_IN_DAY = 96  # 24 * 4
+    # QS_IN_DAY = 96  # 24 * 4
 
     # Triple = namedtuple('Triple', ['start', 'finish', 'symbol'], defaults=[0, 0, 0])
 
@@ -39,7 +40,7 @@ class Chart:
         self.infile = None
         self.current_line = ''
         self.prev_line = ''
-        self.sleep_state = self.AWAKE
+        self.sleep_state = AWAKE
         self.date_re = None
         self.current_date_str = ''
         self.current_time_str = ''
@@ -49,11 +50,11 @@ class Chart:
         self.current_datetime = None
         self.current_interval = None
         self.quarters_carried = 0
-        self.output_row = [Chart.UNKNOWN] * Chart.QS_IN_DAY
+        self.output_row = [UNKNOWN] * QS_IN_DAY
         self.current_output_row = []
         self.header_seen = False
         self.start_from_0 = False
-        self.spaces_left = 24 * 4
+        self.spaces_left = QS_IN_DAY
 
     def read_file(self):
         """
@@ -98,7 +99,7 @@ class Chart:
 
         :return: a Triple holding
                      a start position,
-                     a one-past-end position,
+                     a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, UNKNOWN)
         Called by: read_file()
         """
@@ -107,10 +108,9 @@ class Chart:
         if len(line_array) < 2:
             return Triple(None, None, None)
         start = self.time_or_interval_str_to_int(line_array[1])
-        finish = start + self.time_or_interval_str_to_int(line_array[2])
-        symbol = self.ASLEEP
-        # my_triple = Triple(start, finish, symbol)
-        return Triple(start, finish, symbol)
+        length = self.time_or_interval_str_to_int(line_array[2])
+        symbol = ASLEEP
+        return Triple(start, length, symbol)
 
     def make_output(self, read_file_iterator):
         """
@@ -122,28 +122,29 @@ class Chart:
         Called by: main()
         """
         self.current_output_row = self.output_row[:]
-        self.spaces_left = 24 * 4
+        self.spaces_left = QS_IN_DAY
         
         while True:
-            if self.quarters_carried:
-                carried_triple = Triple(0, self.quarters_carried, self.ASLEEP)
-                self.insert_to_output_row(carried_triple)
-                self.quarters_carried = 0
-            else:
-                carried_triple = Triple(0, 24 * 4, self.UNKNOWN)
+            # if self.quarters_carried:
+            #     self.handle_quarters_carried()
             try:
                 current_triple = Triple(*next(read_file_iterator))  # yielded from read_file()
                 if current_triple.start is None:
                     return
             except RuntimeError:
                 return
-            len_segment = current_triple.finish - current_triple.start
-            # fill gap between carried and current triples
-            # if carried_triple.finish < current_triple.start:
-            spaces_used = self.get_spaces_used()
-            if spaces_used < current_triple.start:
-                self.insert_to_output_row(Triple(spaces_used,
-                                          current_triple.start, self.AWAKE))
+            len_segment = current_triple.length
+            current_position = self.get_current_position()
+            if current_position < current_triple.start:
+                self.insert_to_output_row(Triple(current_position,
+                                          current_triple.start - current_position, AWAKE))
+            else:
+                self.insert_to_output_row(Triple(current_position, QS_IN_DAY - current_position, AWAKE))
+                self.output(self.current_output_row)
+                self.current_output_row = self.output_row[:]
+                self.spaces_left = QS_IN_DAY
+                if current_triple.start > 0:
+                    self.insert_to_output_row(Triple(0, current_triple.start, AWAKE))
             if len_segment < self.spaces_left:
                 self.insert_to_output_row(current_triple)
             elif len_segment == self.spaces_left:
@@ -151,48 +152,49 @@ class Chart:
                 # print(''.join(self.current_output_row))
                 self.output(self.current_output_row)
                 self.current_output_row = self.output_row[:]
-                self.spaces_left = 24 * 4
+                self.spaces_left = QS_IN_DAY
             else:
                 self.insert_to_output_row(current_triple)
                 # print(''.join(self.current_output_row))
                 self.output(self.current_output_row)
                 self.current_output_row = self.output_row[:]
-                self.spaces_left = 24 * 4
+                self.spaces_left = QS_IN_DAY
+            if self.quarters_carried:
+                self.handle_quarters_carried()
 
-
+    def handle_quarters_carried(self):
+        self.insert_to_output_row(Triple(0, self.quarters_carried, ASLEEP))
+        self.quarters_carried = 0
 
     def insert_to_output_row(self, triple):
-        if triple.finish > 24 * 4:
-            self.quarters_carried = triple.finish - 24 * 4
-            triple = triple._replace(finish=24 * 4)
+        finish = triple.start + triple.length
+        if finish > QS_IN_DAY:
+            self.quarters_carried = finish - QS_IN_DAY
+            # triple = triple._replace(length=QS_IN_DAY - triple.start)
+            triple = triple._replace(length=triple.length - self.quarters_carried)
 
-        for i in range(triple.start, triple.finish):
+        for i in range(triple.start, triple.start + triple.length):
             self.current_output_row[i] = triple.symbol
             self.spaces_left -= 1
-        # self.spaces_left -= triple.finish - triple.start
-        # if self.spaces_left < 0:
-        #     self.spaces_left =
 
-    def get_spaces_used(self):
-        return 24 * 4 - self.spaces_left
+    def get_current_position(self):
+        return QS_IN_DAY - self.spaces_left
 
     def output(self, my_output_row):
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
-            if ix and not ix % 4 and ix != 24 * 4:
+            if ix and not ix % 4 and ix != QS_IN_DAY:
                 extended_output_row.extend(['|', val])
             else:
                 extended_output_row.append(val)
         print('01-01-2001: ' + ''.join(extended_output_row))
 
-
-
-    def handle_quarters_carried(self, my_output_row, offset):
-        while self.quarters_carried:
-            my_output_row[offset] = self.ASLEEP
-            offset += 1
-            self.quarters_carried -= 1
-        return my_output_row, offset
+    # def handle_quarters_carried(self, my_output_row, offset):
+    #     while self.quarters_carried:
+    #         my_output_row[offset] = ASLEEP
+    #         offset += 1
+    #         self.quarters_carried -= 1
+    #     return my_output_row, offset
 
     def time_or_interval_str_to_int(self, my_str):
         """
@@ -202,7 +204,7 @@ class Chart:
         """
         if my_str:
             return (int(my_str[:2]) * 4 +
-                    int(my_str[3:5]) // 15) % (24 * 4)
+                    int(my_str[3:5]) // 15) % QS_IN_DAY
         else:
             return 0
 
@@ -249,8 +251,8 @@ if __name__ == '__main__':
     main()
 
 '''
-spaces_used = self.get_spaces_used()
-if spaces_used < current_triple.start:
-    self.insert_to_output_row(Triple(spaces_used,
-                                     current_triple.start, self.AWAKE))
+current_position = self.get_current_position()
+if current_position < current_triple.start:
+    self.insert_to_output_row(Triple(current_position,
+                                     current_triple.start, AWAKE))
 '''
