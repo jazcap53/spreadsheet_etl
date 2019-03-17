@@ -5,9 +5,7 @@
 
 from tests.file_access_wrappers import FileReadAccessWrapper
 import re
-import sys
-from datetime import datetime, timedelta, date
-import copy
+from datetime import datetime, timedelta
 from collections import namedtuple
 
 
@@ -22,19 +20,6 @@ class Chart:
     """
     Create a sleep chart from input data
     """
-
-    # QS_IN_DAY = 96  # 24 * 4
-
-    # Triple = namedtuple('Triple', ['start', 'finish', 'symbol'], defaults=[0, 0, 0])
-
-    # hours = []
-    # for h in range(24):
-    #     hours.extend([str(h).zfill(2)] * 4)
-    # minutes = [str(m).zfill(2) for m in range(0, 60, 15)] * 24
-    # intervals = list(map(lambda h, m: h + ':' + m + ':00', hours, minutes))
-    # positions = list(range(96))
-    # intervals_to_positions = dict(list(zip(intervals, positions)))
-
     def __init__(self, filename):
         self.filename = filename
         self.infile = None
@@ -42,19 +27,12 @@ class Chart:
         self.prev_line = ''
         self.sleep_state = AWAKE
         self.date_re = None
-        self.current_date_str = ''
-        self.current_time_str = ''
-        self.current_date_time_str = ''
-        self.current_date = None
-        self.current_time = None
-        self.current_datetime = None
-        self.current_interval = None
         self.quarters_carried = 0
         self.output_row = [UNKNOWN] * QS_IN_DAY
         self.current_output_row = []
         self.header_seen = False
-        self.start_from_0 = False
         self.spaces_left = QS_IN_DAY
+        self.current_date = '2016-12-06'
 
     def read_file(self):
         """
@@ -125,8 +103,6 @@ class Chart:
         self.spaces_left = QS_IN_DAY
         
         while True:
-            # if self.quarters_carried:
-            #     self.handle_quarters_carried()
             try:
                 current_triple = Triple(*next(read_file_iterator))  # yielded from read_file()
                 if current_triple.start is None:
@@ -140,7 +116,7 @@ class Chart:
                                           current_triple.start - current_position, AWAKE))
             else:
                 self.insert_to_output_row(Triple(current_position, QS_IN_DAY - current_position, AWAKE))
-                self.output(self.current_output_row)
+                self.write_output(self.current_output_row)
                 self.current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
                 if current_triple.start > 0:
@@ -149,14 +125,12 @@ class Chart:
                 self.insert_to_output_row(current_triple)
             elif len_segment == self.spaces_left:
                 self.insert_to_output_row(current_triple)
-                # print(''.join(self.current_output_row))
-                self.output(self.current_output_row)
+                self.write_output(self.current_output_row)
                 self.current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             else:
                 self.insert_to_output_row(current_triple)
-                # print(''.join(self.current_output_row))
-                self.output(self.current_output_row)
+                self.write_output(self.current_output_row)
                 self.current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
@@ -170,7 +144,6 @@ class Chart:
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
             self.quarters_carried = finish - QS_IN_DAY
-            # triple = triple._replace(length=QS_IN_DAY - triple.start)
             triple = triple._replace(length=triple.length - self.quarters_carried)
 
         for i in range(triple.start, triple.start + triple.length):
@@ -180,23 +153,25 @@ class Chart:
     def get_current_position(self):
         return QS_IN_DAY - self.spaces_left
 
-    def output(self, my_output_row):
+    def write_output(self, my_output_row):
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             if ix and not ix % 4 and ix != QS_IN_DAY:
                 extended_output_row.extend(['|', val])
             else:
                 extended_output_row.append(val)
-        print('01-01-2001: ' + ''.join(extended_output_row))
+        self.advance_date()
+        print(f'{self.current_date} |{"".join(extended_output_row)}| {self.current_date}')
 
-    # def handle_quarters_carried(self, my_output_row, offset):
-    #     while self.quarters_carried:
-    #         my_output_row[offset] = ASLEEP
-    #         offset += 1
-    #         self.quarters_carried -= 1
-    #     return my_output_row, offset
+    def advance_date(self):
+        date_as_datetime = datetime.strptime(self.current_date, '%Y-%m-%d')
+        if date_as_datetime.date().weekday() == 5:
+            print(self.create_ruler())
+        date_as_datetime += timedelta(days=1)
+        self.current_date = date_as_datetime.strftime('%Y-%m-%d')
 
-    def time_or_interval_str_to_int(self, my_str):
+    @staticmethod
+    def time_or_interval_str_to_int(my_str):
         """
         Obtain from self.current_interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
@@ -223,7 +198,6 @@ class Chart:
                 ruler[ix] = '12a'
             elif ix == 12:
                 ruler[ix] = '12p'
-
         ruler_line = ' ' * 12 + ''.join(v.ljust(5, ' ') for v in ruler)
         return ruler_line
 
@@ -249,10 +223,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-'''
-current_position = self.get_current_position()
-if current_position < current_triple.start:
-    self.insert_to_output_row(Triple(current_position,
-                                     current_triple.start, AWAKE))
-'''
