@@ -10,7 +10,7 @@ from collections import namedtuple
 
 
 Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
-QS_IN_DAY = 96  # 24 * 4
+QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
 ASLEEP = u'\u2588'  # the printed color (black ink)
 AWAKE = u'\u0020'  # the background color (white paper)
 UNKNOWN = u'\u2591'  # no data
@@ -145,7 +145,6 @@ class Chart:
         if finish > QS_IN_DAY:
             self.quarters_carried = finish - QS_IN_DAY
             triple = triple._replace(length=triple.length - self.quarters_carried)
-
         for i in range(triple.start, triple.start + triple.length):
             self.current_output_row[i] = triple.symbol
             self.spaces_left -= 1
@@ -203,19 +202,9 @@ def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/src/chart/chart_raw_data_new.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
-    lines_printed = 0
     ruler_line = chart.create_ruler()
-
-    while True:
-        if not lines_printed % 7:
-            print(ruler_line)
-        try:
-            chart.make_output(read_file_iterator)
-            output_line = ''.join(chart.current_output_row)
-            print(output_line)
-            lines_printed += 1
-        except StopIteration:
-            break
+    print(ruler_line)
+    chart.make_output(read_file_iterator)
 
 
 if __name__ == '__main__':
