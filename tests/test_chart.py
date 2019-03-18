@@ -4,16 +4,10 @@
 
 
 import pytest
-from src.chart.chart import Chart
+from src.chart.chart import Chart, ASLEEP, AWAKE, UNKNOWN, QS_IN_DAY, Triple
+from collections import namedtuple
 from tests.file_access_wrappers import FakeFileReadWrapper
 import _io
-
-
-'''
-Note:
-    ASLEEP == 1  # the printed color (black ink)
-    AWAKE == 0   # the background color (white paper)
-'''
 
 
 @pytest.fixture()
@@ -48,15 +42,17 @@ def open_input_file(filename='/home/jazcap53/python_projects/' +
     return infile
 
 
-@pytest.mark.skip(reason='ctor code needs revision')
-def test_ctor_creates_class_vars(make_chart):
-    assert make_chart.ASLEEP == 1
-    assert make_chart.AWAKE == 0
+def test_global_constants_have_good_values():
+    assert ASLEEP == u'\u2588'  # the printed color (black ink)
+    assert AWAKE == u'\u0020'  # the background color (white paper)
+    assert UNKNOWN == u'\u2591'  # no data
+    assert QS_IN_DAY == 96  # 24 * 4
+    assert issubclass(Triple, tuple)
 
 
 def test_ctor_creates_instance_vars(make_chart):
     assert make_chart.filename is not None
-    assert make_chart.cur_line is ''
+    assert make_chart.current_line is ''
 
 
 def test_get_a_line(open_input_file, make_chart):
@@ -64,7 +60,7 @@ def test_get_a_line(open_input_file, make_chart):
     make_chart.infile = open_input_file
     make_chart.compile_date_re()
     make_chart.get_a_line()
-    assert make_chart.cur_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
+    assert make_chart.current_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
 
 
 def test_get_a_line_again(open_input_file, make_chart):
@@ -73,14 +69,21 @@ def test_get_a_line_again(open_input_file, make_chart):
     make_chart.compile_date_re()
     make_chart.get_a_line()
     make_chart.get_a_line()
-    assert make_chart.cur_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
+    assert make_chart.current_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
 
 
-@pytest.mark.skip(reason='open file code needs revision')
-def test_open_file(input_file='/home/jazcap53/python_projects/' +
-                              'spreadsheet_etl/src/chart/chart_raw_data.txt'):
+def test_ctor_makes_a_chart(input_file='/home/jazcap53/python_projects/' +
+                                       'spreadsheet_etl/src/chart/' +
+                                       'chart_raw_data.txt'):
+    my_chart = Chart(input_file)
+    assert isinstance(my_chart, Chart)
+
+
+def test_read_file_returns_iterator(input_file='/home/jazcap53/' +
+                                               'python_projects/' +
+                                               'spreadsheet_etl/src/chart/' +
+                                               'chart_raw_data.txt'):
     my_chart = Chart(input_file)
     my_chart.compile_date_re()
-    my_chart.read_file()
-    assert isinstance(my_chart.infile, _io.TextIOWrapper)
-    my_chart.infile.close()
+    read_file_iterator = my_chart.read_file()
+    assert isinstance(next(read_file_iterator), Triple)

@@ -156,10 +156,6 @@ class Chart:
     def write_output(self, my_output_row):
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
-            # if ix and not ix % 4 and ix != QS_IN_DAY:
-            #     extended_output_row.extend(['|', val])
-            # else:
-            #     extended_output_row.append(val)
             extended_output_row.append(val)
         self.advance_date()
         print(f'{self.current_date} |{"".join(extended_output_row)}|')
