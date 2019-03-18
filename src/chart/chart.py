@@ -32,7 +32,8 @@ class Chart:
         self.current_output_row = []
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
-        self.current_date = '2016-12-06'
+        self.output_date = '2016-12-06'
+        self.date_advanced = 0
 
     def read_file(self):
         """
@@ -153,18 +154,24 @@ class Chart:
         return QS_IN_DAY - self.spaces_left
 
     def write_output(self, my_output_row):
+        """
+
+        :param my_output_row:
+        :return:
+        Called by: make_output()
+        """
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
         self.advance_date()
-        print(f'{self.current_date} |{"".join(extended_output_row)}|')
+        print(f'{self.output_date} |{"".join(extended_output_row)}|')
 
     def advance_date(self):
-        date_as_datetime = datetime.strptime(self.current_date, '%Y-%m-%d')
+        date_as_datetime = datetime.strptime(self.output_date, '%Y-%m-%d')
         if date_as_datetime.date().weekday() == 5:
             print(self.create_ruler())
         date_as_datetime += timedelta(days=1)
-        self.current_date = date_as_datetime.strftime('%Y-%m-%d')
+        self.output_date = date_as_datetime.strftime('%Y-%m-%d')
 
     @staticmethod
     def time_or_interval_str_to_int(my_str):

@@ -87,3 +87,9 @@ def test_read_file_returns_iterator(input_file='/home/jazcap53/' +
     my_chart.compile_date_re()
     read_file_iterator = my_chart.read_file()
     assert isinstance(next(read_file_iterator), Triple)
+
+
+def test_advance_date(make_chart):
+    make_chart.current_date = '2019-03-17'
+    make_chart.advance_date()
+    assert make_chart.current_date == '2019-03-18'
