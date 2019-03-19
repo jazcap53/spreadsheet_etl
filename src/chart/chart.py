@@ -29,7 +29,7 @@ class Chart:
         self.date_re = None
         self.quarters_carried = 0
         self.output_row = [UNKNOWN] * QS_IN_DAY
-        self.current_output_row = []
+        # self.current_output_row = []
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
         self.input_date = ''
@@ -102,7 +102,7 @@ class Chart:
         :return:
         Called by: main()
         """
-        self.current_output_row = self.output_row[:]
+        current_output_row = self.output_row[:]
         self.spaces_left = QS_IN_DAY
         
         while True:
@@ -113,44 +113,58 @@ class Chart:
             except RuntimeError:
                 return
             len_segment = current_triple.length
-            current_position = self.get_current_position()
+            current_position = QS_IN_DAY - self.spaces_left
             if current_position < current_triple.start:
-                self.insert_to_output_row(Triple(current_position,
-                                          current_triple.start - current_position, AWAKE))
+                triple_to_insert = Triple(current_position,
+                                          current_triple.start -
+                                          current_position, AWAKE)
+                current_output_row = self.insert_to_output_row(
+                    triple_to_insert, current_output_row)
             else:
-                self.insert_to_output_row(Triple(current_position, QS_IN_DAY - current_position, AWAKE))
-                self.write_output(self.current_output_row)
-                self.current_output_row = self.output_row[:]
+                triple_to_insert = Triple(current_position, QS_IN_DAY -
+                                          current_position, AWAKE)
+                current_output_row = self.insert_to_output_row(
+                    triple_to_insert, current_output_row)
+                self.write_output(current_output_row)
+                current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
                 if current_triple.start > 0:
-                    self.insert_to_output_row(Triple(0, current_triple.start, AWAKE))
+                    triple_to_insert = Triple(0, current_triple.start, AWAKE)
+                    current_output_row = self.insert_to_output_row(
+                        triple_to_insert, current_output_row)
             if len_segment < self.spaces_left:
-                self.insert_to_output_row(current_triple)
+                current_output_row = self.insert_to_output_row(
+                    current_triple, current_output_row)
             elif len_segment == self.spaces_left:
-                self.insert_to_output_row(current_triple)
-                self.write_output(self.current_output_row)
-                self.current_output_row = self.output_row[:]
+                current_output_row = self.insert_to_output_row(
+                    current_triple, current_output_row)
+                self.write_output(current_output_row)
+                current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             else:
-                self.insert_to_output_row(current_triple)
-                self.write_output(self.current_output_row)
-                self.current_output_row = self.output_row[:]
+                current_output_row = self.insert_to_output_row(
+                    current_triple, current_output_row)
+                self.write_output(current_output_row)
+                current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
-                self.handle_quarters_carried()
+                current_output_row = self.handle_quarters_carried(
+                    current_output_row)
 
-    def handle_quarters_carried(self):
-        self.insert_to_output_row(Triple(0, self.quarters_carried, ASLEEP))
+    def handle_quarters_carried(self, current_output_row):
+        current_output_row = self.insert_to_output_row(Triple(0, self.quarters_carried, ASLEEP), current_output_row)
         self.quarters_carried = 0
+        return current_output_row
 
-    def insert_to_output_row(self, triple):
+    def insert_to_output_row(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
             self.quarters_carried = finish - QS_IN_DAY
             triple = triple._replace(length=triple.length - self.quarters_carried)
         for i in range(triple.start, triple.start + triple.length):
-            self.current_output_row[i] = triple.symbol
+            output_row[i] = triple.symbol
             self.spaces_left -= 1
+        return output_row
 
     def get_current_position(self):
         return QS_IN_DAY - self.spaces_left
