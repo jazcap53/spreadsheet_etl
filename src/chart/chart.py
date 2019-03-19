@@ -132,18 +132,21 @@ class Chart:
                     triple_to_insert = Triple(0, current_triple.start, AWAKE)
                     current_output_row = self.insert_to_output_row(
                         triple_to_insert, current_output_row)
-            if len_segment < self.spaces_left:
-                current_output_row = self.insert_to_output_row(
-                    current_triple, current_output_row)
-            elif len_segment == self.spaces_left:
-                current_output_row = self.insert_to_output_row(
-                    current_triple, current_output_row)
+
+            spaces_left_now = self.spaces_left
+            current_output_row = self.insert_to_output_row(
+                current_triple, current_output_row)
+            if len_segment < spaces_left_now:
+                pass
+            elif len_segment == spaces_left_now:
+                # current_output_row = self.insert_to_output_row(
+                #     current_triple, current_output_row)
                 self.write_output(current_output_row)
                 current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             else:
-                current_output_row = self.insert_to_output_row(
-                    current_triple, current_output_row)
+                # current_output_row = self.insert_to_output_row(
+                #     current_triple, current_output_row)
                 self.write_output(current_output_row)
                 current_output_row = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
