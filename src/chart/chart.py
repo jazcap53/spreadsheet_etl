@@ -13,7 +13,7 @@ Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
 QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
 ASLEEP = u'\u2588'  # the printed color (black ink)
 AWAKE = u'\u0020'  # the background color (white paper)
-UNKNOWN = u'\u2591'  # no data
+NO_DATA = u'\u2591'  # no data
 
 
 class Chart:
@@ -28,7 +28,7 @@ class Chart:
         self.sleep_state = AWAKE
         self.date_re = None
         self.quarters_carried = 0
-        self.output_row = [UNKNOWN] * QS_IN_DAY
+        self.output_row = [NO_DATA] * QS_IN_DAY
         # self.current_output_row = []
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
@@ -80,7 +80,7 @@ class Chart:
         :return: a Triple holding
                      a start position,
                      a count of quarter hours,
-                     a unicode character (ASLEEP, AWAKE, UNKNOWN)
+                     a unicode character (ASLEEP, AWAKE, NO_DATA)
         Called by: read_file()
         """
         line_array = self.current_line.split('|')  # current_line[-1] may be '|'
