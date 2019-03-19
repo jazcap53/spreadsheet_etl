@@ -112,33 +112,42 @@ class Chart:
                     return
             except RuntimeError:
                 return
-            len_segment = current_triple.length
-            current_posn = QS_IN_DAY - self.spaces_left
-            if current_posn < current_triple.start:
-                triple_to_insert = Triple(current_posn, current_triple.start -
-                                          current_posn, AWAKE)
-                row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            else:
-                triple_to_insert = Triple(current_posn, QS_IN_DAY -
-                                          current_posn, AWAKE)
-                row_out = self.insert_to_row_out(triple_to_insert, row_out)
-                self.write_output(row_out)
-                row_out = self.output_row[:]
-                self.spaces_left = QS_IN_DAY
-                if current_triple.start > 0:
-                    triple_to_insert = Triple(0, current_triple.start, AWAKE)
-                    row_out = self.insert_to_row_out(triple_to_insert, row_out)
-                    
+
+            row_out, len_segment = self.write_leading_blanks(current_triple, row_out)
             spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(current_triple, row_out)
-            # if len_segment < spaces_left_now:
-            #     pass
             if len_segment >= spaces_left_now:
                 self.write_output(row_out)
                 row_out = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
                 row_out = self.handle_quarters_carried(row_out)
+
+    def write_leading_blanks(self, cur_triple, row_out):
+        """
+        Write blanks onto row_out from current posn to start of cur_triple.
+        :param cur_triple:
+        :param row_out:
+        :return:
+        Called by: make_output()
+        """
+        len_segment = cur_triple.length
+        current_posn = QS_IN_DAY - self.spaces_left
+        if current_posn < cur_triple.start:
+            triple_to_insert = Triple(current_posn,
+                                      cur_triple.start - current_posn, AWAKE)
+            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+        else:
+            triple_to_insert = Triple(current_posn,
+                                      QS_IN_DAY - current_posn, AWAKE)
+            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+            self.write_output(row_out)
+            row_out = self.output_row[:]
+            self.spaces_left = QS_IN_DAY
+            if cur_triple.start > 0:
+                triple_to_insert = Triple(0, cur_triple.start, AWAKE)
+                row_out = self.insert_to_row_out(triple_to_insert, row_out)
+        return row_out, len_segment
 
     def handle_quarters_carried(self, current_output_row):
         current_output_row = self.insert_to_row_out(Triple(0, self.quarters_carried, ASLEEP), current_output_row)
