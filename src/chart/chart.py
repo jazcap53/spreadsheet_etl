@@ -102,64 +102,50 @@ class Chart:
         :return:
         Called by: main()
         """
-        current_output_row = self.output_row[:]
+        row_out = self.output_row[:]
         self.spaces_left = QS_IN_DAY
         
         while True:
             try:
-                current_triple = Triple(*next(read_file_iterator))  # yielded from read_file()
+                current_triple = Triple(*next(read_file_iterator))
                 if current_triple.start is None:
                     return
             except RuntimeError:
                 return
             len_segment = current_triple.length
-            current_position = QS_IN_DAY - self.spaces_left
-            if current_position < current_triple.start:
-                triple_to_insert = Triple(current_position,
-                                          current_triple.start -
-                                          current_position, AWAKE)
-                current_output_row = self.insert_to_output_row(
-                    triple_to_insert, current_output_row)
+            current_posn = QS_IN_DAY - self.spaces_left
+            if current_posn < current_triple.start:
+                triple_to_insert = Triple(current_posn, current_triple.start -
+                                          current_posn, AWAKE)
+                row_out = self.insert_to_row_out(triple_to_insert, row_out)
             else:
-                triple_to_insert = Triple(current_position, QS_IN_DAY -
-                                          current_position, AWAKE)
-                current_output_row = self.insert_to_output_row(
-                    triple_to_insert, current_output_row)
-                self.write_output(current_output_row)
-                current_output_row = self.output_row[:]
+                triple_to_insert = Triple(current_posn, QS_IN_DAY -
+                                          current_posn, AWAKE)
+                row_out = self.insert_to_row_out(triple_to_insert, row_out)
+                self.write_output(row_out)
+                row_out = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
                 if current_triple.start > 0:
                     triple_to_insert = Triple(0, current_triple.start, AWAKE)
-                    current_output_row = self.insert_to_output_row(
-                        triple_to_insert, current_output_row)
-
+                    row_out = self.insert_to_row_out(triple_to_insert, row_out)
+                    
             spaces_left_now = self.spaces_left
-            current_output_row = self.insert_to_output_row(
-                current_triple, current_output_row)
-            if len_segment < spaces_left_now:
-                pass
-            elif len_segment == spaces_left_now:
-                # current_output_row = self.insert_to_output_row(
-                #     current_triple, current_output_row)
-                self.write_output(current_output_row)
-                current_output_row = self.output_row[:]
-                self.spaces_left = QS_IN_DAY
-            else:
-                # current_output_row = self.insert_to_output_row(
-                #     current_triple, current_output_row)
-                self.write_output(current_output_row)
-                current_output_row = self.output_row[:]
+            row_out = self.insert_to_row_out(current_triple, row_out)
+            # if len_segment < spaces_left_now:
+            #     pass
+            if len_segment >= spaces_left_now:
+                self.write_output(row_out)
+                row_out = self.output_row[:]
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
-                current_output_row = self.handle_quarters_carried(
-                    current_output_row)
+                row_out = self.handle_quarters_carried(row_out)
 
     def handle_quarters_carried(self, current_output_row):
-        current_output_row = self.insert_to_output_row(Triple(0, self.quarters_carried, ASLEEP), current_output_row)
+        current_output_row = self.insert_to_row_out(Triple(0, self.quarters_carried, ASLEEP), current_output_row)
         self.quarters_carried = 0
         return current_output_row
 
-    def insert_to_output_row(self, triple, output_row):
+    def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
             self.quarters_carried = finish - QS_IN_DAY
@@ -169,7 +155,7 @@ class Chart:
             self.spaces_left -= 1
         return output_row
 
-    def get_current_position(self):
+    def get_current_posn(self):
         return QS_IN_DAY - self.spaces_left
 
     def write_output(self, my_output_row):
@@ -193,19 +179,9 @@ class Chart:
         return date_as_datetime.strftime('%Y-%m-%d')
 
     def advance_input_date(self, my_input_date):
-        # date_as_datetime = datetime.strptime(my_input_date, '%Y-%m-%d')
-        # # if date_as_datetime.date().weekday() == 5:
-        # #     print(self.create_ruler())
-        # date_as_datetime += timedelta(days=1)
-        # my_input_date = date_as_datetime.strftime('%Y-%m-%d')
         return self.advance_date(my_input_date)
 
     def advance_output_date(self, my_output_date):
-        # date_as_datetime = datetime.strptime(my_output_date, '%Y-%m-%d')
-        # if date_as_datetime.date().weekday() == 5:
-        #     print(self.create_ruler())
-        # date_as_datetime += timedelta(days=1)
-        # my_output_date = date_as_datetime.strftime('%Y-%m-%d')
         return self.advance_date(my_output_date, True)
 
     @staticmethod
