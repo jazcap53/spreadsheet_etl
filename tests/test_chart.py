@@ -90,6 +90,19 @@ def test_read_file_returns_iterator(input_file='/home/jazcap53/' +
 
 
 def test_advance_date(make_chart):
-    make_chart.current_date = '2019-03-17'
-    make_chart.advance_date()
-    assert make_chart.current_date == '2019-03-18'
+    assert make_chart.advance_date('2019-03-17') == '2019-03-18'
+
+
+def test_advance_date_with_true_prints_ruler_before_sunday(make_chart, capsys):
+    make_chart.advance_date('2019-03-16', True)
+    ruler = make_chart.create_ruler()
+    out, err = capsys.readouterr()
+    assert out == ruler + '\n'
+    assert err == ''
+
+
+def test_advance_date_with_true_omits_ruler_before_saturday(make_chart, capsys):
+    make_chart.advance_date('2019-03-15', True)
+    out, err = capsys.readouterr()
+    assert out == ''
+    assert err == ''
