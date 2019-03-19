@@ -32,6 +32,7 @@ class Chart:
         self.current_output_row = []
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
+        self.input_date = ''
         self.output_date = '2016-12-06'
         self.date_advanced = 0
 
@@ -45,8 +46,8 @@ class Chart:
         """
         with open(self.filename) as self.infile:
             while self.get_a_line():
-                parsed_input_line = self.parse_input_line()  # gets a Triple
-                yield parsed_input_line
+                self.input_date, parsed_input_line = self.parse_input_line()
+                yield parsed_input_line  # parsed_input_line is a Triple
 
     def get_a_line(self):
         """
@@ -84,12 +85,13 @@ class Chart:
         """
         line_array = self.current_line.split('|')  # current_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
-        if len(line_array) < 2:
-            return Triple(None, None, None)
+        if len(line_array) < 2:  # we've reached '(dddd rows)'
+            return None, Triple(None, None, None)
+        date_in = line_array[0]
         start = self.time_or_interval_str_to_int(line_array[1])
         length = self.time_or_interval_str_to_int(line_array[2])
         symbol = ASLEEP
-        return Triple(start, length, symbol)
+        return date_in, Triple(start, length, symbol)
 
     def make_output(self, read_file_iterator):
         """
@@ -163,15 +165,31 @@ class Chart:
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
-        self.advance_date()
+        self.output_date = self.advance_output_date(self.output_date)
         print(f'{self.output_date} |{"".join(extended_output_row)}|')
 
-    def advance_date(self):
-        date_as_datetime = datetime.strptime(self.output_date, '%Y-%m-%d')
-        if date_as_datetime.date().weekday() == 5:
+    def advance_date(self, my_date, make_ruler=False):
+        date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
+        if make_ruler and date_as_datetime.date().weekday() == 5:
             print(self.create_ruler())
         date_as_datetime += timedelta(days=1)
-        self.output_date = date_as_datetime.strftime('%Y-%m-%d')
+        return date_as_datetime.strftime('%Y-%m-%d')
+
+    def advance_input_date(self, my_input_date):
+        # date_as_datetime = datetime.strptime(my_input_date, '%Y-%m-%d')
+        # # if date_as_datetime.date().weekday() == 5:
+        # #     print(self.create_ruler())
+        # date_as_datetime += timedelta(days=1)
+        # my_input_date = date_as_datetime.strftime('%Y-%m-%d')
+        return self.advance_date(my_input_date)
+
+    def advance_output_date(self, my_output_date):
+        # date_as_datetime = datetime.strptime(my_output_date, '%Y-%m-%d')
+        # if date_as_datetime.date().weekday() == 5:
+        #     print(self.create_ruler())
+        # date_as_datetime += timedelta(days=1)
+        # my_output_date = date_as_datetime.strftime('%Y-%m-%d')
+        return self.advance_date(my_output_date, True)
 
     @staticmethod
     def time_or_interval_str_to_int(my_str):
