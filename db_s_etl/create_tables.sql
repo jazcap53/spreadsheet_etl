@@ -8,7 +8,10 @@ CREATE TABLE sl_night (
     night_id SERIAL UNIQUE,
     start_date date NOT NULL,
     start_time time NOT NULL,
-    PRIMARY KEY (night_id)
+    start_no_data boolean,
+    end_no_data boolean,
+    PRIMARY KEY (night_id),
+    CHECK (start_no_data IS FALSE OR end_no_data IS FALSE)
 );
 
 

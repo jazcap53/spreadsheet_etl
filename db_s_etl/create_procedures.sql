@@ -6,15 +6,17 @@
 -- the below are modeled on the last example at 
 -- https://www.postgresql.org/docs/9.3/static/plpython-database.html
 
-DROP FUNCTION sl_insert_night(date, time without time zone);
+DROP FUNCTION sl_insert_night(date, time without time zone, boolean, boolean);
 
 CREATE FUNCTION sl_insert_night(new_start_date date, 
-    new_start_time time without time zone) RETURNS text AS $$
+    new_start_time time without time zone,
+    new_start_no_data boolean,
+    new_end_no_data boolean) RETURNS text AS $$
 from plpy import spiexceptions
 try:
-    plan = plpy.prepare("INSERT INTO sl_night (start_date, start_time) \
-            VALUES($1, $2)", ["date", "time without time zone"])
-    plpy.execute(plan, [new_start_date, new_start_time])
+    plan = plpy.prepare("INSERT INTO sl_night (start_date, start_time, start_no_data, end_no_data) \
+            VALUES($1, $2, $3, $4)", ["date", "time without time zone", "boolean", "boolean"])
+    plpy.execute(plan, [new_start_date, new_start_time, new_start_no_data, new_end_no_data])
 except plpy.SPIError, e:
     return "error: SQLSTATE %s" % (e.sqlstate,)
 else:

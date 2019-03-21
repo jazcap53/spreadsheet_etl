@@ -330,6 +330,7 @@ class Extract:
         else:
             read_logger.info('Incomplete night(s) before {}'.
                              format(datetime_date))
+            # pop incomplete data from output buffer
             for buf_ix in range(len(self.output_buffer) - 1, -1, -1):
                 this_line = self.output_buffer[buf_ix]
                 # if we see a 3-element 'b' event, there's good data before it

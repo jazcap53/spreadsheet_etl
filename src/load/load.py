@@ -34,11 +34,11 @@ def decimal_to_interval(dec_str):
 
 def read_nights_naps(engine, infile_name=sys.stdin):
     """
-    Read NIGHT and NAP data from stdin;
+    Read NIGHT and NAP data from infile_name;
     call function to load that data into database.
 
     :param engine: the db engine
-    :param infile_name: read data from file or stdout
+    :param infile_name: read data from file or stdin
     :return: None
     Called by: connect()
     """
@@ -74,7 +74,7 @@ def store_nights_naps(connection, my_line):
     line_list = my_line.rstrip().split(', ')
     if line_list[0] == 'NIGHT':
         result = connection.execute(
-            func.sl_insert_night(line_list[1], line_list[2])
+            func.sl_insert_night(line_list[1], line_list[2], line_list[3], line_list[4])
         )
         load_logger.debug(result)
         success = True
