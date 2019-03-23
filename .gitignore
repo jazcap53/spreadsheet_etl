@@ -26,5 +26,4 @@ coverage*
 !requirements.txt
 set_envs*.sh
 sql_all
-!sql_all/sql_queries_visualize/all_dates_all_cols_no_bedtime.sql
 !sql_all/sql_queries_visualize/all_dates_all_cols_no_bedtime_with_no_data.sql
