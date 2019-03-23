@@ -336,7 +336,9 @@ class Extract:
                 this_line = self.output_buffer[buf_ix]
                 # if we see a 3-element 'b' event, there's good data before it
                 if self._match_complete_b_event_line(this_line):
-                    self.output_buffer.pop(buf_ix)  # pop one last time
+                    # pop one last time; change 'b' event to 'N' event
+                    no_data_line = self.output_buffer.pop(buf_ix).replace('b', 'N', 1)
+                    print(no_data_line, file=out)
                     break
                 elif self._match_event_line(this_line):  # pop only Event lines
                     self.output_buffer.pop(buf_ix)  # leave headers in buffer

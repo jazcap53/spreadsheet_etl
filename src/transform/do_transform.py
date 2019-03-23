@@ -94,6 +94,11 @@ class Transform:
             wake_time = self.get_time_part_from(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
+        elif line.startswith('action: N'):
+            self.last_sleep_time = self.get_time_part_from(line)
+            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
+                                                          self.last_sleep_time,
+                                                          'true', 'false')
 
     def output_val(self):
         print(self.out_val)
