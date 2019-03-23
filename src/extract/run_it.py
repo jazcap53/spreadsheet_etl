@@ -37,7 +37,7 @@ def main():
     # read_logger will need a formatter since it is writing to file
     read_logger = logging.getLogger('extract.read_fns')
     read_logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler('read_fns.log', mode='w')
+    file_handler = logging.FileHandler('src/extract/read_fns.log', mode='w')
     formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)

@@ -21,6 +21,7 @@ import re
 
 class Transform:
     transform_logger = logging.getLogger('transform.do_transform')
+    transform_logger.setLevel('DEBUG')
 
     def __init__(self, data_source=fileinput):
         """
