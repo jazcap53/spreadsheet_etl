@@ -115,7 +115,6 @@ class Extract:
         self.infile = infile
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
-        self.we_are_in_week = False
         self.have_events = False
         self.output_buffer = []
         self.line_as_list = []
@@ -127,14 +126,15 @@ class Extract:
         :return: None
         Called by: client code
         """
+        in_week = False
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
             date_match = self._re_match_date(self.line_as_list[0])
-            if not self.we_are_in_week:
-                self._look_for_week(date_match)
-            if self.we_are_in_week:  # 'if' is correct here
+            if not in_week:
+                in_week = self._look_for_week(date_match)
+            if in_week:  # 'if' is correct here
                 # output good data and discard bad data
-                self._handle_week()
+                in_week = self._handle_week()
         # handle any data left in buffer
         self._handle_leftovers()
 
@@ -154,7 +154,7 @@ class Extract:
         Determine whether current input line represents the start of a week.
 
         :param date_match: a match object for a date in format dd/mm/yyyy
-        :return: None
+        :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
         self.sunday_date = Extract.NULL_DATE
@@ -167,11 +167,12 @@ class Extract:
                                 datetime.timedelta(days=x), [])
                             for x in range(7)]
                 self.new_week = Week(*day_list)
-                self.we_are_in_week = True
+                return True
             else:
                 read_logger.warning('Non-Sunday date {} found in input'.
                                     format(self.sunday_date))
                 self.sunday_date = Extract.NULL_DATE
+        return False
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -195,17 +196,18 @@ class Extract:
             call self._manage_output_buffer() to write good data, discard
             incomplete data from self.output_buffer
 
-        :return: None
+        :return: bool: True iff our week is not over
         Called by: lines_in_weeks_out()
         """
         self.have_events = False
-        self.we_are_in_week = False
         if any(self.line_as_list):
-            self._get_events()
+            self._get_events()  # TODO: make this fn return a bool
             if self.have_events:
-                self.we_are_in_week = True
+                return True
+            return False
         else:  # we saw a blank line: our week has ended
             self._manage_output_buffer()
+            return False
 
     def _handle_leftovers(self):
         """
