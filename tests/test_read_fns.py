@@ -51,19 +51,23 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
     assert extract.new_week[0].events == []
     assert isinstance(extract.new_week[4].events[-1], Event)
     assert isinstance(extract.new_week[6].events[-1], Event)
-
-
-def test_get_events_creates_events_on_valid_non_empty_line_input(extract):
-    extract.line_as_list = ['12/11/2016', '', '', '', '', '', '', '', '', '',
-                            '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
-                            '5:15', '5.25']
-    extract.sunday_date = datetime.date(2016, 12, 11)
-    day_list = [Day(extract.sunday_date +
-                    datetime.timedelta(days=x), [])
-                for x in range(7)]
-    extract.new_week = Week(*day_list)
-    extract._get_events()
     assert extract.have_events
+
+
+# def test_get_events_creates_events_on_valid_non_empty_line_input(extract):
+#     extract.line_as_list = ['12/11/2016', '', '', '', '', '', '', '', '', '',
+#                             '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
+#                             '5:15', '5.25']
+#     extract.sunday_date = datetime.date(2016, 12, 11)
+#     day_list = [Day(extract.sunday_date +
+#                     datetime.timedelta(days=x), [])
+#                 for x in range(7)]
+#     extract.new_week = Week(*day_list)
+#     extract._get_events()
+#     assert extract.new_week[0].events == []
+#     assert isinstance(extract.new_week[4].events[-1], Event)
+#     assert isinstance(extract.new_week[6].events[-1], Event)
+#     assert extract.have_events
 
 
 def test_get_events_creates_no_events_on_empty_line_input(extract):
