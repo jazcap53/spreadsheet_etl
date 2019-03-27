@@ -47,11 +47,11 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    extract._get_events()
+    have_events = extract._get_events()
     assert extract.new_week[0].events == []
     assert isinstance(extract.new_week[4].events[-1], Event)
     assert isinstance(extract.new_week[6].events[-1], Event)
-    assert extract.have_events
+    assert have_events
 
 
 def test_get_events_creates_no_events_on_empty_line_input(extract):
@@ -216,8 +216,15 @@ def test_check_for_date_rejects_date_with_alpha(extract):
     assert not date_match
 
 
-def test_look_for_week_finds_no_week_on_non_sunday_input(extract):
+def test_look_for_week_returns_false_on_non_sunday_input(extract):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
-    extract._look_for_week(date_match)
+    assert not extract._look_for_week(date_match)
     assert extract.sunday_date == Extract.NULL_DATE
-    assert not extract.new_week
+
+
+def test_look_for_week_returns_true_on_sunday_input(extract):
+    date_match = extract._re_match_date('03/31/2019')  # a Sunday
+    assert extract._look_for_week(date_match)
+
+
+# def test_handle_week_returns_true_on_

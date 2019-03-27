@@ -4,7 +4,7 @@
 
 
 import pytest
-from src.chart.chart import Chart, ASLEEP, AWAKE, UNKNOWN, QS_IN_DAY, Triple
+from src.chart.chart import Chart, ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
 from collections import namedtuple
 from tests.file_access_wrappers import FakeFileReadWrapper
 import _io
@@ -45,7 +45,7 @@ def open_input_file(filename='/home/jazcap53/python_projects/' +
 def test_global_constants_have_good_values():
     assert ASLEEP == u'\u2588'  # the printed color (black ink)
     assert AWAKE == u'\u0020'  # the background color (white paper)
-    assert UNKNOWN == u'\u2591'  # no data
+    assert NO_DATA == u'\u2591'
     assert QS_IN_DAY == 96  # 24 * 4
     assert issubclass(Triple, tuple)
 

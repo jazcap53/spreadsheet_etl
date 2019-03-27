@@ -115,7 +115,6 @@ class Extract:
         self.infile = infile
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
-        self.have_events = False
         self.output_buffer = []
         self.line_as_list = []
 
@@ -199,15 +198,12 @@ class Extract:
         :return: bool: True iff our week is not over
         Called by: lines_in_weeks_out()
         """
-        self.have_events = False
+        have_events = False
         if any(self.line_as_list):
-            self._get_events()  # TODO: make this fn return a bool
-            if self.have_events:
-                return True
-            return False
+            have_events = self._get_events()  # TODO: make this fn return a bool
         else:  # we saw a blank line: our week has ended
             self._manage_output_buffer()
-            return False
+        return have_events
 
     def _handle_leftovers(self):
         """
@@ -217,7 +213,7 @@ class Extract:
         :return: None
         Called by: lines_in_weeks_out()
         """
-        if self.sunday_date and self.have_events and self.new_week:
+        if self.sunday_date and self.new_week:
             self._manage_output_buffer()
 
     @staticmethod
@@ -239,11 +235,12 @@ class Extract:
         """
         Add each valid event in self.line_as_list to self.new_week.
 
-        :return: None
-        Called by: lines_in_weeks_out()
+        :return: bool: True iff we successfully read at least one event
+                       from self.line_as_list
+        Called by: _handle_week()
         """
         shorter_line = self.line_as_list[1:]
-        self.have_events = False
+        have_events = False
         for ix in range(7):
             # a segment is a list of 3 consecutive fields from the .csv file
             segment = shorter_line[3 * ix: 3 * ix + 3]
@@ -259,7 +256,8 @@ class Extract:
                 continue
             if self.new_week and an_event and an_event.action:
                 self.new_week[ix].events.append(an_event)
-                self.have_events = True
+                have_events = True
+        return have_events
 
     def _manage_output_buffer(self):
         """
