@@ -62,7 +62,8 @@ def test_get_events_creates_no_events_on_empty_line_input(extract):
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    assert not extract.have_events
+    have_events = extract._get_events()
+    assert not have_events
 
 
 def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
