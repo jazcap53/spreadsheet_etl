@@ -98,6 +98,8 @@ read_logger.setLevel('DEBUG')
 
 def open_infile(filename):
     """
+    Left outside class so Extract.__init__() may accept an open file handle
+
     :param filename: name of file to be read
     :return: a file handle open for read
     Called by: client code
@@ -200,7 +202,7 @@ class Extract:
         """
         have_events = False
         if any(self.line_as_list):
-            have_events = self._get_events()  # TODO: make this fn return a bool
+            have_events = self._get_events()
         else:  # we saw a blank line: our week has ended
             self._manage_output_buffer()
         return have_events
