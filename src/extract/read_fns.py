@@ -2,6 +2,8 @@
 # andrew jarcho
 # 2017-01-25
 
+
+# TODO: rewrite read_fns.py docstring
 """
 SUMMARY:
 =======
@@ -117,7 +119,6 @@ class Extract:
         self.infile = infile
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
-        self.output_buffer = []
         self.line_as_list = []
 
     def lines_in_weeks_out(self):
@@ -266,40 +267,46 @@ class Extract:
         Convert the Events in self.new_week into strings and place the strings
         in output buffer.
 
-        :return: None
-        Called by: lines_in_weeks_out()
+        :return: output_buffer[]
+        Called by: _handle_leftovers(), _handle_week()
         """
-        self._append_week_header()
+        output_buffer = self._append_week_header()
         for day in self.new_week:
-            self._append_day_header(day)
+            output_buffer.extend(self._append_day_header(day))
             for event in day.events:
                 event_str = 'action: {}, time: {}'.format(event.action,
                                                           event.mil_time)
                 if event.hours:
                     event_str += ', hours: {:.2f}'.format(float(event.hours))
                 if event.action == 'b':
-                    self._handle_start_of_night(event, day.dt_date)
-                self.output_buffer.append(event_str)
+                    output_buffer = self._handle_start_of_night(event, day.dt_date, output_buffer)
+                output_buffer.append(event_str)
+        return output_buffer
 
     def _append_week_header(self):
         """
-        :return: None
+        :return: out_buffer[]
         Called by: _manage_output_buffer()
         """
+        out_buffer = []
         wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
-        self.output_buffer.append(wk_header)
+        out_buffer.append(wk_header)
+        return out_buffer
 
-    def _append_day_header(self, day):
+    @staticmethod
+    def _append_day_header(day):
         """
-        :return: None
+        :return: out_buffer[]
         Called by: _manage_output_buffer()
         """
+        out_buffer = []
         dy_header = '    {}'.format(day.dt_date)  # four leading spaces
-        self.output_buffer.append(dy_header)
+        out_buffer.append(dy_header)
+        return out_buffer
 
     def _handle_start_of_night(self, action_b_event, datetime_date,
-                               out=sys.stdout):
+                               out_buffer, out=sys.stdout):
         """
         Write (only) complete nights from buffer to out.
 
@@ -322,28 +329,29 @@ class Extract:
                                action_b_event will have an 'hours' field iff
                                we have complete data for the preceding night.
         :param datetime_date: a datetime.date
+        :param out_buffer: the output buffer
         :param out: output destination
-        :return: None
+        :return: out_buffer[]
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
-            for line in self.output_buffer:  # action_b_event is NOT in buffer
+            for line in out_buffer:  # action_b_event is NOT in buffer
                 print(line, file=out)
-            self.output_buffer.clear()
+            out_buffer.clear()
         else:
             read_logger.info('Incomplete night(s) before {}'.
                              format(datetime_date))
             # pop incomplete data from output buffer
-            for buf_ix in range(len(self.output_buffer) - 1, -1, -1):
-                this_line = self.output_buffer[buf_ix]
+            for buf_ix in range(len(out_buffer) - 1, -1, -1):
+                this_line = out_buffer[buf_ix]
                 # if we see a 3-element 'b' event, there's good data before it
                 if self._match_complete_b_event_line(this_line):
                     # pop one last time; change 'b' event to 'N' event
-                    no_data_line = self.output_buffer.pop(buf_ix).replace('b', 'N', 1)
+                    no_data_line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
                     print(no_data_line, file=out)
-                    break
                 elif self._match_event_line(this_line):  # pop only Event lines
-                    self.output_buffer.pop(buf_ix)  # leave headers in buffer
+                    out_buffer.pop(buf_ix)  # leave headers in buffer
+        return out_buffer
 
     @staticmethod
     def _match_complete_b_event_line(line):
@@ -351,8 +359,7 @@ class Extract:
         Called by: _handle_start_of_night()
         """
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
-                        ' hours: \d{1,2}\.\d{2}$',
-                        line)
+                        ' hours: \d{1,2}\.\d{2}$', line)
 
     @staticmethod
     def _match_event_line(line):
