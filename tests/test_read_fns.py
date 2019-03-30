@@ -74,8 +74,8 @@ def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
                 for x in range(7)]
     extract.new_week = Week(*day_list)
     extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
-    extract._manage_output_buffer()
-    assert extract.output_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
+    out_buffer = extract._manage_output_buffer()
+    assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
 def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
@@ -85,58 +85,58 @@ def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    extract._manage_output_buffer()
-    assert extract.output_buffer[-1] == '    2016-04-16'
+    out_buffer = extract._manage_output_buffer()
+    assert out_buffer[-1] == '    2016-04-16'
 
 
 def test_append_week_header(extract):
-    extract.output_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
     day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    extract._append_week_header()
-    assert extract.output_buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + \
+    out_buffer = extract._append_week_header()
+    assert out_buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + \
                                         '=' * 26
 
 
 def test_append_day_header(extract):
-    extract.output_buffer = []
     dy = Day(datetime.date(2015, 5, 5), [])
-    extract._append_day_header(dy)
-    assert extract.output_buffer[-1] == '    2015-05-05'
+    out_buffer = extract._append_day_header(dy)
+    assert out_buffer[-1] == '    2015-05-05'
 
 
 def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
     output = io.StringIO()
-    extract.output_buffer = ['bongo', 'Hello World']
+    out_buffer = ['bongo', 'Hello World']
     extract._handle_start_of_night(Event(action='b', mil_time='8:15',
                                          hours='4.25'),
-                                   datetime.date(2017, 10, 12), output)
+                                   datetime.date(2017, 10, 12), out_buffer,
+                                   output)
     assert output.getvalue() == 'bongo\nHello World\n'
-    assert extract.output_buffer == []
+    assert out_buffer == []
 
 
 def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     output = io.StringIO()
-    extract.output_buffer = ['bongobongo', 'action: s, time: 19:00']
+    out_buffer = ['bongobongo', 'action: s, time: 19:00']
     extract._handle_start_of_night(Event(action='b', mil_time='10:00',
                                          hours=''),
-                                   datetime.date(2017, 5, 17), output)
+                                   datetime.date(2017, 5, 17), out_buffer,
+                                   output)
     assert output.getvalue() == ''
-    assert extract.output_buffer == ['bongobongo']
+    assert out_buffer == ['bongobongo']
 
 
 def test_handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
     output = io.StringIO()
-    extract.output_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-                             'action: s, time: 17:00']
+    out_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
     extract._handle_start_of_night(Event(action='b', mil_time='23:15',
                                          hours=''),
-                                   datetime.date(2017, 3, 19), output)
+                                   datetime.date(2017, 3, 19), out_buffer,
+                                   output)
     assert output.getvalue() == ''
-    assert extract.output_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+    assert out_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
 def test_is_complete_b_event_line_returns_true_on_complete_b_event_line():
