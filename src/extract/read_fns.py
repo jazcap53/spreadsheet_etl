@@ -119,6 +119,7 @@ class Extract:
         self.infile = infile
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
+        # self.output_buffer = []
         self.line_as_list = []
 
     def lines_in_weeks_out(self):
@@ -129,6 +130,7 @@ class Extract:
         Called by: client code
         """
         in_week = False
+        out_buffer = []
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
             date_match = self._re_match_date(self.line_as_list[0])
@@ -136,9 +138,9 @@ class Extract:
                 in_week = self._look_for_week(date_match)
             if in_week:  # 'if' is correct here
                 # output good data and discard bad data
-                in_week = self._handle_week()
+                in_week, out_buffer = self._handle_week(out_buffer)
         # handle any data left in buffer
-        self._handle_leftovers()
+        self._handle_leftovers(out_buffer)
 
     @staticmethod
     def _re_match_date(field):
@@ -189,7 +191,7 @@ class Extract:
             return False
         return dt_date.weekday() == 6
 
-    def _handle_week(self):
+    def _handle_week(self, out_buffer):
         """
         if there are valid events in self.line_as_list:
             call self._get_events() to store them as Event objects in Week
@@ -205,10 +207,10 @@ class Extract:
         if any(self.line_as_list):
             have_events = self._get_events()
         else:  # we saw a blank line: our week has ended
-            self._manage_output_buffer()
-        return have_events
+            out_buffer = self._manage_output_buffer(out_buffer)
+        return have_events, out_buffer
 
-    def _handle_leftovers(self):
+    def _handle_leftovers(self, out_buffer):
         """
         If there is data left in self.output_buffer, calls
                 self._manage_output_buffer().
@@ -217,7 +219,8 @@ class Extract:
         Called by: lines_in_weeks_out()
         """
         if self.sunday_date and self.new_week:
-            self._manage_output_buffer()
+            out_buffer = self._manage_output_buffer(out_buffer)
+        # return out_buffer
 
     @staticmethod
     def _match_to_date_obj(m):
@@ -262,7 +265,7 @@ class Extract:
                 have_events = True
         return have_events
 
-    def _manage_output_buffer(self):
+    def _manage_output_buffer(self, out_buffer):
         """
         Convert the Events in self.new_week into strings, place the strings
         into output buffer, pass output buffer to _write_or_discard_night()
@@ -270,25 +273,25 @@ class Extract:
         :return: None
         Called by: _handle_leftovers(), _handle_week()
         """
-        output_buffer = self._append_week_header()
+        out_buffer = self._append_week_header(out_buffer)
         for day in self.new_week:
-            output_buffer.extend(self._append_day_header(day))
+            out_buffer.extend(self._append_day_header(day))
             for event in day.events:
                 event_str = 'action: {}, time: {}'.format(event.action,
                                                           event.mil_time)
                 if event.hours:
                     event_str += ', hours: {:.2f}'.format(float(event.hours))
                 if event.action == 'b':
-                    output_buffer = self._write_or_discard_night(event, day.dt_date, output_buffer)
-                output_buffer.append(event_str)
-        return output_buffer
+                    out_buffer = self._write_or_discard_night(event, day.dt_date, out_buffer)
+                out_buffer.append(event_str)
+        return out_buffer
 
-    def _append_week_header(self):
+    def _append_week_header(self, out_buffer):
         """
         :return: out_buffer[]
         Called by: _manage_output_buffer()
         """
-        out_buffer = []
+        # out_buffer = []
         wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
         out_buffer.append(wk_header)
@@ -320,9 +323,9 @@ class Extract:
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
-            self.write_complete_night(out_buffer, outfile)
+            out_buffer = self.write_complete_night(out_buffer, outfile)
         else:
-            self.discard_incomplete_night(datetime_date, out_buffer, outfile)
+            out_buffer = self.discard_incomplete_night(datetime_date, out_buffer, outfile)
         return out_buffer
 
     @staticmethod
