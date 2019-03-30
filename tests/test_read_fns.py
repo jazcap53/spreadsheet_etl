@@ -100,38 +100,37 @@ def test_get_events_creates_no_events_on_empty_line_input(extract):
     assert not have_events
 
 
-# @pytest.mark.skip(reason='Test is probably obsolete')
 def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
-    extract.output_buffer = []
+    out_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
     day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
     extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
-    out_buffer = extract._manage_output_buffer()
+    out_buffer = extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
-# @pytest.mark.skip(reason='Test is probably obsolete')
 def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
-    extract.output_buffer = []
+    out_buffer = []
     extract.sunday_date = datetime.date(2016, 4, 10)
     day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    out_buffer = extract._manage_output_buffer()
+    out_buffer = extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == '    2016-04-16'
 
 
 def test_append_week_header(extract):
+    out_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
     day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    out_buffer = extract._append_week_header()
+    out_buffer = extract._append_week_header(out_buffer)
     assert out_buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + \
                                         '=' * 26
 
