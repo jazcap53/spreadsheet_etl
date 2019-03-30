@@ -61,7 +61,7 @@ together.
 _manage_output_buffer() converts the Weeks, Days, and Events into strings,
 and puts the strings into the output buffer one Week at a time.
 
-_handle_start_of_night() makes sure that only complete nights are written
+_write_or_discard_night() makes sure that only complete nights are written
 to output
 
 
@@ -264,10 +264,10 @@ class Extract:
 
     def _manage_output_buffer(self):
         """
-        Convert the Events in self.new_week into strings and place the strings
-        in output buffer.
+        Convert the Events in self.new_week into strings, place the strings
+        into output buffer, pass output buffer to _write_or_discard_night()
 
-        :return: output_buffer[]
+        :return: None
         Called by: _handle_leftovers(), _handle_week()
         """
         output_buffer = self._append_week_header()
@@ -279,7 +279,7 @@ class Extract:
                 if event.hours:
                     event_str += ', hours: {:.2f}'.format(float(event.hours))
                 if event.action == 'b':
-                    output_buffer = self._handle_start_of_night(event, day.dt_date, output_buffer)
+                    output_buffer = self._write_or_discard_night(event, day.dt_date, output_buffer)
                 output_buffer.append(event_str)
         return output_buffer
 
@@ -305,58 +305,52 @@ class Extract:
         out_buffer.append(dy_header)
         return out_buffer
 
-    def _handle_start_of_night(self, action_b_event, datetime_date,
-                               out_buffer, out=sys.stdout):
+    def _write_or_discard_night(self, action_b_event, datetime_date,
+                                out_buffer, outfile=sys.stdout):
         """
         Write (only) complete nights from buffer to out.
-
-        A 'b' action Event starts each night of data.
-        If any data from the *previous* night are missing, this Event will
-            have exactly two key/value elements.
-        Otherwise, 'b' action Events have exactly three key/value elements.
-
-        if the Event parameter action_b_event has 3 elements:
-            output the entire buffer
-            clear() the buffer
-        else:
-            do not output anything
-            pop() lines from the buffer:
-                start with the last line that represents an Event
-                leave any header lines intact
-                stop pop()ping after removing a 3-element 'b' Event
 
         :param action_b_event: is the first Event for some night.
                                action_b_event will have an 'hours' field iff
                                we have complete data for the preceding night.
         :param datetime_date: a datetime.date
         :param out_buffer: the output buffer
-        :param out: output destination
+        :param outfile: output destination
         :return: out_buffer[]
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
-            for line in out_buffer:  # action_b_event is NOT in buffer
-                print(line, file=out)
-            out_buffer.clear()
+            self.write_complete_night(out_buffer, outfile)
         else:
-            read_logger.info('Incomplete night(s) before {}'.
-                             format(datetime_date))
-            # pop incomplete data from output buffer
-            for buf_ix in range(len(out_buffer) - 1, -1, -1):
-                this_line = out_buffer[buf_ix]
-                # if we see a 3-element 'b' event, there's good data before it
-                if self._match_complete_b_event_line(this_line):
-                    # pop one last time; change 'b' event to 'N' event
-                    no_data_line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
-                    print(no_data_line, file=out)
-                elif self._match_event_line(this_line):  # pop only Event lines
-                    out_buffer.pop(buf_ix)  # leave headers in buffer
+            self.discard_incomplete_night(datetime_date, out_buffer, outfile)
+        return out_buffer
+
+    @staticmethod
+    def write_complete_night(out_buffer, outfile):
+        for line in out_buffer:  # action_b_event is NOT in buffer
+            print(line, file=outfile)
+        out_buffer.clear()
+        return out_buffer
+
+    def discard_incomplete_night(self, datetime_date, out_buffer, outfile):
+        read_logger.info('Incomplete night(s) before {}'.
+                         format(datetime_date))
+        # pop incomplete data from output buffer
+        for buf_ix in range(len(out_buffer) - 1, -1, -1):
+            this_line = out_buffer[buf_ix]
+            # if we see a 3-element 'b' event, there's good data before it
+            if self._match_complete_b_event_line(this_line):
+                # pop one last time; change 'b' event to 'N' event
+                no_data_line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
+                print(no_data_line, file=outfile)
+            elif self._match_event_line(this_line):  # pop only Event lines
+                out_buffer.pop(buf_ix)  # leave headers in buffer
         return out_buffer
 
     @staticmethod
     def _match_complete_b_event_line(line):
         """
-        Called by: _handle_start_of_night()
+        Called by: _write_or_discard_night()
         """
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
                         ' hours: \d{1,2}\.\d{2}$', line)
@@ -364,7 +358,7 @@ class Extract:
     @staticmethod
     def _match_event_line(line):
         """
-        Called by: _handle_start_of_night()
+        Called by: _write_or_discard_night()
         """
         # b events may have 2 or 3 elements
         match_line = r'(?:action: b, time: \d{1,2}:\d{2})' + \

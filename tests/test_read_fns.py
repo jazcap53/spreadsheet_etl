@@ -100,6 +100,7 @@ def test_get_events_creates_no_events_on_empty_line_input(extract):
     assert not have_events
 
 
+# @pytest.mark.skip(reason='Test is probably obsolete')
 def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     extract.output_buffer = []
     extract.sunday_date = datetime.date(2017, 11, 12)
@@ -112,6 +113,7 @@ def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
+# @pytest.mark.skip(reason='Test is probably obsolete')
 def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     extract.output_buffer = []
     extract.sunday_date = datetime.date(2016, 4, 10)
@@ -143,10 +145,10 @@ def test_append_day_header(extract):
 def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
     output = io.StringIO()
     out_buffer = ['bongo', 'Hello World']
-    extract._handle_start_of_night(Event(action='b', mil_time='8:15',
-                                         hours='4.25'),
-                                   datetime.date(2017, 10, 12), out_buffer,
-                                   output)
+    extract._write_or_discard_night(Event(action='b', mil_time='8:15',
+                                          hours='4.25'),
+                                    datetime.date(2017, 10, 12), out_buffer,
+                                    output)
     assert output.getvalue() == 'bongo\nHello World\n'
     assert out_buffer == []
 
@@ -154,10 +156,10 @@ def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
 def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     output = io.StringIO()
     out_buffer = ['bongobongo', 'action: s, time: 19:00']
-    extract._handle_start_of_night(Event(action='b', mil_time='10:00',
-                                         hours=''),
-                                   datetime.date(2017, 5, 17), out_buffer,
-                                   output)
+    extract._write_or_discard_night(Event(action='b', mil_time='10:00',
+                                          hours=''),
+                                    datetime.date(2017, 5, 17), out_buffer,
+                                    output)
     assert output.getvalue() == ''
     assert out_buffer == ['bongobongo']
 
@@ -165,10 +167,10 @@ def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
 def test_handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
     output = io.StringIO()
     out_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
-    extract._handle_start_of_night(Event(action='b', mil_time='23:15',
-                                         hours=''),
-                                   datetime.date(2017, 3, 19), out_buffer,
-                                   output)
+    extract._write_or_discard_night(Event(action='b', mil_time='23:15',
+                                          hours=''),
+                                    datetime.date(2017, 3, 19), out_buffer,
+                                    output)
     assert output.getvalue() == ''
     assert out_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
