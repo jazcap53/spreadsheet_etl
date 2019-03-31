@@ -111,6 +111,7 @@ def open_infile(filename):
 
 class Extract:
     NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)
+    SUNDAY = 6
 
     def __init__(self, infile):
         """
@@ -119,7 +120,6 @@ class Extract:
         self.infile = infile
         self.sunday_date = Extract.NULL_DATE
         self.new_week = None
-        # self.output_buffer = []
         self.line_as_list = []
 
     def lines_in_weeks_out(self):
@@ -161,11 +161,12 @@ class Extract:
         :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
-        self.sunday_date = Extract.NULL_DATE
+        self.sunday_date = None
         self.new_week = None
         if date_match:
             self.sunday_date = self._match_to_date_obj(date_match)
-            if self._is_a_sunday(self.sunday_date):
+            if isinstance(self.sunday_date, datetime.date) and \
+                    self.sunday_date.weekday() == self.SUNDAY:
                 # set up a Week
                 day_list = [Day(self.sunday_date +
                                 datetime.timedelta(days=x), [])
@@ -175,7 +176,7 @@ class Extract:
             else:
                 read_logger.warning('Non-Sunday date {} found in input'.
                                     format(self.sunday_date))
-                self.sunday_date = Extract.NULL_DATE
+                self.sunday_date = None
         return False
 
     @staticmethod
@@ -187,9 +188,7 @@ class Extract:
         :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
         """
-        if dt_date == Extract.NULL_DATE:
-            return False
-        return dt_date.weekday() == 6
+        return dt_date.weekday() == 6 if dt_date else False
 
     def _handle_week(self, out_buffer):
         """
@@ -219,8 +218,7 @@ class Extract:
         Called by: lines_in_weeks_out()
         """
         if self.sunday_date and self.new_week:
-            out_buffer = self._manage_output_buffer(out_buffer)
-        # return out_buffer
+            self._manage_output_buffer(out_buffer)
 
     @staticmethod
     def _match_to_date_obj(m):
@@ -235,7 +233,7 @@ class Extract:
             dt = [int(m.group(x)) for x in (3, 1, 2)]
             return datetime.date(dt[0], dt[1], dt[2])  # year, month, day
         else:
-            return Extract.NULL_DATE
+            return None
 
     def _get_events(self):
         """
