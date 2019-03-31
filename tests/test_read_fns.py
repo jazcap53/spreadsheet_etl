@@ -141,7 +141,7 @@ def test_append_day_header(extract):
     assert out_buffer[-1] == '    2015-05-05'
 
 
-def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
+def test_write_or_discard_night_3_element_b_event_flushes_buffer(extract):
     output = io.StringIO()
     out_buffer = ['bongo', 'Hello World']
     extract._write_or_discard_night(Event(action='b', mil_time='8:15',
@@ -152,7 +152,7 @@ def test_handle_start_of_night_3_element_b_event_flushes_buffer(extract):
     assert out_buffer == []
 
 
-def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
+def test_write_or_discard_night_2_elem_b_event_no_output_pop_actions(extract):
     output = io.StringIO()
     out_buffer = ['bongobongo', 'action: s, time: 19:00']
     extract._write_or_discard_night(Event(action='b', mil_time='10:00',
@@ -163,7 +163,7 @@ def test_handle_start_of_night_2_elem_b_event_no_output_pop_actions(extract):
     assert out_buffer == ['bongobongo']
 
 
-def test_handle_start_of_night_2_elem_b_event_long_b_str_in_buffer(extract):
+def test_write_or_discard_night_2_elem_b_event_long_b_str_in_buffer(extract):
     output = io.StringIO()
     out_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
     extract._write_or_discard_night(Event(action='b', mil_time='23:15',
