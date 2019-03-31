@@ -145,7 +145,7 @@ class Extract:
     @staticmethod
     def _re_match_date(field):
         """
-        Does param 'field' start with a date?
+        Check for a date at start of param 'field'.
 
         :param field: a string
         :return: a match object for a date in format dd/mm/yyyy
@@ -155,7 +155,7 @@ class Extract:
 
     def _look_for_week(self, date_match):
         """
-        Determine whether current input line represents the start of a week.
+        Does current input line represent the start of a week?
 
         :param date_match: a match object for a date in format dd/mm/yyyy
         :return: bool: True iff a week was found
