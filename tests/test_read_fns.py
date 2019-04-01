@@ -16,19 +16,19 @@ from container_objs import Event, Day, Week
 @pytest.fixture
 def infile_wrapper():
     return FakeFileReadWrapper(
-                u''',Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,
-12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00
-,,,,,,,,,,,,,s,4:45,,s,3:30,,w,5:15,5.25
-,,,,,,,,,,,,,w,6:15,1.50,w,8:45,5.25,s,10:30,
-,,,,,,,,,,,,,s,11:30,,s,19:30,,w,11:30,1.00
-,,,,,,,,,,,,,w,12:15,0.75,w,20:30,1.00,s,16:00,
-,,,,,,,,,,,,,s,16:45,,,,,w,17:00,1.00
-,,,,,,,,,,,,,w,17:30,0.75,,,,b,22:30,7.25
-,,,,,,,,,,,,,s,21:00,,,,,,,
-,,,,,,,,,,,,,w,21:30,0.50,,,,,,
-,,,,,,,,,,,,,b,23:15,7.50,,,,,,
-,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,
+                u'''w,Sun,,,Mon,,,Tue,,,Wed,,,Thu,,,Fri,,,Sat,,,,
+12/4/2016,,,,,,,,,,b,23:45,,w,3:45,4.00,w,2:00,2.75,b,0:00,9.00,,
+,,,,,,,,,,,,,s,4:45,,s,3:30,,w,5:15,5.25,,
+,,,,,,,,,,,,,w,6:15,1.50,w,8:45,5.25,s,10:30,,,
+,,,,,,,,,,,,,s,11:30,,s,19:30,,w,11:30,1.00,,
+,,,,,,,,,,,,,w,12:15,0.75,w,20:30,1.00,s,16:00,,,
+,,,,,,,,,,,,,s,16:45,,,,,w,17:00,1.00,,
+,,,,,,,,,,,,,w,17:30,0.75,,,,b,22:30,7.25,,
+,,,,,,,,,,,,,s,21:00,,,,,,,,,
+,,,,,,,,,,,,,w,21:30,0.50,,,,,,,,
+,,,,,,,,,,,,,b,23:15,7.50,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,
 ''')
 
 
@@ -63,7 +63,7 @@ def test_re_match_date_rejects_date_with_alpha(extract):
 def test_look_for_week_returns_false_on_non_sunday_input(extract):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
     assert not extract._look_for_week(date_match)
-    assert extract.sunday_date == Extract.NULL_DATE
+    assert extract.sunday_date is None
 
 
 def test_look_for_week_returns_true_on_sunday_input(extract):
