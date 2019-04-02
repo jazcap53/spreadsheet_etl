@@ -166,10 +166,11 @@ class Extract:
         if date_match:
             self.sunday_date = self._match_to_date_obj(date_match)
             if isinstance(self.sunday_date, datetime.date) and \
-                    self.sunday_date.weekday() == self.SUNDAY:
+                    self.sunday_date.weekday() == Extract.SUNDAY:
                 # set up a Week
                 day_list = [Day(self.sunday_date +
-                                datetime.timedelta(days=x), [])
+                                datetime.timedelta(days=x),
+                                [])  # [] will hold Event list for Day
                             for x in range(7)]
                 self.new_week = Week(*day_list)
                 return True
@@ -188,7 +189,7 @@ class Extract:
         :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
         """
-        return dt_date.weekday() == 6 if dt_date else False
+        return dt_date.weekday() == Extract.SUNDAY if dt_date else False
 
     def _handle_week(self, out_buffer):
         """

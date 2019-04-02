@@ -5,6 +5,7 @@
 import io
 import datetime
 import pytest
+from datetime import date
 
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile
@@ -110,6 +111,14 @@ def test_look_for_week_returns_false_on_non_sunday_input(extract):
 def test_look_for_week_returns_true_on_sunday_input(extract):
     date_match = extract._re_match_date('03/31/2019')  # a Sunday
     assert extract._look_for_week(date_match)
+
+
+def test_is_a_sunday_returns_true_on_sunday_input(extract):
+    assert extract._is_a_sunday(date(2019, 3, 17))  # also a Sunday
+
+
+def test_is_a_sunday_returns_false_on_non_sunday_input(extract):
+    assert not extract._is_a_sunday(date(2019, 4, 1))
 
 
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
