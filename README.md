@@ -6,4 +6,7 @@
 * #### outputs a specialized visualization.
 
 
-I return to this project often to refactor and learn. Just started a refactor based on Robert Martin's _Clean Code_; I've only done a little but it's going very well.
+I return to this project often to refactor and learn. 
+
+I'm currently refactoring to remove side effects, as per Robert Martin's _Clean Code_. 
+
