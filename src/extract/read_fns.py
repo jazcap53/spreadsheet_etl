@@ -272,17 +272,18 @@ class Extract:
         :return: None
         Called by: _handle_leftovers(), _handle_week()
         """
-        out_buffer = self._append_week_header(out_buffer)
-        for day in self.new_week:
-            out_buffer.extend(self._append_day_header(day))
-            for event in day.events:
-                event_str = 'action: {}, time: {}'.format(event.action,
-                                                          event.mil_time)
-                if event.hours:
-                    event_str += ', hours: {:.2f}'.format(float(event.hours))
-                if event.action == 'b':
-                    out_buffer = self._write_or_discard_night(event, day.dt_date, out_buffer)
-                out_buffer.append(event_str)
+        if self.new_week:  # TODO: explain (?)
+            out_buffer = self._append_week_header(out_buffer)
+            for day in self.new_week:
+                out_buffer.extend(self._append_day_header(day))
+                for event in day.events:
+                    event_str = 'action: {}, time: {}'.format(event.action,
+                                                              event.mil_time)
+                    if event.hours:
+                        event_str += ', hours: {:.2f}'.format(float(event.hours))
+                    if event.action == 'b':
+                        out_buffer = self._write_or_discard_night(event, day.dt_date, out_buffer)
+                    out_buffer.append(event_str)
         return out_buffer
 
     def _append_week_header(self, out_buffer):

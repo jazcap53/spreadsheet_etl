@@ -121,6 +121,22 @@ def test_is_a_sunday_returns_false_on_non_sunday_input(extract):
     assert not extract._is_a_sunday(date(2019, 4, 1))
 
 
+def test_handle_week_works_for_full_week(infile_wrapper):
+    extr = Extract(infile_wrapper)
+    extr.line_as_list = ['12/4/2016', '', '', '', '', '', '', '', '', '',
+                         'b', '23:45', '', 'w', '3:45', '4.00', 'w', '2:00',
+                         '2.75', 'b', '0:00', '9.00']
+    ret_pair = extr._handle_week([])
+    assert ret_pair == (False, [])
+
+
+def test_handle_week_works_for_empty_week(infile_wrapper):
+    extr = Extract(infile_wrapper)
+    extr.line_as_list = [''] * 22
+    ret_pair = extr._handle_week([])
+    assert ret_pair == (False, [])
+
+
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
     # shorter_line holds an 's' event for Thu and Fri, and a 'w' event for Sat
     extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '',
@@ -277,6 +293,3 @@ def test_match_event_line_returns_false_on_2_element_w_line_input():
 def test_match_event_line_returns_false_on_non_action_input():
     line = '=' * 18
     assert not bool(Extract._match_event_line(line))
-
-
-# def test_handle_week_returns_true_on_
