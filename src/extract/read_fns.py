@@ -118,8 +118,8 @@ class Extract:
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.sunday_date = Extract.NULL_DATE
-        self.new_week = None
+        self.have_sunday_date = Extract.NULL_DATE
+        self.have_new_week = None
         self.line_as_list = []
 
     def lines_in_weeks_out(self):
@@ -129,16 +129,16 @@ class Extract:
         :return: None
         Called by: client code
         """
-        in_week = False
+        are_in_week = False
         out_buffer = []
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
             date_match = self._re_match_date(self.line_as_list[0])
-            if not in_week:
-                in_week = self._look_for_week(date_match)
-            if in_week:  # 'if' is correct here
+            if not are_in_week:  # TODO: change to 'if not are_in_week and date_match:'
+                are_in_week = self._look_for_week(date_match)
+            if are_in_week:  # 'if' is correct here
                 # output good data and discard bad data
-                in_week = self._handle_week(out_buffer)
+                are_in_week = self._handle_week(out_buffer)
         # handle any data left in buffer
         if out_buffer:
             self._handle_leftovers(out_buffer)
@@ -162,24 +162,19 @@ class Extract:
         :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
-        self.sunday_date = None
-        self.new_week = None
+        self.have_sunday_date = None
+        self.have_new_week = None
         if date_match:
-            self.sunday_date = self._match_to_date_obj(date_match)
-            if isinstance(self.sunday_date, datetime.date) and \
-                    self.sunday_date.weekday() == Extract.SUNDAY:
+            self.have_sunday_date = self._match_to_date_obj(date_match)
+            if self._is_a_sunday(self.have_sunday_date):
                 # set up a Week
-                day_list = [Day(self.sunday_date +
-                                datetime.timedelta(days=x),
-                                [])  # [] will hold Event list for Day
-                            for x in range(7)]
-                self.new_week = Week(*day_list)
-                return True
+                day_list = self._make_day_list()
+                self.have_new_week = Week(*day_list)
             else:
                 read_logger.warning('Non-Sunday date {} found in input'.
-                                    format(self.sunday_date))
-                self.sunday_date = None
-        return False
+                                    format(self.have_sunday_date))
+                self.have_sunday_date = None
+        return bool(self.have_new_week)
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -192,11 +187,22 @@ class Extract:
         """
         return dt_date.weekday() == Extract.SUNDAY if dt_date else False
 
+    def _make_day_list(self):
+        """
+
+        :return:
+        Called by:
+        """
+        return [Day(self.have_sunday_date +
+                    datetime.timedelta(days=x),
+                    [])  # [] will hold Event list for Day
+                for x in range(7)]
+
     def _handle_week(self, out_buffer):
         """
         if there are valid events in self.line_as_list:
             call self._get_events() to store them as Event objects in Week
-            object new_week
+            object have_new_week
         else:
             call self._manage_output_buffer() to write good data, discard
             incomplete data from self.output_buffer
@@ -238,7 +244,7 @@ class Extract:
 
     def _get_events(self):
         """
-        Add each valid event in self.line_as_list to self.new_week.
+        Add each valid event in self.line_as_list to self.have_new_week.
 
         :return: bool: True iff we successfully read at least one event
                        from self.line_as_list
@@ -257,25 +263,25 @@ class Extract:
                 read_logger.warning('segment {} not valid in _get_events()\n'
                                     '\tsegment date is {}'.
                                     format(segment,
-                                           self.new_week[ix].dt_date))
+                                           self.have_new_week[ix].dt_date))
                 continue
-            if self.new_week and an_event and an_event.action:
-                self.new_week[ix].events.append(an_event)
+            if self.have_new_week and an_event and an_event.action:
+                self.have_new_week[ix].events.append(an_event)
                 have_events = True
         return have_events
 
     # TODO: NOW: explain this!
     def _manage_output_buffer(self, out_buffer):
         """
-        Convert the Events in self.new_week into strings, place the strings
+        Convert the Events in self.have_new_week into strings, place the strings
         into output buffer, pass output buffer to _write_or_discard_night()
 
         :return: None
         Called by: _handle_leftovers(), _handle_week()
         """
-        if self.new_week:  # TODO: explain (?)
+        if self.have_new_week:  # TODO: explain (?)
             out_buffer.append(self._get_week_header())
-            for day in self.new_week:
+            for day in self.have_new_week:
                 out_buffer.append(self._get_day_header(day))
                 for event in day.events:
                     event_str = 'action: {}, time: {}'.format(event.action,
@@ -292,7 +298,7 @@ class Extract:
         :return:
         Called by:
         """
-        wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
+        wk_header = '\nWeek of Sunday, {}:'.format(self.have_new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
         return wk_header
 

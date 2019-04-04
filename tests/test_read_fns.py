@@ -108,7 +108,7 @@ def test_re_match_date_rejects_date_with_alpha(extract):
 def test_look_for_week_returns_false_on_non_sunday_input(extract):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
     assert not extract._look_for_week(date_match)
-    assert extract.sunday_date is None
+    assert extract.have_sunday_date is None
 
 
 def test_look_for_week_returns_true_on_sunday_input(extract):
@@ -145,12 +145,12 @@ def test_handle_leftovers(extract):
                   'action: w, time: 14:00, hours: 1.00', 'action: s, time: 17:15',
                   'action: w, time: 18:00, hours: 0.75', 'action: s, time: 21:00',
                   'action: w, time: 22:00, hours: 1.00', 'action: s, time: 23:30']
-    extract.new_week = (
+    extract.have_new_week = (
         Day(datetime.date(2016, 12, 4), []), Day(datetime.date(2016, 12, 5), []),
         Day(datetime.date(2016, 12, 6), []), Day(datetime.date(2016, 12, 7), []),
         Day(datetime.date(2016, 12, 8), []), Day(datetime.date(2016, 12, 9), []),
         Day(datetime.date(2016, 12, 10), []))
-    extract.sunday_date = datetime.date(2016, 12, 4)
+    extract.have_sunday_date = datetime.date(2016, 12, 4)
     assert not extract._manage_output_buffer(out_buffer)
 
 
@@ -159,49 +159,49 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
     extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '',
                             '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
                             '5:15', '5.25']
-    extract.sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(extract.sunday_date +
+    extract.have_sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.new_week = Week(*day_list)
+    extract.have_new_week = Week(*day_list)
     have_events = extract._get_events()
-    assert extract.new_week[0].events == []
-    assert isinstance(extract.new_week[4].events[-1], Event)
-    assert isinstance(extract.new_week[6].events[-1], Event)
+    assert extract.have_new_week[0].events == []
+    assert isinstance(extract.have_new_week[4].events[-1], Event)
+    assert isinstance(extract.have_new_week[6].events[-1], Event)
     assert have_events
 
 
 def test_get_events_creates_no_events_on_empty_line_input(extract):
     extract.line_as_list = ['', '', '', '', '', '', '', '', '', '', '', '',
                             '', '', '', '', '', '', '', '', '', '']
-    extract.sunday_date = datetime.date(2017, 11, 5)
-    day_list = [Day(extract.sunday_date +
+    extract.have_sunday_date = datetime.date(2017, 11, 5)
+    day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.new_week = Week(*day_list)
+    extract.have_new_week = Week(*day_list)
     have_events = extract._get_events()
     assert not have_events
 
 
 def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     out_buffer = []
-    extract.sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(extract.sunday_date +
+    extract.have_sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.new_week = Week(*day_list)
-    extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
+    extract.have_new_week = Week(*day_list)
+    extract.have_new_week[6].events.append(Event('w', '13:15', '6.5'))
     extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
 def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     out_buffer = []
-    extract.sunday_date = datetime.date(2016, 4, 10)
-    day_list = [Day(extract.sunday_date +
+    extract.have_sunday_date = datetime.date(2016, 4, 10)
+    day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.new_week = Week(*day_list)
+    extract.have_new_week = Week(*day_list)
     extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == '    2016-04-16'
 
