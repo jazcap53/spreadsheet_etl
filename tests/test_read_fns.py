@@ -137,6 +137,42 @@ def test_handle_week_works_for_empty_week(infile_wrapper):
     assert ret_pair == (False, [])
 
 
+# TODO: NOW: check behavior of this function!
+def test_handle_leftovers(extract):
+    out_buffer = ['action: b, time: 6:30, hours: 8.00',
+                  'action: w, time: 8:45, hours: 2.25', 'action: s, time: 13:00',
+                  'action: w, time: 14:00, hours: 1.00', 'action: s, time: 17:15',
+                  'action: w, time: 18:00, hours: 0.75', 'action: s, time: 21:00',
+                  'action: w, time: 22:00, hours: 1.00', 'action: s, time: 23:30']
+    extract.new_week = (
+        Day(datetime.date(2016, 12, 4), []), Day(datetime.date(2016, 12, 5), []),
+        Day(datetime.date(2016, 12, 6), []), Day(datetime.date(2016, 12, 7), []),
+        Day(datetime.date(2016, 12, 8), []), Day(datetime.date(2016, 12, 9), []),
+        Day(datetime.date(2016, 12, 10), []))
+    extract.sunday_date = datetime.date(2016, 12, 4)
+    assert extract._manage_output_buffer(out_buffer) == [
+         'action: b, time: 6:30, hours: 8.00',
+         'action: w, time: 8:45, hours: 2.25',
+         'action: s, time: 13:00',
+         'action: w, time: 14:00, hours: 1.00',
+         'action: s, time: 17:15',
+         'action: w, time: 18:00, hours: 0.75',
+         'action: s, time: 21:00',
+         'action: w, time: 22:00, hours: 1.00',
+         'action: s, time: 23:30',
+         '\nWeek of Sunday, 2016-12-04:\n==========================',
+         '    2016-12-04',
+         '    2016-12-05',
+         '    2016-12-06',
+         '    2016-12-07',
+         '    2016-12-08',
+         '    2016-12-09',
+         '    2016-12-10']
+
+
+
+
+
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
     # shorter_line holds an 's' event for Thu and Fri, and a 'w' event for Sat
     extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '',

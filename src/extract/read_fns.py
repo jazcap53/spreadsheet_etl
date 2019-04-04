@@ -140,7 +140,8 @@ class Extract:
                 # output good data and discard bad data
                 in_week, out_buffer = self._handle_week(out_buffer)
         # handle any data left in buffer
-        self._handle_leftovers(out_buffer)
+        if out_buffer:  # TODO: this line is new
+            self._handle_leftovers(out_buffer)
 
     @staticmethod
     def _re_match_date(field):
@@ -212,14 +213,14 @@ class Extract:
 
     def _handle_leftovers(self, out_buffer):
         """
-        If there is data left in self.output_buffer, calls
+        If there is data left in output_buffer, calls
                 self._manage_output_buffer().
 
         :return: None
         Called by: lines_in_weeks_out()
         """
-        if self.sunday_date and self.new_week:
-            self._manage_output_buffer(out_buffer)
+        # if self.sunday_date and self.new_week:  TODO: this line newly commented out
+        self._manage_output_buffer(out_buffer)
 
     @staticmethod
     def _match_to_date_obj(m):
@@ -264,6 +265,7 @@ class Extract:
                 have_events = True
         return have_events
 
+    # TODO: NOW: explain this!
     def _manage_output_buffer(self, out_buffer):
         """
         Convert the Events in self.new_week into strings, place the strings
