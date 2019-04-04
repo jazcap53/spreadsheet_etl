@@ -13,6 +13,9 @@ from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
 
+# TODO: change assertions on fns which return None
+
+
 @pytest.fixture
 def infile_wrapper():
     return FakeFileReadWrapper(
@@ -126,15 +129,13 @@ def test_handle_week_works_for_full_week(infile_wrapper):
     extr.line_as_list = ['12/4/2016', '', '', '', '', '', '', '', '', '',
                          'b', '23:45', '', 'w', '3:45', '4.00', 'w', '2:00',
                          '2.75', 'b', '0:00', '9.00']
-    ret_pair = extr._handle_week([])
-    assert ret_pair == (False, [])
+    assert not extr._handle_week([])
 
 
 def test_handle_week_works_for_empty_week(infile_wrapper):
     extr = Extract(infile_wrapper)
     extr.line_as_list = [''] * 22
-    ret_pair = extr._handle_week([])
-    assert ret_pair == (False, [])
+    assert not extr._handle_week([])
 
 
 # TODO: NOW: check behavior of this function!
@@ -150,27 +151,7 @@ def test_handle_leftovers(extract):
         Day(datetime.date(2016, 12, 8), []), Day(datetime.date(2016, 12, 9), []),
         Day(datetime.date(2016, 12, 10), []))
     extract.sunday_date = datetime.date(2016, 12, 4)
-    assert extract._manage_output_buffer(out_buffer) == [
-         'action: b, time: 6:30, hours: 8.00',
-         'action: w, time: 8:45, hours: 2.25',
-         'action: s, time: 13:00',
-         'action: w, time: 14:00, hours: 1.00',
-         'action: s, time: 17:15',
-         'action: w, time: 18:00, hours: 0.75',
-         'action: s, time: 21:00',
-         'action: w, time: 22:00, hours: 1.00',
-         'action: s, time: 23:30',
-         '\nWeek of Sunday, 2016-12-04:\n==========================',
-         '    2016-12-04',
-         '    2016-12-05',
-         '    2016-12-06',
-         '    2016-12-07',
-         '    2016-12-08',
-         '    2016-12-09',
-         '    2016-12-10']
-
-
-
+    assert not extract._manage_output_buffer(out_buffer)
 
 
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
@@ -210,7 +191,7 @@ def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
                 for x in range(7)]
     extract.new_week = Week(*day_list)
     extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
-    out_buffer = extract._manage_output_buffer(out_buffer)
+    extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
 
@@ -221,26 +202,8 @@ def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
-    out_buffer = extract._manage_output_buffer(out_buffer)
+    extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == '    2016-04-16'
-
-
-def test_append_week_header(extract):
-    out_buffer = []
-    extract.sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(extract.sunday_date +
-                    datetime.timedelta(days=x), [])
-                for x in range(7)]
-    extract.new_week = Week(*day_list)
-    out_buffer = extract._append_week_header(out_buffer)
-    assert out_buffer[-1] == '\nWeek of Sunday, 2017-11-12:\n' + \
-                                        '=' * 26
-
-
-def test_append_day_header(extract):
-    dy = Day(datetime.date(2015, 5, 5), [])
-    out_buffer = extract._append_day_header(dy)
-    assert out_buffer[-1] == '    2015-05-05'
 
 
 def test_write_or_discard_night_3_element_b_event_flushes_buffer(extract):

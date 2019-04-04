@@ -287,12 +287,23 @@ class Extract:
                     out_buffer.append(event_str)
 
     def _get_week_header(self):
+        """
+
+        :return:
+        Called by:
+        """
         wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
         return wk_header
 
     @staticmethod
     def _get_day_header(day):
+        """
+
+        :param day:
+        :return:
+        Called by:
+        """
         return '    {}'.format(day.dt_date)  # four leading spaces
 
     def _write_or_discard_night(self, action_b_event, datetime_date,
