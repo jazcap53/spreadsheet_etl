@@ -3,6 +3,7 @@
 # 2017-01-28
 
 import io
+import re
 import sys
 import datetime
 import pytest
@@ -11,7 +12,9 @@ from datetime import date
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
+# from src.extract.read_fns import Extract._get_day_header
 from container_objs import Event, Day, Week
+
 
 
 # TODO: change assertions on fns which return None
@@ -125,6 +128,14 @@ def test_is_a_sunday_returns_false_on_non_sunday_input(extract):
     assert not extract._is_a_sunday(date(2019, 4, 1))
 
 
+def test_make_day_list(extract):
+    extract.have_sunday_date = datetime.date(2016, 12, 11)
+    assert extract._make_day_list() == [Day(extract.have_sunday_date +
+                                        datetime.timedelta(days=x),
+                                        [])  # [] will hold Event list for Day
+                                        for x in range(Extract.DAYS_IN_A_WEEK)]
+
+
 def test_handle_week_works_for_full_week(infile_wrapper):
     extr = Extract(infile_wrapper)
     extr.line_as_list = ['12/4/2016', '', '', '', '', '', '', '', '', '',
@@ -139,7 +150,7 @@ def test_handle_week_works_for_empty_week(infile_wrapper):
     assert not extr._handle_week([])
 
 
-# TODO: NOW: check behavior of this function!
+# TODO: ASAP: check behavior of this function!
 def test_handle_leftovers(extract):
     out_buffer = ['action: b, time: 6:30, hours: 8.00',
                   'action: w, time: 8:45, hours: 2.25', 'action: s, time: 13:00',
@@ -153,6 +164,17 @@ def test_handle_leftovers(extract):
         Day(datetime.date(2016, 12, 10), []))
     extract.have_sunday_date = datetime.date(2016, 12, 4)
     assert not extract._manage_output_buffer(out_buffer)
+
+
+def test_match_to_date_obj_returns_none_on_unsuccessful_match(extract):
+    bad_match = re.match('hello', 'goodbye')
+    assert not extract._match_to_date_obj(bad_match)
+
+
+def test_match_to_date_obj_returns_date_object_on_successful_match(extract):
+    date_string = '12/06/1907'
+    date_match = extract._re_match_date(date_string)
+    assert extract._match_to_date_obj(date_match) == datetime.date(1907, 12, 6)
 
 
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
@@ -207,6 +229,20 @@ def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     assert out_buffer[-1] == '    2016-04-16'
 
 
+def test_get_week_header(extract):
+    extract.have_sunday_date = datetime.date(2019, 3, 24)
+    day_list = [Day(extract.have_sunday_date +
+                    datetime.timedelta(days=x), [])
+                for x in range(7)]
+    extract.have_new_week = Week(*day_list)
+    assert extract._get_week_header() == '\nWeek of Sunday, 2019-03-24:\n' + \
+        '=' * 26
+
+
+def test_get_day_header(day=Day(datetime.date(2018, 10, 14), [])):
+    assert Extract._get_day_header(day) == '    2018-10-14'
+
+
 def test_write_or_discard_night_3_element_b_event_flushes_buffer(extract):
     output = io.StringIO()
     out_buffer = ['bongo', 'Hello World']
@@ -238,6 +274,20 @@ def test_write_or_discard_night_2_elem_b_event_long_b_str_in_buffer(extract):
                                     output)
     assert output.getvalue() == ''
     assert out_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
+
+
+def test_write_complete_night(extract, capfd):
+    extract.out_buffer = ['hello', 'there']
+    extract.outfile = sys.stdout
+    extract._write_complete_night(extract.out_buffer, extract.outfile)
+    out, err = capfd.readouterr()
+    assert out == 'hello\nthere\n'
+    assert err == ''
+    assert extract.out_buffer == []
+
+
+def test_discard_incomplete_night():
+    assert False
 
 
 def test_match_complete_b_event_line_returns_true_on_complete_b_event_line():

@@ -112,6 +112,7 @@ def open_infile(filename):
 class Extract:
     NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)
     SUNDAY = 6
+    DAYS_IN_A_WEEK = 7
 
     def __init__(self, infile):
         """
@@ -190,13 +191,13 @@ class Extract:
     def _make_day_list(self):
         """
 
-        :return:
-        Called by:
+        :return: a list holding a week's worth of Day objects
+        Called by: _look_for_week()
         """
         return [Day(self.have_sunday_date +
                     datetime.timedelta(days=x),
                     [])  # [] will hold Event list for Day
-                for x in range(7)]
+                for x in range(Extract.DAYS_IN_A_WEEK)]
 
     def _handle_week(self, out_buffer):
         """
@@ -308,7 +309,7 @@ class Extract:
 
         :param day:
         :return:
-        Called by:
+        Called by: _manage_output_buffer()
         """
         return '    {}'.format(day.dt_date)  # four leading spaces
 
