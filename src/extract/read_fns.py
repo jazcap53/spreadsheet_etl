@@ -134,8 +134,11 @@ class Extract:
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
             date_match = self._re_match_date(self.line_as_list[0])
-            if not are_in_week:  # TODO: change to 'if not are_in_week and date_match:'
-                are_in_week = self._look_for_week(date_match)
+            if not are_in_week:
+                self.have_sunday_date = None
+                self.have_new_week = None
+                if date_match:
+                    are_in_week = self._look_for_week(date_match)
             if are_in_week:  # 'if' is correct here
                 # output good data and discard bad data
                 are_in_week = self._handle_week(out_buffer)
@@ -162,18 +165,15 @@ class Extract:
         :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
-        self.have_sunday_date = None
-        self.have_new_week = None
-        if date_match:
-            self.have_sunday_date = self._match_to_date_obj(date_match)
-            if self._is_a_sunday(self.have_sunday_date):
-                # set up a Week
-                day_list = self._make_day_list()
-                self.have_new_week = Week(*day_list)
-            else:
-                read_logger.warning('Non-Sunday date {} found in input'.
-                                    format(self.have_sunday_date))
-                self.have_sunday_date = None
+        self.have_sunday_date = self._match_to_date_obj(date_match)
+        if self._is_a_sunday(self.have_sunday_date):
+            # set up a Week
+            day_list = self._make_day_list()
+            self.have_new_week = Week(*day_list)
+        else:
+            read_logger.warning('Non-Sunday date {} found in input'.
+                                format(self.have_sunday_date))
+            self.have_sunday_date = None
         return bool(self.have_new_week)
 
     @staticmethod

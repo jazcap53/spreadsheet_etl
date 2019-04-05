@@ -3,6 +3,7 @@
 # 2017-01-28
 
 import io
+import sys
 import datetime
 import pytest
 from datetime import date
