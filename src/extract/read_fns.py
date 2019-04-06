@@ -110,7 +110,7 @@ def open_infile(filename):
 
 
 class Extract:
-    NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)
+    NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)  # TODO: get rid of this
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
@@ -341,7 +341,7 @@ class Extract:
     def _discard_incomplete_night(self, datetime_date, out_buffer, outfile):
         read_logger.info('Incomplete night(s) before {}'.
                          format(datetime_date))
-        # pop incomplete data from output buffer
+        # pop incomplete data from end of output buffer
         for buf_ix in range(len(out_buffer) - 1, -1, -1):
             this_line = out_buffer[buf_ix]
             # if we see a 3-element 'b' event, there's good data before it
@@ -358,7 +358,7 @@ class Extract:
         Called by: _write_or_discard_night()
         """
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
-                        ' hours: \d{1,2}\.\d{2}$', line)
+                        r' hours: \d{1,2}\.\d{2}$', line)
 
     @staticmethod
     def _match_event_line(line):
@@ -366,11 +366,11 @@ class Extract:
         Called by: _write_or_discard_night()
         """
         # b events may have 2 or 3 elements
-        match_line = r'(?:action: b, time: \d{1,2}:\d{2})' + \
+        match_line = r'(?:action: b, time: \d{1,2}:\d{2})' \
                      r'(?:, hours: \d{1,2}\.\d{2})?$'
         # s events must have 2 elements
         match_line += r'|(?:action: s, time: \d{1,2}:\d{2}$)'
         # w events must have 3 elements
-        match_line += r'|(?:action: w, time: \d{1,2}:\d{2}, ' + \
+        match_line += r'|(?:action: w, time: \d{1,2}:\d{2}, ' \
                       r'hours: \d{1,2}\.\d{2}$)'
         return re.match(match_line, line)

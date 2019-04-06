@@ -46,7 +46,7 @@ class Transform:
 
         Called by: __main__()
         """
-        self.date_checker = re.compile(' {4}\d{4}-\d{2}-\d{2}')
+        self.date_checker = re.compile(r' {4}\d{4}-\d{2}-\d{2}')
         with self.data_source.input() as infile:
             for curr_line in infile:
                 self.process_curr(curr_line.rstrip('\n'))

@@ -12,7 +12,6 @@ from datetime import date
 from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
-# from src.extract.read_fns import Extract._get_day_header
 from container_objs import Event, Day, Week
 
 
@@ -109,10 +108,11 @@ def test_re_match_date_rejects_date_with_alpha(extract):
     assert not date_match
 
 
-def test_look_for_week_returns_false_on_non_sunday_input(extract):
+def test_look_for_week_returns_false_on_non_sunday_input(extract, caplog):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
     assert not extract._look_for_week(date_match)
     assert extract.have_sunday_date is None
+    assert caplog.text.endswith('Non-Sunday date 2017-11-14 found in input\n')
 
 
 def test_look_for_week_returns_true_on_sunday_input(extract):
@@ -286,8 +286,16 @@ def test_write_complete_night(extract, capfd):
     assert extract.out_buffer == []
 
 
-def test_discard_incomplete_night():
-    assert False
+def test_discard_incomplete_night(extract, capfd):
+    datetime_date = datetime.date(2017, 1, 3)
+    out_buffer = ['action: b, time: 23:00, hours: 7.00',
+                  '\nWeek of Sunday, 2017-01-01:\n==========================',
+                  '    2017-01-01', '    2017-01-02', '    2017-01-03']
+    outfile = sys.stdout
+    extract._discard_incomplete_night(datetime_date, out_buffer, outfile)
+    out, err = capfd.readouterr()
+    assert out == 'action: N, time: 23:00, hours: 7.00\n'
+    assert err == ''
 
 
 def test_match_complete_b_event_line_returns_true_on_complete_b_event_line():
