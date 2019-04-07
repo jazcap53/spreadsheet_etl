@@ -15,7 +15,7 @@ from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
 
-# TODO: fail is pytest not called with -s switch
+# TODO: fail if pytest is not called with -s switch
 # TODO: change assertions on fns which return None
 
 
@@ -66,8 +66,8 @@ def test_init_with_good_argument_succeeds():
         break
 
 
-# this test will fail unless pytest is run with -s switch
 def test_lines_in_weeks_out(infile_wrapper, capfd):
+    """ >==> THIS TEST WILL FAIL UNLESS PYTEST IS RUN WITH -s SWITCH <==< """
     infile = open_infile(infile_wrapper)
     extract = Extract(infile)
     extract.lines_in_weeks_out()
