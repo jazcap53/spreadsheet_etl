@@ -15,7 +15,7 @@ from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
 
-
+# TODO: fail is pytest not called with -s switch
 # TODO: change assertions on fns which return None
 
 
@@ -46,6 +46,24 @@ def extract():
 def test_open_infile(infile_wrapper):
     infile = open_infile(infile_wrapper)
     assert isinstance(infile, io.StringIO)
+
+
+def test_init_with_bad_argument_fails():
+    filename = None
+    extr = Extract(filename)
+    with pytest.raises(AttributeError):
+        for line in extr.infile.getline():
+            line += 'x'
+            break
+
+
+def test_init_with_good_argument_succeeds():
+    filename = '/dev/null'
+    opened_file = open(filename)
+    extr = Extract(opened_file)
+    for line in extr.infile:
+        line += 'x'
+        break
 
 
 # this test will fail unless pytest is run with -s switch

@@ -110,7 +110,6 @@ def open_infile(filename):
 
 
 class Extract:
-    NULL_DATE = datetime.date(datetime.MINYEAR, 1, 1)  # TODO: get rid of this
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
@@ -119,7 +118,7 @@ class Extract:
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.have_sunday_date = Extract.NULL_DATE
+        self.have_sunday_date = None
         self.have_new_week = None
         self.line_as_list = []
 
