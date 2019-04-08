@@ -168,14 +168,14 @@ def test_handle_week_works_for_empty_week(infile_wrapper):
     assert not extr._handle_week([])
 
 
-# TODO: ASAP: check behavior of this function!
+# TODO: check behavior of this function
 def test_handle_leftovers(extract):
     out_buffer = ['action: b, time: 6:30, hours: 8.00',
                   'action: w, time: 8:45, hours: 2.25', 'action: s, time: 13:00',
                   'action: w, time: 14:00, hours: 1.00', 'action: s, time: 17:15',
                   'action: w, time: 18:00, hours: 0.75', 'action: s, time: 21:00',
                   'action: w, time: 22:00, hours: 1.00', 'action: s, time: 23:30']
-    extract.have_new_week = (
+    extract.new_week = (
         Day(datetime.date(2016, 12, 4), []), Day(datetime.date(2016, 12, 5), []),
         Day(datetime.date(2016, 12, 6), []), Day(datetime.date(2016, 12, 7), []),
         Day(datetime.date(2016, 12, 8), []), Day(datetime.date(2016, 12, 9), []),
@@ -204,11 +204,11 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
     day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.have_new_week = Week(*day_list)
+    extract.new_week = Week(*day_list)
     have_events = extract._get_events()
-    assert extract.have_new_week[0].events == []
-    assert isinstance(extract.have_new_week[4].events[-1], Event)
-    assert isinstance(extract.have_new_week[6].events[-1], Event)
+    assert extract.new_week[0].events == []
+    assert isinstance(extract.new_week[4].events[-1], Event)
+    assert isinstance(extract.new_week[6].events[-1], Event)
     assert have_events
 
 
@@ -219,7 +219,7 @@ def test_get_events_creates_no_events_on_empty_line_input(extract):
     day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.have_new_week = Week(*day_list)
+    extract.new_week = Week(*day_list)
     have_events = extract._get_events()
     assert not have_events
 
@@ -230,8 +230,8 @@ def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.have_new_week = Week(*day_list)
-    extract.have_new_week[6].events.append(Event('w', '13:15', '6.5'))
+    extract.new_week = Week(*day_list)
+    extract.new_week[6].events.append(Event('w', '13:15', '6.5'))
     extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == 'action: w, time: 13:15, hours: 6.50'
 
@@ -242,7 +242,7 @@ def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.have_new_week = Week(*day_list)
+    extract.new_week = Week(*day_list)
     extract._manage_output_buffer(out_buffer)
     assert out_buffer[-1] == '    2016-04-16'
 
@@ -252,7 +252,7 @@ def test_get_week_header(extract):
     day_list = [Day(extract.have_sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
-    extract.have_new_week = Week(*day_list)
+    extract.new_week = Week(*day_list)
     assert extract._get_week_header() == '\nWeek of Sunday, 2019-03-24:\n' + \
         '=' * 26
 
@@ -310,9 +310,9 @@ def test_discard_incomplete_night(extract, capfd):
                   '\nWeek of Sunday, 2017-01-01:\n==========================',
                   '    2017-01-01', '    2017-01-02', '    2017-01-03']
     outfile = sys.stdout
-    extract._discard_incomplete_night(datetime_date, out_buffer, outfile)
+    extract._discard_incomplete_night(out_buffer, outfile)
     out, err = capfd.readouterr()
-    assert out == 'action: N, time: 23:00, hours: 7.00\n'
+    assert out == 'action: N, time: 23:00, hours: 0.00\n'
     assert err == ''
 
 

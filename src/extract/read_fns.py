@@ -119,7 +119,7 @@ class Extract:
         """
         self.infile = infile
         self.have_sunday_date = None
-        self.have_new_week = None
+        self.new_week = None
         self.line_as_list = []
 
     def lines_in_weeks_out(self):
@@ -136,7 +136,7 @@ class Extract:
             date_match = self._re_match_date(self.line_as_list[0])
             if not are_in_week:
                 self.have_sunday_date = None
-                self.have_new_week = None
+                self.new_week = None
                 if date_match:
                     are_in_week = self._look_for_week(date_match)
             if are_in_week:  # 'if' is correct here
@@ -169,12 +169,12 @@ class Extract:
         if self._is_a_sunday(self.have_sunday_date):
             # set up a Week
             day_list = self._make_day_list()
-            self.have_new_week = Week(*day_list)
+            self.new_week = Week(*day_list)
         else:
             read_logger.warning('Non-Sunday date {} found in input'.
                                 format(self.have_sunday_date))
             self.have_sunday_date = None
-        return bool(self.have_new_week)
+        return bool(self.new_week)
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -202,7 +202,7 @@ class Extract:
         """
         if there are valid events in self.line_as_list:
             call self._get_events() to store them as Event objects in Week
-            object have_new_week
+            object new_week
         else:
             call self._manage_output_buffer() to write good data, discard
             incomplete data from self.output_buffer
@@ -244,7 +244,7 @@ class Extract:
 
     def _get_events(self):
         """
-        Add each valid event in self.line_as_list to self.have_new_week.
+        Add each valid event in self.line_as_list to self.new_week.
 
         :return: bool: True iff we successfully read at least one event
                        from self.line_as_list
@@ -263,25 +263,25 @@ class Extract:
                 read_logger.warning('segment {} not valid in _get_events()\n'
                                     '\tsegment date is {}'.
                                     format(segment,
-                                           self.have_new_week[ix].dt_date))
+                                           self.new_week[ix].dt_date))
                 continue
-            if self.have_new_week and an_event and an_event.action:
-                self.have_new_week[ix].events.append(an_event)
+            if self.new_week and an_event and an_event.action:
+                self.new_week[ix].events.append(an_event)
                 have_events = True
         return have_events
 
-    # TODO: NOW: explain this!
+    # TODO: explain
     def _manage_output_buffer(self, out_buffer):
         """
-        Convert the Events in self.have_new_week into strings, place the strings
-        into output buffer, pass output buffer to _write_or_discard_night()
+        Convert the Events in self.new_week into strings, place the strings
+        into output buffer, and pass output buffer to _write_or_discard_night()
 
         :return: None
         Called by: _handle_leftovers(), _handle_week()
         """
-        if self.have_new_week:  # TODO: explain (?)
+        if self.new_week:  # a Week of 7 Days beginning with a Sunday
             out_buffer.append(self._get_week_header())
-            for day in self.have_new_week:
+            for day in self.new_week:
                 out_buffer.append(self._get_day_header(day))
                 for event in day.events:
                     event_str = 'action: {}, time: {}'.format(event.action,
@@ -298,7 +298,7 @@ class Extract:
         :return:
         Called by:
         """
-        wk_header = '\nWeek of Sunday, {}:'.format(self.have_new_week[0].dt_date)
+        wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
         return wk_header
 
@@ -329,7 +329,9 @@ class Extract:
         if action_b_event.hours:  # we have complete data for preceding night
             self._write_complete_night(out_buffer, outfile)
         else:
-            self._discard_incomplete_night(datetime_date, out_buffer, outfile)
+            read_logger.info('Incomplete night(s) before {}'.
+                             format(datetime_date))
+            self._discard_incomplete_night(out_buffer, outfile)
 
     @staticmethod
     def _write_complete_night(out_buffer, outfile):
@@ -337,16 +339,13 @@ class Extract:
             print(line, file=outfile)
         out_buffer.clear()
 
-    def _discard_incomplete_night(self, datetime_date, out_buffer, outfile):
-        read_logger.info('Incomplete night(s) before {}'.
-                         format(datetime_date))
+    def _discard_incomplete_night(self, out_buffer, outfile):
         # pop incomplete data from end of output buffer
         for buf_ix in range(len(out_buffer) - 1, -1, -1):
             this_line = out_buffer[buf_ix]
             # if we see a 3-element 'b' event, there's good data before it
             if self._match_complete_b_event_line(this_line):
-                # pop one last time; change 'b' event to 'N' (data not found)
-                no_data_line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
+                no_data_line = self._get_no_data_line(out_buffer, buf_ix)
                 print(no_data_line, file=outfile)
             elif self._match_event_line(this_line):  # pop only Event lines
                 out_buffer.pop(buf_ix)  # leave headers in buffer
@@ -358,6 +357,15 @@ class Extract:
         """
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
                         r' hours: \d{1,2}\.\d{2}$', line)
+
+    @staticmethod
+    def _get_no_data_line(out_buffer, buf_ix):
+        line_in = out_buffer.pop(buf_ix)
+        line_in = line_in.replace('b', 'N', 1)
+        line_as_list = line_in.split(',')
+        line_as_list[1] = line_in[11:22]  # time
+        line_as_list[2] = 'hours: 0.00'
+        return ', '.join(line_as_list)
 
     @staticmethod
     def _match_event_line(line):
