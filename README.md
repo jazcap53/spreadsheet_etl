@@ -8,5 +8,6 @@
 
 I return to this project often to refactor and learn. 
 
-I'm currently refactoring to remove side effects, as per Robert Martin's _Clean Code_. 
+I'm currently refactoring read_fns.py to remove side effects, as per Robert
+C. Martin's _Clean Code_, and to improve the test suite.
 
