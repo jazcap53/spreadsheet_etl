@@ -14,7 +14,6 @@ from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
-
 # TODO: fail if pytest is not called with -s switch
 # TODO: change assertions on fns which return None
 
@@ -298,9 +297,9 @@ def test_write_complete_night(extract, capfd):
     extract.out_buffer = ['hello', 'there']
     extract.outfile = sys.stdout
     extract._write_complete_night(extract.out_buffer, extract.outfile)
-    out, err = capfd.readouterr()
-    assert out == 'hello\nthere\n'
-    assert err == ''
+    fd1, fd2 = capfd.readouterr()
+    assert fd1 == 'hello\nthere\n'
+    assert fd2 == ''
     assert extract.out_buffer == []
 
 
@@ -311,9 +310,9 @@ def test_discard_incomplete_night(extract, capfd):
                   '    2017-01-01', '    2017-01-02', '    2017-01-03']
     outfile = sys.stdout
     extract._discard_incomplete_night(out_buffer, outfile)
-    out, err = capfd.readouterr()
-    assert out == 'action: N, time: 23:00, hours: 0.00\n'
-    assert err == ''
+    fd1, fd2 = capfd.readouterr()
+    assert fd1 == 'action: N, time: 23:00, hours: 0.00\n'
+    assert fd2 == ''
 
 
 def test_match_complete_b_event_line_returns_true_on_complete_b_event_line():
