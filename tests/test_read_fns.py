@@ -129,7 +129,7 @@ def test_re_match_date_rejects_date_with_alpha(extract):
 def test_look_for_week_returns_false_on_non_sunday_input(extract, caplog):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
     assert not extract._look_for_week(date_match)
-    assert extract.have_sunday_date is None
+    assert extract.sunday_date is None
     assert caplog.text.endswith('Non-Sunday date 2017-11-14 found in input\n')
 
 
@@ -147,8 +147,8 @@ def test_is_a_sunday_returns_false_on_non_sunday_input(extract):
 
 
 def test_make_day_list(extract):
-    extract.have_sunday_date = datetime.date(2016, 12, 11)
-    assert extract._make_day_list() == [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2016, 12, 11)
+    assert extract._make_day_list() == [Day(extract.sunday_date +
                                         datetime.timedelta(days=x),
                                         [])  # [] will hold Event list for Day
                                         for x in range(Extract.DAYS_IN_A_WEEK)]
@@ -180,19 +180,19 @@ def test_handle_leftovers(extract):
         Day(datetime.date(2016, 12, 6), []), Day(datetime.date(2016, 12, 7), []),
         Day(datetime.date(2016, 12, 8), []), Day(datetime.date(2016, 12, 9), []),
         Day(datetime.date(2016, 12, 10), []))
-    extract.have_sunday_date = datetime.date(2016, 12, 4)
+    extract.sunday_date = datetime.date(2016, 12, 4)
     assert not extract._manage_output_buffer(out_buffer)
 
 
 def test_match_to_date_obj_returns_none_on_unsuccessful_match(extract):
     bad_match = re.match('hello', 'goodbye')
-    assert not extract._match_to_date_obj(bad_match)
+    assert not extract._match_obj_to_date(bad_match)
 
 
 def test_match_to_date_obj_returns_date_object_on_successful_match(extract):
     date_string = '12/06/1907'
     date_match = extract._re_match_date(date_string)
-    assert extract._match_to_date_obj(date_match) == datetime.date(1907, 12, 6)
+    assert extract._match_obj_to_date(date_match) == datetime.date(1907, 12, 6)
 
 
 def test_get_events_creates_events_from_non_empty_line_segments(extract):
@@ -200,8 +200,8 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
     extract.line_as_list = ['11/12/2017', '', '', '', '', '', '', '', '', '',
                             '', '', '', 's', '4:45', '', 's', '3:30', '', 'w',
                             '5:15', '5.25']
-    extract.have_sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
@@ -215,8 +215,8 @@ def test_get_events_creates_events_from_non_empty_line_segments(extract):
 def test_get_events_creates_no_events_on_empty_line_input(extract):
     extract.line_as_list = ['', '', '', '', '', '', '', '', '', '', '', '',
                             '', '', '', '', '', '', '', '', '', '']
-    extract.have_sunday_date = datetime.date(2017, 11, 5)
-    day_list = [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2017, 11, 5)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
@@ -226,8 +226,8 @@ def test_get_events_creates_no_events_on_empty_line_input(extract):
 
 def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
     out_buffer = []
-    extract.have_sunday_date = datetime.date(2017, 11, 12)
-    day_list = [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2017, 11, 12)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
@@ -238,8 +238,8 @@ def test_manage_output_buffer_leaves_last_event_in_buffer(extract):
 
 def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
     out_buffer = []
-    extract.have_sunday_date = datetime.date(2016, 4, 10)
-    day_list = [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2016, 4, 10)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)
@@ -248,8 +248,8 @@ def test_manage_output_buffer_leaves_date_in_buffer_if_no_events(extract):
 
 
 def test_get_week_header(extract):
-    extract.have_sunday_date = datetime.date(2019, 3, 24)
-    day_list = [Day(extract.have_sunday_date +
+    extract.sunday_date = datetime.date(2019, 3, 24)
+    day_list = [Day(extract.sunday_date +
                     datetime.timedelta(days=x), [])
                 for x in range(7)]
     extract.new_week = Week(*day_list)

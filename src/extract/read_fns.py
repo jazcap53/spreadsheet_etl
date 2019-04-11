@@ -118,7 +118,7 @@ class Extract:
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.have_sunday_date = None
+        self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
 
@@ -129,19 +129,19 @@ class Extract:
         :return: None
         Called by: client code
         """
-        are_in_week = False
+        in_week = False
         out_buffer = []
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
-            date_match = self._re_match_date(self.line_as_list[0])
-            if not are_in_week:
-                self.have_sunday_date = None
+            date_match_obj = self._re_match_date(self.line_as_list[0])
+            if not in_week:
+                self.sunday_date = None
                 self.new_week = None
-                if date_match:
-                    are_in_week = self._look_for_week(date_match)
-            if are_in_week:  # 'if' is correct here
+                if date_match_obj:
+                    in_week = self._look_for_week(date_match_obj)
+            if in_week:  # 'if' is correct here
                 # output good data and discard bad data
-                are_in_week = self._handle_week(out_buffer)
+                in_week = self._handle_week(out_buffer)
         # handle any data left in buffer
         if out_buffer:
             self._handle_leftovers(out_buffer)
@@ -157,23 +157,23 @@ class Extract:
         """
         return re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
 
-    def _look_for_week(self, date_match):
+    def _look_for_week(self, date_match_obj):
         """
         Does current input line represent the start of a week?
 
-        :param date_match: a match object for a date in format dd/mm/yyyy
+        :param date_match_obj: a match object for a date in format dd/mm/yyyy
         :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
-        self.have_sunday_date = self._match_to_date_obj(date_match)
-        if self._is_a_sunday(self.have_sunday_date):
+        self.sunday_date = self._match_obj_to_date(date_match_obj)
+        if self._is_a_sunday(self.sunday_date):
             # set up a Week
             day_list = self._make_day_list()
             self.new_week = Week(*day_list)
         else:
             read_logger.warning('Non-Sunday date {} found in input'.
-                                format(self.have_sunday_date))
-            self.have_sunday_date = None
+                                format(self.sunday_date))
+            self.sunday_date = None
         return bool(self.new_week)
 
     @staticmethod
@@ -193,7 +193,7 @@ class Extract:
         :return: a list holding a week's worth of Day objects
         Called by: _look_for_week()
         """
-        return [Day(self.have_sunday_date +
+        return [Day(self.sunday_date +
                     datetime.timedelta(days=x),
                     [])  # [] will hold Event list for Day
                 for x in range(Extract.DAYS_IN_A_WEEK)]
@@ -228,7 +228,7 @@ class Extract:
         self._manage_output_buffer(out_buffer)
 
     @staticmethod
-    def _match_to_date_obj(m):
+    def _match_obj_to_date(m):
         """
         Convert a successful regex match to a datetime.date object
 
