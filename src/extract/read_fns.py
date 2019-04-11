@@ -118,7 +118,7 @@ class Extract:
         :param infile: A file handle open for read
         """
         self.infile = infile
-        self.sunday_date = None
+        # self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
 
@@ -135,10 +135,10 @@ class Extract:
             self.line_as_list = line.strip().split(',')[:22]
             date_match_obj = self._re_match_date(self.line_as_list[0])
             if not in_week:
-                self.sunday_date = None
+                # sunday_date = None
                 self.new_week = None
                 if date_match_obj:
-                    in_week = self._look_for_week(date_match_obj)
+                    in_week, sunday_date = self._look_for_week(date_match_obj)
             if in_week:  # 'if' is correct here
                 # output good data and discard bad data
                 in_week = self._handle_week(out_buffer)
@@ -165,16 +165,16 @@ class Extract:
         :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
-        self.sunday_date = self._match_obj_to_date(date_match_obj)
-        if self._is_a_sunday(self.sunday_date):
+        sunday_date = self._match_obj_to_date(date_match_obj)
+        if self._is_a_sunday(sunday_date):
             # set up a Week
-            day_list = self._make_day_list()
+            day_list = self._make_day_list(sunday_date)
             self.new_week = Week(*day_list)
         else:
             read_logger.warning('Non-Sunday date {} found in input'.
-                                format(self.sunday_date))
-            self.sunday_date = None
-        return bool(self.new_week)
+                                format(sunday_date))
+            sunday_date = None
+        return bool(self.new_week), sunday_date
 
     @staticmethod
     def _is_a_sunday(dt_date):
@@ -187,13 +187,14 @@ class Extract:
         """
         return dt_date.weekday() == Extract.SUNDAY if dt_date else False
 
-    def _make_day_list(self):
+    @staticmethod
+    def _make_day_list(sunday_date):
         """
 
         :return: a list holding a week's worth of Day objects
         Called by: _look_for_week()
         """
-        return [Day(self.sunday_date +
+        return [Day(sunday_date +
                     datetime.timedelta(days=x),
                     [])  # [] will hold Event list for Day
                 for x in range(Extract.DAYS_IN_A_WEEK)]

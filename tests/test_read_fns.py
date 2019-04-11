@@ -126,10 +126,9 @@ def test_re_match_date_rejects_date_with_alpha(extract):
     assert not date_match
 
 
-def test_look_for_week_returns_false_on_non_sunday_input(extract, caplog):
+def test_look_for_week_returns_false_and_none_on_non_sunday_input(extract, caplog):
     date_match = extract._re_match_date('11/14/2017')  # date is not a Sunday
-    assert not extract._look_for_week(date_match)
-    assert extract.sunday_date is None
+    assert extract._look_for_week(date_match) == (False, None)
     assert caplog.text.endswith('Non-Sunday date 2017-11-14 found in input\n')
 
 
@@ -147,8 +146,9 @@ def test_is_a_sunday_returns_false_on_non_sunday_input(extract):
 
 
 def test_make_day_list(extract):
-    extract.sunday_date = datetime.date(2016, 12, 11)
-    assert extract._make_day_list() == [Day(extract.sunday_date +
+    sunday_date = datetime.date(2016, 12, 11)
+    assert extract._make_day_list(sunday_date
+                                  ) == [Day(sunday_date +
                                         datetime.timedelta(days=x),
                                         [])  # [] will hold Event list for Day
                                         for x in range(Extract.DAYS_IN_A_WEEK)]
