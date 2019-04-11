@@ -359,8 +359,17 @@ class Extract:
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
                         r' hours: \d{1,2}\.\d{2}$', line)
 
+    # TODO: fix docstring
     @staticmethod
     def _get_no_data_line(out_buffer, buf_ix):
+        """
+
+        :param out_buffer:
+        :param buf_ix:
+        :return:
+        Called by: _discard_incomplete_night():w
+
+        """
         line_in = out_buffer.pop(buf_ix)
         line_in = line_in.replace('b', 'N', 1)
         line_as_list = line_in.split(',')
