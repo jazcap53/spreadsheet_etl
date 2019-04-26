@@ -90,20 +90,22 @@ import datetime
 import re
 import logging
 import sys
+from typing import Tuple, Optional, Union, List
+from datetime import date
 
 from container_objs import validate_segment, Week, Day, Event
+from tests.file_access_wrappers import FileReadAccessWrapper
+from io import TextIOWrapper
 
 
 read_logger = logging.getLogger('extract.read_fns')
 read_logger.setLevel('DEBUG')
 
 
-def open_infile(filename):
+def open_infile(filename: FileReadAccessWrapper) -> TextIOWrapper:
     """
+    Open input file.
     Left outside class so Extract.__init__() may accept an open file handle
-
-    :param filename: name of file to be read
-    :return: a file handle open for read
     Called by: client code
     """
     return filename.open()
@@ -113,20 +115,17 @@ class Extract:
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
-    def __init__(self, infile):
-        """
-        :param infile: A file handle open for read
-        """
+    def __init__(self, infile: TextIOWrapper) -> None:
+        """infile: open for read"""
         self.infile = infile
         # self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
 
-    def lines_in_weeks_out(self):
+    def lines_in_weeks_out(self) -> None:
         """
         Read lines from .csv file; output weeks, days, and events
 
-        :return: None
         Called by: client code
         """
         in_week = False
@@ -147,22 +146,19 @@ class Extract:
             self._handle_leftovers(out_buffer)
 
     @staticmethod
-    def _re_match_date(field):
+    def _re_match_date(field: str) -> re.match:
         """
         Check for a date at start of param 'field'.
 
-        :param field: a string
-        :return: a match object for a date in format dd/mm/yyyy
         Called by: lines_in_weeks_out()
         """
         return re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
 
-    def _look_for_week(self, date_match_obj):
+    def _look_for_week(self, date_match_obj: re.match) -> \
+            Tuple[bool, Optional[date]]:
         """
         Does current input line represent the start of a week?
 
-        :param date_match_obj: a match object for a date in format dd/mm/yyyy
-        :return: bool: True iff a week was found
         Called by: lines_in_weeks_out()
         """
         sunday_date = self._match_obj_to_date(date_match_obj)
@@ -177,21 +173,19 @@ class Extract:
         return bool(self.new_week), sunday_date
 
     @staticmethod
-    def _is_a_sunday(dt_date):
+    def _is_a_sunday(dt_date: Optional[datetime.datetime]) -> Union[int, bool]:
         """
         Tell whether the parameter represents a Sunday
 
-        :param dt_date: a datetime.date object
-        :return: bool: is dt_date a Sunday
         Called by: _look_for_week()
         """
         return dt_date.weekday() == Extract.SUNDAY if dt_date else False
 
     @staticmethod
-    def _make_day_list(sunday_date):
+    def _make_day_list(sunday_date: date) -> List[Day]:
         """
+        Make a week's worth of Day objects
 
-        :return: a list holding a week's worth of Day objects
         Called by: _look_for_week()
         """
         return [Day(sunday_date +
@@ -199,7 +193,7 @@ class Extract:
                     [])  # [] will hold Event list for Day
                 for x in range(Extract.DAYS_IN_A_WEEK)]
 
-    def _handle_week(self, out_buffer):
+    def _handle_week(self, out_buffer: list) -> bool:
         """
         if there are valid events in self.line_as_list:
             call self._get_events() to store them as Event objects in Week
@@ -207,8 +201,8 @@ class Extract:
         else:
             call self._manage_output_buffer() to write good data, discard
             incomplete data from self.output_buffer
+        return False iff our week is over
 
-        :return: bool: True iff our week is not over
         Called by: lines_in_weeks_out()
         """
         have_events = False
@@ -218,22 +212,20 @@ class Extract:
             self._manage_output_buffer(out_buffer)
         return have_events
 
-    def _handle_leftovers(self, out_buffer):
+    def _handle_leftovers(self, out_buffer: list) -> None:
         """
         If there is data left in output_buffer, calls
                 self._manage_output_buffer().
 
-        :return: None
         Called by: lines_in_weeks_out()
         """
         self._manage_output_buffer(out_buffer)
 
     @staticmethod
-    def _match_obj_to_date(m):
+    def _match_obj_to_date(m: re.match) -> Optional[date]:
         """
         Convert a successful regex match to a datetime.date object
 
-        :return: a datetime.date object
         Called by: lines_in_weeks_out()
         """
         if m:
@@ -243,11 +235,11 @@ class Extract:
         else:
             return None
 
-    def _get_events(self):
+    def _get_events(self) -> bool:
         """
         Add each valid event in self.line_as_list to self.new_week.
 
-        :return: bool: True iff we successfully read at least one event
+        return True iff we successfully read at least one event
                        from self.line_as_list
         Called by: _handle_week()
         """
@@ -272,7 +264,7 @@ class Extract:
         return have_events
 
     # TODO: explain
-    def _manage_output_buffer(self, out_buffer):
+    def _manage_output_buffer(self, out_buffer: list) -> None:
         """
         Convert the Events in self.new_week into strings, place the strings
         into output buffer, and pass output buffer to _write_or_discard_night()
@@ -293,38 +285,32 @@ class Extract:
                         self._write_or_discard_night(event, day.dt_date, out_buffer)
                     out_buffer.append(event_str)
 
-    def _get_week_header(self):
+    def _get_week_header(self) -> str:
         """
 
-        :return:
-        Called by:
+        Called by: _manage_output_buffer()
         """
         wk_header = '\nWeek of Sunday, {}:'.format(self.new_week[0].dt_date)
         wk_header += '\n' + '=' * (len(wk_header) - 2)
         return wk_header
 
     @staticmethod
-    def _get_day_header(day):
+    def _get_day_header(day: Day) -> str:
         """
 
-        :param day:
-        :return:
         Called by: _manage_output_buffer()
         """
         return '    {}'.format(day.dt_date)  # four leading spaces
 
-    def _write_or_discard_night(self, action_b_event, datetime_date,
-                                out_buffer, outfile=sys.stdout):
+    def _write_or_discard_night(self, action_b_event: Event,
+                                datetime_date: date,
+                                out_buffer: list,
+                                outfile: TextIOWrapper = sys.stdout) -> None:
         """
-        Write (only) complete nights from buffer to out.
+        Write (only) complete nights from out_buffer to outfile.
 
-        :param action_b_event: is the first Event for some night.
-                               action_b_event will have an 'hours' field iff
-                               we have complete data for the preceding night.
-        :param datetime_date: a datetime.date
-        :param out_buffer: the output buffer
-        :param outfile: output destination
-        :return: None
+        action_b_event is the first Event for some night. It will have an
+        'hours' field iff we have complete data for the preceding night.
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
@@ -335,12 +321,22 @@ class Extract:
             self._discard_incomplete_night(out_buffer, outfile)
 
     @staticmethod
-    def _write_complete_night(out_buffer, outfile):
+    def _write_complete_night(out_buffer: list, outfile: TextIOWrapper) \
+            -> None:
+        """
+
+        Called by: _write_or_discard_night()
+        """
         for line in out_buffer:
             print(line, file=outfile)
         out_buffer.clear()
 
-    def _discard_incomplete_night(self, out_buffer, outfile):
+    def _discard_incomplete_night(self, out_buffer: list,
+                                  outfile: TextIOWrapper) -> None:
+        """
+
+        Called by: _write_or_discard_night()
+        """
         # pop incomplete data from end of output buffer
         for buf_ix in range(len(out_buffer) - 1, -1, -1):
             this_line = out_buffer[buf_ix]
@@ -352,7 +348,7 @@ class Extract:
                 out_buffer.pop(buf_ix)  # leave headers in buffer
 
     @staticmethod
-    def _match_complete_b_event_line(line):
+    def _match_complete_b_event_line(line: str) -> re.match:
         """
         Called by: _write_or_discard_night()
         """
@@ -361,24 +357,23 @@ class Extract:
 
     # TODO: fix docstring
     @staticmethod
-    def _get_no_data_line(out_buffer, buf_ix):
+    def _get_no_data_line(out_buffer: list, buf_ix: int) -> str:
         """
 
         :param out_buffer:
         :param buf_ix:
         :return:
-        Called by: _discard_incomplete_night():w
-
+        Called by: _discard_incomplete_night()
         """
         line_in = out_buffer.pop(buf_ix)
         line_in = line_in.replace('b', 'N', 1)
         line_as_list = line_in.split(',')
         line_as_list[1] = line_in[11:22]  # time
-        line_as_list[2] = 'hours: 0.00'
+        line_as_list[2] = 'hours: 0.00'  # duration
         return ', '.join(line_as_list)
 
     @staticmethod
-    def _match_event_line(line):
+    def _match_event_line(line: str) -> re.match:
         """
         Called by: _write_or_discard_night()
         """
