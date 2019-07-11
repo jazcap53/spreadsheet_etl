@@ -13,6 +13,7 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
+import sys
 import fileinput
 import logging
 import logging.handlers
@@ -165,6 +166,8 @@ class Transform:
             transform_logger.warning('Invalid quarter {} in do_transform.py '
                                      'quarter_hour_to_decimal()'.
                                      format(quarter))
+            quarter = Transform.get_closest_quarter(quarter)
+
         decimal_quarter = None
         if quarter == 15:
             decimal_quarter = '.25'
@@ -176,6 +179,17 @@ class Transform:
             decimal_quarter = '.00'
         return decimal_quarter
 
+    @staticmethod
+    def get_closest_quarter(q):
+        if q < 8:
+            closest_quarter = 0
+        elif 8 <= q < 23:
+            closest_quarter = 15
+        elif 23 <= q < 37:
+            closest_quarter = 30
+        else:
+            closest_quarter = 45
+        return closest_quarter
 
 def main():
     # from: https://docs.python.org/3/howto/
