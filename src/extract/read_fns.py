@@ -94,7 +94,7 @@ from typing import Tuple, Optional, Union, List
 from datetime import date
 
 from container_objs import validate_segment, Week, Day, Event
-from tests.file_access_wrappers import FileReadAccessWrapper
+# from tests.file_access_wrappers import FileReadAccessWrapper
 from io import TextIOWrapper
 
 
@@ -102,7 +102,7 @@ read_logger = logging.getLogger('extract.read_fns')
 read_logger.setLevel('DEBUG')
 
 
-def open_infile(filename: FileReadAccessWrapper) -> TextIOWrapper:
+def open_infile(filename) -> TextIOWrapper:
     """
     Open input file.
     Left outside class so Extract.__init__() may accept an open file handle
