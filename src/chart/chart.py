@@ -227,7 +227,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/chart_raw_data_2019-03-23.txt')
+                  'xtraneous/chart_raw_data_2019-09-03.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
