@@ -121,6 +121,7 @@ class Extract:
         # self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
+        self.in_missing_data = False  # TODO: new 2019-09-03
 
     def lines_in_weeks_out(self) -> None:
         """
@@ -134,10 +135,9 @@ class Extract:
             self.line_as_list = line.strip().split(',')[:22]
             date_match_obj = self._re_match_date(self.line_as_list[0])
             if not in_week:
-                # sunday_date = None
                 self.new_week = None
                 if date_match_obj:
-                    in_week, sunday_date = self._look_for_week(date_match_obj)
+                    in_week = self._look_for_week(date_match_obj)
             if in_week:  # 'if' is correct here
                 # output good data and discard bad data
                 in_week = self._handle_week(out_buffer)
@@ -155,7 +155,7 @@ class Extract:
         return re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', field)
 
     def _look_for_week(self, date_match_obj: re.match) -> \
-            Tuple[bool, Optional[date]]:
+            bool:
         """
         Does current input line represent the start of a week?
 
@@ -169,8 +169,7 @@ class Extract:
         else:
             read_logger.warning('Non-Sunday date {} found in input'.
                                 format(sunday_date))
-            sunday_date = None
-        return bool(self.new_week), sunday_date
+        return bool(self.new_week)
 
     @staticmethod
     def _is_a_sunday(dt_date: Optional[datetime.datetime]) -> Union[int, bool]:
@@ -320,14 +319,18 @@ class Extract:
                              format(datetime_date))
             self._discard_incomplete_night(out_buffer, outfile)
 
-    @staticmethod
-    def _write_complete_night(out_buffer: list, outfile: TextIOWrapper) \
+    def _write_complete_night(self, out_buffer: list, outfile: TextIOWrapper) \
             -> None:
         """
-
+        Write a complete night from output buffer to outfile
+        # TODO: break this into 2 functions (?)  CHECK LINE THAT CAUSES ERROR
         Called by: _write_or_discard_night()
         """
         for line in out_buffer:
+            if self.in_missing_data:
+                if line.startswith('action: b'):
+                    line = line.replace('b', 'Y', 1)  # TODO: CHECK THIS !!!
+                    self.in_missing_data = False
             print(line, file=outfile)
         out_buffer.clear()
 
@@ -346,6 +349,7 @@ class Extract:
                 print(no_data_line, file=outfile)
             elif self._match_event_line(this_line):  # pop only Event lines
                 out_buffer.pop(buf_ix)  # leave headers in buffer
+        self.in_missing_data = True
 
     @staticmethod
     def _match_complete_b_event_line(line: str) -> re.match:

@@ -100,6 +100,12 @@ class Transform:
             self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
                                                           self.last_sleep_time,
                                                           'true', 'false')
+        elif line.startswith('action: Y'):
+            self.last_sleep_time = self.get_time_part_from(line)
+            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
+                                                          self.last_sleep_time,
+                                                          'false', 'true')
+
 
     def output_val(self):
         print(self.out_val)
