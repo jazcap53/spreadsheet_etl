@@ -23,13 +23,13 @@ class Chart:
     def __init__(self, filename):
         self.filename = filename
         self.infile = None
-        self.current_line = ''
+        self.curr_line = ''
         self.prev_line = ''
         self.sleep_state = NO_DATA  # TODO: was AWAKE
         self.date_re = None
         self.quarters_carried = 0
         self.output_row = [NO_DATA] * QS_IN_DAY
-        # self.current_output_row = []
+        # self.curr_output_row = []
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
         self.input_date = ''
@@ -56,12 +56,12 @@ class Chart:
         :return: bool
         Called by: read_file()
         """
-        self.current_line = self.infile.readline().rstrip()
+        self.curr_line = self.infile.readline().rstrip()
         if not self.header_seen:
             self.skip_header()
-        while self.current_line[14:22] == ' ' * 8:
-            self.current_line = self.infile.readline().rstrip()
-        return bool(self.current_line)
+        while self.curr_line[14:22] == ' ' * 8:
+            self.curr_line = self.infile.readline().rstrip()
+        return bool(self.curr_line)
 
     def skip_header(self):
         """
@@ -70,8 +70,8 @@ class Chart:
         :return:
         Called by: get_a_line()
         """
-        while self.current_line and not self.date_re.match(self.current_line):
-            self.current_line = self.infile.readline().rstrip()
+        while self.curr_line and not self.date_re.match(self.curr_line):
+            self.curr_line = self.infile.readline().rstrip()
         self.header_seen = True
 
     def parse_input_line(self):
@@ -83,7 +83,7 @@ class Chart:
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         Called by: read_file()
         """
-        line_array = self.current_line.split('|')  # current_line[-1] may be '|'
+        line_array = self.curr_line.split('|')  # curr_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
         if len(line_array) < 2:  # we've reached '(dddd rows)': end of input
             return None, Triple(None, None, None)
@@ -107,15 +107,15 @@ class Chart:
         
         while True:
             try:
-                current_triple = Triple(*next(read_file_iterator))
-                if current_triple.start is None:
+                curr_triple = Triple(*next(read_file_iterator))
+                if curr_triple.start is None:
                     return
             except RuntimeError:
                 return
 
-            row_out, len_segment = self.write_leading_blanks(current_triple, row_out)
+            row_out, len_segment = self.write_leading_blanks(curr_triple, row_out)
             spaces_left_now = self.spaces_left
-            row_out = self.insert_to_row_out(current_triple, row_out)
+            row_out = self.insert_to_row_out(curr_triple, row_out)
             if len_segment >= spaces_left_now:
                 self.write_output(row_out)
                 row_out = self.output_row[:]
@@ -123,36 +123,36 @@ class Chart:
             if self.quarters_carried:
                 row_out = self.handle_quarters_carried(row_out)
 
-    def write_leading_blanks(self, cur_triple, row_out):
+    def write_leading_blanks(self, curr_triple, row_out):
         """
-        Write blanks onto row_out from current posn to start of cur_triple.
-        :param cur_triple:
+        Write blanks onto row_out from current posn to start of curr_triple.
+        :param curr_triple:
         :param row_out:
         :return:
         Called by: make_output()
         """
-        len_segment = cur_triple.length
-        current_posn = QS_IN_DAY - self.spaces_left
-        if current_posn < cur_triple.start:
-            triple_to_insert = Triple(current_posn,
-                                      cur_triple.start - current_posn, AWAKE)
+        len_segment = curr_triple.length
+        curr_posn = QS_IN_DAY - self.spaces_left
+        if curr_posn < curr_triple.start:
+            triple_to_insert = Triple(curr_posn,
+                                      curr_triple.start - curr_posn, AWAKE)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
         else:
-            triple_to_insert = Triple(current_posn,
-                                      QS_IN_DAY - current_posn, AWAKE)
+            triple_to_insert = Triple(curr_posn,
+                                      QS_IN_DAY - curr_posn, AWAKE)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
             self.write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
-            if cur_triple.start > 0:
-                triple_to_insert = Triple(0, cur_triple.start, AWAKE)
+            if curr_triple.start > 0:
+                triple_to_insert = Triple(0, curr_triple.start, AWAKE)
                 row_out = self.insert_to_row_out(triple_to_insert, row_out)
         return row_out, len_segment
 
-    def handle_quarters_carried(self, current_output_row):
-        current_output_row = self.insert_to_row_out(Triple(0, self.quarters_carried, ASLEEP), current_output_row)
+    def handle_quarters_carried(self, curr_output_row):
+        curr_output_row = self.insert_to_row_out(Triple(0, self.quarters_carried, ASLEEP), curr_output_row)
         self.quarters_carried = 0
-        return current_output_row
+        return curr_output_row
 
     def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
@@ -164,7 +164,7 @@ class Chart:
             self.spaces_left -= 1
         return output_row
 
-    def get_current_posn(self):
+    def get_curr_posn(self):
         return QS_IN_DAY - self.spaces_left
 
     def write_output(self, my_output_row):
@@ -196,7 +196,7 @@ class Chart:
     @staticmethod
     def time_or_interval_str_to_int(my_str):
         """
-        Obtain from self.current_interval the number of 15-minute chunks it contains
+        Obtain from self.curr_interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
         Called by: read_file()
         """
