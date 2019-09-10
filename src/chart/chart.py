@@ -25,7 +25,7 @@ class Chart:
         self.infile = None
         self.current_line = ''
         self.prev_line = ''
-        self.sleep_state = AWAKE
+        self.sleep_state = NO_DATA  # TODO: was AWAKE
         self.date_re = None
         self.quarters_carried = 0
         self.output_row = [NO_DATA] * QS_IN_DAY
@@ -85,7 +85,7 @@ class Chart:
         """
         line_array = self.current_line.split('|')  # current_line[-1] may be '|'
         line_array = list(map(str.strip, line_array))  # so strip() now
-        if len(line_array) < 2:  # we've reached '(dddd rows)'
+        if len(line_array) < 2:  # we've reached '(dddd rows)': end of input
             return None, Triple(None, None, None)
         date_in = line_array[0]
         start = self.time_or_interval_str_to_int(line_array[1])
@@ -201,10 +201,9 @@ class Chart:
         Called by: read_file()
         """
         if my_str:
-            return (int(my_str[:2]) * 4 +
+            return (int(my_str[:2]) * 4 +  # 4 chunks per hour
                     int(my_str[3:5]) // 15) % QS_IN_DAY
-        else:
-            return 0
+        return 0
 
     def compile_date_re(self):
         """
@@ -227,7 +226,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/chart_raw_data_2019-09-03.txt')
+                  'xtraneous/chart_raw_data_2019-09-09.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
