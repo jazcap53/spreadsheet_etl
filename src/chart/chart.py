@@ -90,6 +90,8 @@ class Chart:
         date_in = line_array[0]
         start = self.time_or_interval_str_to_int(line_array[1])
         length = self.time_or_interval_str_to_int(line_array[2])
+        # TODO: write a self.set_symbol(line_array) function -- call it
+        #       wherever a symbol must be output (???) OR call it below only (???)
         symbol = ASLEEP
         return date_in, Triple(start, length, symbol)
 
@@ -108,17 +110,17 @@ class Chart:
         while True:
             try:
                 curr_triple = Triple(*next(read_file_iterator))
-                if curr_triple.start is None:
+                if curr_triple.start is None:  # reached end of input
                     return
             except RuntimeError:
                 return
 
-            row_out, len_segment = self.write_leading_blanks(curr_triple, row_out)
+            row_out = self.write_leading_blanks(curr_triple, row_out)
             spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
-            if len_segment >= spaces_left_now:
+            if curr_triple.length >= spaces_left_now:
                 self.write_output(row_out)
-                row_out = self.output_row[:]
+                row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
                 row_out = self.handle_quarters_carried(row_out)
@@ -131,7 +133,6 @@ class Chart:
         :return:
         Called by: make_output()
         """
-        len_segment = curr_triple.length
         curr_posn = QS_IN_DAY - self.spaces_left
         if curr_posn < curr_triple.start:
             triple_to_insert = Triple(curr_posn,
@@ -147,10 +148,11 @@ class Chart:
             if curr_triple.start > 0:
                 triple_to_insert = Triple(0, curr_triple.start, AWAKE)
                 row_out = self.insert_to_row_out(triple_to_insert, row_out)
-        return row_out, len_segment
+        return row_out
 
     def handle_quarters_carried(self, curr_output_row):
-        curr_output_row = self.insert_to_row_out(Triple(0, self.quarters_carried, ASLEEP), curr_output_row)
+        curr_output_row = self.insert_to_row_out(
+                Triple(0, self.quarters_carried, ASLEEP), curr_output_row)
         self.quarters_carried = 0
         return curr_output_row
 
