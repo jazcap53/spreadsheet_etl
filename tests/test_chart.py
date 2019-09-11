@@ -52,7 +52,7 @@ def test_global_constants_have_good_values():
 
 def test_ctor_creates_instance_vars(make_chart):
     assert make_chart.filename is not None
-    assert make_chart.current_line is ''
+    assert make_chart.curr_line is ''
 
 
 def test_get_a_line(open_input_file, make_chart):
@@ -60,7 +60,7 @@ def test_get_a_line(open_input_file, make_chart):
     make_chart.infile = open_input_file
     make_chart.compile_date_re()
     make_chart.get_a_line()
-    assert make_chart.current_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
+    assert make_chart.curr_line == ' 2016-12-07 | 23:45:00 | 04:00:00 |      1'
 
 
 def test_get_a_line_again(open_input_file, make_chart):
@@ -69,7 +69,7 @@ def test_get_a_line_again(open_input_file, make_chart):
     make_chart.compile_date_re()
     make_chart.get_a_line()
     make_chart.get_a_line()
-    assert make_chart.current_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
+    assert make_chart.curr_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
 
 
 def test_ctor_makes_a_chart(input_file='/home/jazcap53/python_projects/' +
