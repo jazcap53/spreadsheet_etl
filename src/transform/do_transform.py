@@ -106,7 +106,6 @@ class Transform:
                                                           self.last_sleep_time,
                                                           'false', 'true')
 
-
     def output_val(self):
         print(self.out_val)
         self.out_val = None

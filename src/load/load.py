@@ -74,7 +74,7 @@ def store_nights_naps(connection, my_line):
     line_list = my_line.rstrip().split(', ')
     if line_list[0] == 'NIGHT':
         result = connection.execute(
-            func.sl_insert_night(line_list[1], line_list[2], line_list[3], line_list[4])
+            func.sl_insert_night(*line_list[1:])
         )
         load_logger.debug(result)
         success = True
