@@ -36,6 +36,7 @@ class Chart:
         self.output_date = '2016-12-06'
         self.date_advanced = 0
         self.curr_sunday = ''
+        self.date_in = None
 
     def read_file(self):
         """
@@ -46,13 +47,15 @@ class Chart:
         Called by: main()
         """
         with open(self.filename) as self.infile:
-            while self.get_a_line():
+            ctr = 0
+            while self.get_a_line() and ctr < 100:
                 self.input_date, parsed_input_line = self.parse_input_line()
                 yield parsed_input_line  # parsed_input_line is a Triple
+                ctr += 1
 
     def get_a_line(self):
         """
-        Get next input line
+        Get next input line, discarding blank lines and '======'s
 
         :return: bool
         Called by: read_file()
@@ -69,25 +72,32 @@ class Chart:
     def parse_input_line(self):
         """
 
-        :return: a Triple holding
+        :return: a date, and a Triple holding
                      a start position,
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         Called by: read_file()
         """
         line_array = self.curr_line.split(',')
+        if len(line_array) == 1:
+            self.date_in = line_array[0]  # TODO: should date_in be a data member?
+            return self.date_in, Triple(0, 8, NO_DATA)
+        else:  # len(line_array) == 2:
+            # TODO: duration must come from line_array[2] of subsequent line, or from
+            #       a wake:sleep interval
+            duration = 0
+            action = line_array[0][-1]
+            act_time = self.get_time_part_from(self.curr_line)
+            start = self.get_num_chunks(line_array[1])  # TODO: get start posn from line_array[1]
+            if len(line_array) > 2:
+                duration = self.get_num_chunks(line_array[2])
 
-        # date_in = line_array[0]
-        # start = self.time_or_interval_str_to_int(line_array[1])
-        # length = self.time_or_interval_str_to_int(line_array[2])
         # TODO: write a self.set_symbol(line_array) function -- call it
         #       wherever a symbol must be output (???) OR call it below only (???)
 
-        print(line_array)  # TEMPORARY
-
-        symbol = ASLEEP
-        # return date_in, Triple(start, length, symbol)
-        return '2019-09-12', Triple(0, 4, symbol)
+            symbol = ASLEEP
+            print(self.date_in, Triple(start, duration, symbol))
+            return '2019-09-12', Triple(0, 4, symbol)
 
 
 
@@ -234,15 +244,18 @@ class Chart:
         return self.advance_date(my_output_date, True)
 
     @staticmethod
-    def time_or_interval_str_to_int(my_str):
+    def get_num_chunks(my_str):
         """
         Obtain from self.curr_interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
         Called by: read_file()
         """
         if my_str:
-            return (int(my_str[:2]) * 4 +  # 4 chunks per hour
-                    int(my_str[3:5]) // 15) % QS_IN_DAY
+            m = re.search(r'(\d{1,2})(?:\.|:)(\d{2})', my_str)  # TODO: compile this
+            return (int(m.group(1)) * 4 +  # 4 chunks per hour
+                    int(m.group(2)) // 15) % QS_IN_DAY
+            # return (int(my_str[:2]) * 4 +  # 4 chunks per hour
+            #         int(my_str[3:5]) // 15) % QS_IN_DAY
         return 0
 
     def compile_date_re(self):
