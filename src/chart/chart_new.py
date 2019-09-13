@@ -33,10 +33,13 @@ class Chart:
         # self.header_seen = False
         self.spaces_left = QS_IN_DAY
         self.input_date = ''
+        self.last_date_read = None
+        self.last_sleep_time = None
         self.output_date = '2016-12-06'
         self.date_advanced = 0
         self.curr_sunday = ''
         self.date_in = None
+        self.last_start_posn = None
 
     def read_file(self):
         """
@@ -49,7 +52,10 @@ class Chart:
         with open(self.filename) as self.infile:
             ctr = 0
             while self.get_a_line() and ctr < 100:
-                self.input_date, parsed_input_line = self.parse_input_line()
+                # self.input_date, parsed_input_line = self.parse_input_line()
+                parsed_input_line = self.parse_input_line()
+                if parsed_input_line.start == -1:
+                    continue
                 yield parsed_input_line  # parsed_input_line is a Triple
                 ctr += 1
 
@@ -71,58 +77,86 @@ class Chart:
 
     def parse_input_line(self):
         """
-
-        :return: a date, and a Triple holding
-                     a start position,
-                     a count of quarter hours,
-                     a unicode character (ASLEEP, AWAKE, NO_DATA)
+        # TODO: use self.handle_action_line() instead of this (?)
+        :return: a Triple holding
+                     a start position, (start)
+                     a count of quarter hours, (length)
+                     a unicode character (ASLEEP, AWAKE, NO_DATA) (symbol)
         Called by: read_file()
         """
-        line_array = self.curr_line.split(',')
-        if len(line_array) == 1:
-            self.date_in = line_array[0]  # TODO: should date_in be a data member?
-            return self.date_in, Triple(0, 8, NO_DATA)
-        else:  # len(line_array) == 2:
+        if self.curr_line and re.match(r'\d{4}-\d{2}-\d{2}$', self.curr_line):
+            self.last_date_read = self.curr_line
+            # return Triple(0, 4, NO_DATA)
+            return Triple(-1, -1, -1)
+
+        else:
+            return self.handle_action_line(self.curr_line)
+
             # TODO: duration must come from line_array[2] of subsequent line, or from
             #       a wake:sleep interval
-            duration = 0
-            action = line_array[0][-1]
-            act_time = self.get_time_part_from(self.curr_line)
-            start = self.get_num_chunks(line_array[1])  # TODO: get start posn from line_array[1]
-            if len(line_array) > 2:
-                duration = self.get_num_chunks(line_array[2])
+            # duration = 0
+            # action = line_array[0][-1]
+            # act_time = self.get_time_part_from(self.curr_line)
+            # start = self.get_num_chunks(line_array[1])  # TODO: get start posn from line_array[1]
+            # if len(line_array) > 2:
+            #     duration = self.get_num_chunks(line_array[2])
 
         # TODO: write a self.set_symbol(line_array) function -- call it
         #       wherever a symbol must be output (???) OR call it below only (???)
 
-            symbol = ASLEEP
-            print(self.date_in, Triple(start, duration, symbol))
-            return '2019-09-12', Triple(0, 4, symbol)
-
+            # symbol = ASLEEP
+            # print(self.date_in, Triple(self.last_date_read, 8, symbol))
+            #return '2019-09-12', Triple(0, 4, symbol)
+            # return Triple(0, 16, symbol)
 
 
     def handle_action_line(self, line):
+        """
+        Note: don't return the date (as of 2019-09-13)
+        If a complete Triple is not yet available, return the date just read and a
+        Triple with values (-1, -1, -1).
+        If a complete Triple is available, return None for the date (use previous date)
+        and the complete Triple.
+
+         :return: a date, and a Triple holding
+                     a start position,
+                     a count of quarter hours,
+                     a unicode character (ASLEEP, AWAKE, NO_DATA)
+        :param line:
+        :return:
+        """
         if line.startswith('action: b'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
-                                                          self.last_sleep_time,
-                                                          'false', 'false')
-        elif line.startswith('action: s'):
+            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            if self.sleep_state != NO_DATA:
+                self.sleep_state = ASLEEP
+            return Triple(-1, -1, -1)
+        elif line.startswith('action: s'):  # TODO: this is the same as for `action: b`
             self.last_sleep_time = self.get_time_part_from(line)
+            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            if self.sleep_state != NO_DATA:
+                self.sleep_state = ASLEEP
+            return Triple(-1, -1, -1)
+
         elif line.startswith('action: w'):
             wake_time = self.get_time_part_from(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
-            self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
+            length = self.get_num_chunks_or_start_posn(duration)
+            self.sleep_state = AWAKE
+            return Triple(self.last_start_posn, length, ASLEEP)
+            # self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
         elif line.startswith('action: N'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
+            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date_read,
                                                           self.last_sleep_time,
                                                           'true', 'false')
         elif line.startswith('action: Y'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date,
+            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date_read,
                                                           self.last_sleep_time,
                                                           'false', 'true')
+        return Triple(-1, -1, -1)
 
     @staticmethod
     def get_time_part_from(cur_l):
@@ -138,6 +172,74 @@ class Chart:
         if len(out_time) == 4:
             out_time = '0' + out_time
         return out_time
+
+    @staticmethod
+    def get_duration(w_time, s_time):
+        """
+        Calculate the interval between w_time and s_time.
+
+        Arguments are strings representing times in 'hh:mm' format.
+        get_duration() calculates the interval between them as a
+        string in decimal format e.g.,
+            04.25 for 4 1/4 hours
+        Called by: process_curr()
+        Returns: the calculated interval, whose value will be
+                non-negative.
+        """
+        w_time_list = list(map(int, w_time.split(':')))
+        s_time_list = list(map(int, s_time.split(':')))
+        if w_time_list[1] < s_time_list[1]:  # wake minute < sleep minute
+            w_time_list[1] += 60
+            w_time_list[0] -= 1
+        if w_time_list[0] < s_time_list[0]:  # wake hour < sleep hour
+            w_time_list[0] += 24
+        dur_list = [(w_time_list[x] - s_time_list[x])
+                    for x in range(len(w_time_list))]
+        duration = str(dur_list[0])
+        if len(duration) == 1:  # change hour from '1' to '01', e.g.
+            duration = '0' + duration
+        # TODO: (perhaps) make quarter_hour_to_decimal() a method of Chart
+        duration += Chart.quarter_hour_to_decimal(dur_list[1])
+        return duration
+
+    @staticmethod
+    def quarter_hour_to_decimal(quarter):
+        """
+        Convert an integer number of minutes into a decimal string
+
+        Argument is a number of minutes past the hour. If that number
+        is a quarter-hour, convert it to a decimal quarter represented
+        as a string.
+
+        Called by: get_duration()
+        Returns: a number of minutes represented as a decimal fraction
+        """
+        valid_quarters = (0, 15, 30, 45)
+        if quarter not in valid_quarters:
+            quarter = Chart.get_closest_quarter(quarter)
+
+        decimal_quarter = None
+        if quarter == 15:
+            decimal_quarter = '.25'
+        elif quarter == 30:
+            decimal_quarter = '.50'
+        elif quarter == 45:
+            decimal_quarter = '.75'
+        elif quarter == 0:
+            decimal_quarter = '.00'
+        return decimal_quarter
+
+    @staticmethod
+    def get_closest_quarter(q):
+        if q < 8:
+            closest_quarter = 0
+        elif 8 <= q < 23:
+            closest_quarter = 15
+        elif 23 <= q < 37:
+            closest_quarter = 30
+        else:
+            closest_quarter = 45
+        return closest_quarter
 
 
 
@@ -167,7 +269,7 @@ class Chart:
             spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
             if curr_triple.length >= spaces_left_now:
-                self.write_output(row_out)  # TODO: ADVANCES self.output_date
+                # self.write_output(row_out)  # TODO: ADVANCES self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
@@ -190,7 +292,7 @@ class Chart:
             triple_to_insert = Triple(curr_posn,
                                       QS_IN_DAY - curr_posn, AWAKE)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            self.write_output(row_out)
+            self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
             if curr_triple.start > 0:
@@ -227,8 +329,9 @@ class Chart:
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
-        self.output_date = self.advance_output_date(self.output_date)
-        print(f'{self.output_date} |{"".join(extended_output_row)}|')
+        # self.output_date = self.advance_output_date(self.output_date)
+        # print(f'{self.output_date} |{"".join(extended_output_row)}|')
+        print(f'{self.last_date_read} |{"".join(extended_output_row)}|')
 
     def advance_date(self, my_date, make_ruler=False):
         date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
@@ -244,14 +347,17 @@ class Chart:
         return self.advance_date(my_output_date, True)
 
     @staticmethod
-    def get_num_chunks(my_str):
+    def get_num_chunks_or_start_posn(my_str):
         """
-        Obtain from self.curr_interval the number of 15-minute chunks it contains
+        Obtain from an interval the number of 15-minute chunks it contains
+        or
+        Obtain from a time string its starting position in an output day
         :return: int: the number of chunks
         Called by: read_file()
         """
         if my_str:
             m = re.search(r'(\d{1,2})(?:\.|:)(\d{2})', my_str)  # TODO: compile this
+            assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
                     int(m.group(2)) // 15) % QS_IN_DAY
             # return (int(my_str[:2]) * 4 +  # 4 chunks per hour
