@@ -34,8 +34,9 @@ class Chart:
         self.spaces_left = QS_IN_DAY
         self.input_date = ''
         self.last_date_read = None
+        # self.prev_date_read = None
         self.last_sleep_time = None
-        self.output_date = '2016-12-06'
+        self.output_date = '2016-12-04'
         self.date_advanced = 0
         self.curr_sunday = ''
         self.date_in = None
@@ -85,10 +86,20 @@ class Chart:
         Called by: read_file()
         """
         if self.curr_line and re.match(r'\d{4}-\d{2}-\d{2}$', self.curr_line):
-            self.last_date_read = self.curr_line
-            # return Triple(0, 4, NO_DATA)
-            return Triple(-1, -1, -1)
-
+            if self.last_date_read is None:
+                self.last_start_posn = 0
+                self.last_date_read = self.curr_line
+                return Triple(-1, -1, -1)
+            else:
+                if self.sleep_state == NO_DATA:
+                    quarters_to_output = QS_IN_DAY - self.last_start_posn
+                    # self.last_start_posn = 0
+                    # self.last_date_read = self.curr_line
+                    return Triple(self.last_start_posn, quarters_to_output,
+                                  NO_DATA)
+                else:
+                    self.last_date_read = self.curr_line
+                    return Triple(-1, -1, -1)
         else:
             return self.handle_action_line(self.curr_line)
 
@@ -137,26 +148,22 @@ class Chart:
             if self.sleep_state != NO_DATA:
                 self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
-
         elif line.startswith('action: w'):
             wake_time = self.get_time_part_from(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks_or_start_posn(duration)
             self.sleep_state = AWAKE
             return Triple(self.last_start_posn, length, ASLEEP)
-            # self.out_val = 'NAP, {}, {}'.format(self.last_sleep_time, duration)
         elif line.startswith('action: N'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date_read,
-                                                          self.last_sleep_time,
-                                                          'true', 'false')
+            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.sleep_state = NO_DATA
+            return Triple(-1, -1, -1)
         elif line.startswith('action: Y'):
             self.last_sleep_time = self.get_time_part_from(line)
             self.last_start_posn = self.get_num_chunks_or_start_posn(line)
-            self.out_val = 'NIGHT, {}, {}, {}, {}'.format(self.last_date_read,
-                                                          self.last_sleep_time,
-                                                          'false', 'true')
-        return Triple(-1, -1, -1)
+            self.sleep_state = ASLEEP
+            return Triple(-1, -1, -1)
 
     @staticmethod
     def get_time_part_from(cur_l):
@@ -265,15 +272,41 @@ class Chart:
             except StopIteration:
                 return
 
-            row_out = self.write_leading_blanks(curr_triple, row_out)
-            spaces_left_now = self.spaces_left
+            row_out = self.write_leading_sleep_states(curr_triple, row_out)
+            # spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
-            if curr_triple.length >= spaces_left_now:
-                # self.write_output(row_out)  # TODO: ADVANCES self.output_date
+            if curr_triple.length >= self.spaces_left:
+                self.write_output(row_out)  # TODO: ADVANCES self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried:
                 row_out = self.handle_quarters_carried(row_out)
+
+    def write_leading_sleep_states(self, curr_triple, row_out):
+        """
+                Write sleep states onto row_out from current posn to start of curr_triple.
+                :param curr_triple:
+                :param row_out:
+                :return:
+                Called by: make_output()
+                """
+        curr_posn = QS_IN_DAY - self.spaces_left
+        if curr_posn < curr_triple.start:
+            triple_to_insert = Triple(curr_posn,
+                                      curr_triple.start - curr_posn, self.sleep_state)
+            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+        else:
+            triple_to_insert = Triple(curr_posn,
+                                      QS_IN_DAY - curr_posn, self.sleep_state)
+            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+            self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
+            row_out = self.output_row[:]
+            self.spaces_left = QS_IN_DAY
+            if curr_triple.start > 0:
+                triple_to_insert = Triple(0, curr_triple.start, self.sleep_state)
+                row_out = self.insert_to_row_out(triple_to_insert, row_out)
+        return row_out
+
 
     def write_leading_blanks(self, curr_triple, row_out):
         """
@@ -329,7 +362,7 @@ class Chart:
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
-        # self.output_date = self.advance_output_date(self.output_date)
+        self.output_date = self.advance_output_date(self.output_date)
         # print(f'{self.output_date} |{"".join(extended_output_row)}|')
         print(f'{self.last_date_read} |{"".join(extended_output_row)}|')
 
