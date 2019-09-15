@@ -299,7 +299,7 @@ class Chart:
             triple_to_insert = Triple(curr_posn,
                                       QS_IN_DAY - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
+            # self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
             if curr_triple.start > 0:
@@ -325,7 +325,7 @@ class Chart:
             triple_to_insert = Triple(curr_posn,
                                       QS_IN_DAY - curr_posn, AWAKE)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
+            # self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
             if curr_triple.start > 0:
@@ -362,9 +362,9 @@ class Chart:
         extended_output_row = []
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
+        print(f'{self.output_date} |{"".join(extended_output_row)}|')
         self.output_date = self.advance_output_date(self.output_date)
-        # print(f'{self.output_date} |{"".join(extended_output_row)}|')
-        print(f'{self.last_date_read} |{"".join(extended_output_row)}|')
+        # print(f'{self.last_date_read} |{"".join(extended_output_row)}|')
 
     def advance_date(self, my_date, make_ruler=False):
         date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
