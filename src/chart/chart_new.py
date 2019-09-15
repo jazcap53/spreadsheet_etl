@@ -22,25 +22,25 @@ class Chart:
     Create a sleep chart from input data
     """
     def __init__(self, filename):
+        self.curr_line = ''
+        self.curr_sunday = ''
+        self.date_re = None
         self.filename = filename
         self.infile = None
-        self.curr_line = ''
-        self.prev_line = ''
-        self.sleep_state = NO_DATA  # TODO: was AWAKE
-        self.date_re = None
-        self.quarters_carried = 0
-        self.output_row = [NO_DATA] * QS_IN_DAY
-        # self.header_seen = False
-        self.spaces_left = QS_IN_DAY
-        self.input_date = ''
         self.last_date_read = None
-        # self.prev_date_read = None
         self.last_sleep_time = None
-        self.output_date = '2016-12-04'
-        self.date_advanced = 0
-        self.curr_sunday = ''
-        self.date_in = None
         self.last_start_posn = None
+        self.output_date = '2016-12-04'
+        self.output_row = [NO_DATA] * QS_IN_DAY
+        self.quarters_carried = 0
+        self.sleep_state = NO_DATA  # TODO: was AWAKE
+        self.spaces_left = QS_IN_DAY
+        # self.prev_line = ''
+        # self.header_seen = False
+        # self.input_date = ''
+        # self.prev_date_read = None
+        # self.date_advanced = 0
+        # self.date_in = None
 
     def read_file(self):
         """
