@@ -9,12 +9,13 @@ import re
 from datetime import datetime, timedelta
 from collections import namedtuple
 
+DEBUG = True
 
 Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
 QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
-ASLEEP = u'\u2588'  # the printed color (black ink)
-AWAKE = u'\u0020'  # the background color (white paper)
-NO_DATA = u'\u2591'  # no data
+ASLEEP = 'x' if DEBUG else u'\u2588'  # the printed color (black ink)
+AWAKE = 'o' if DEBUG else u'\u0020'  # the background color (white paper)
+NO_DATA = '-' if DEBUG else u'\u2591'  # no data
 
 
 class Chart:
@@ -95,8 +96,9 @@ class Chart:
                     quarters_to_output = QS_IN_DAY - self.last_start_posn
                     # self.last_start_posn = 0
                     # self.last_date_read = self.curr_line
-                    return Triple(self.last_start_posn, quarters_to_output,
+                    t = Triple(self.last_start_posn, quarters_to_output,
                                   NO_DATA)
+                    return t
                 else:
                     self.last_date_read = self.curr_line
                     return Triple(-1, -1, -1)
@@ -138,30 +140,32 @@ class Chart:
         """
         if line.startswith('action: b'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.last_start_posn = self.get_start_posn(line)
             if self.sleep_state != NO_DATA:
                 self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
         elif line.startswith('action: s'):  # TODO: this is the same as for `action: b`
             self.last_sleep_time = self.get_time_part_from(line)
-            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.last_start_posn = self.get_start_posn(line)
             if self.sleep_state != NO_DATA:
                 self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
         elif line.startswith('action: w'):
             wake_time = self.get_time_part_from(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
-            length = self.get_num_chunks_or_start_posn(duration)
-            self.sleep_state = AWAKE
-            return Triple(self.last_start_posn, length, ASLEEP)
+            length = self.get_num_chunks(duration)
+            if self.sleep_state != NO_DATA:
+                self.sleep_state = AWAKE
+            t = Triple(self.last_start_posn, length, ASLEEP)
+            return t
         elif line.startswith('action: N'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = NO_DATA
             return Triple(-1, -1, -1)
         elif line.startswith('action: Y'):
             self.last_sleep_time = self.get_time_part_from(line)
-            self.last_start_posn = self.get_num_chunks_or_start_posn(line)
+            self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
 
@@ -345,7 +349,13 @@ class Chart:
             self.quarters_carried = finish - QS_IN_DAY
             triple = triple._replace(length=triple.length - self.quarters_carried)
         for i in range(triple.start, triple.start + triple.length):
-            output_row[i] = triple.symbol
+            if DEBUG is True:
+                if not i % 4:
+                    output_row[i] = triple.symbol.upper()
+                else:
+                    output_row[i] = triple.symbol.lower()
+            else:
+                output_row[i] = triple.symbol
             self.spaces_left -= 1
         return output_row
 
@@ -380,22 +390,36 @@ class Chart:
         return self.advance_date(my_output_date, True)
 
     @staticmethod
-    def get_num_chunks_or_start_posn(my_str):
+    def get_num_chunks(my_str):
         """
         Obtain from an interval the number of 15-minute chunks it contains
-        or
-        Obtain from a time string its starting position in an output day
         :return: int: the number of chunks
         Called by: read_file()
         """
         if my_str:
-            m = re.search(r'(\d{1,2})(?:\.|:)(\d{2})', my_str)  # TODO: compile this
+            m = re.search(r'(\d{1,2})\.(\d{2})', my_str)  # TODO: compile this
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
-                    int(m.group(2)) // 15) % QS_IN_DAY
-            # return (int(my_str[:2]) * 4 +  # 4 chunks per hour
-            #         int(my_str[3:5]) // 15) % QS_IN_DAY
+                    int(m.group(2)) // 25) % QS_IN_DAY  # m.group(2) is decimal
         return 0
+
+    @staticmethod
+    def get_start_posn(time_str):
+        """
+        Obtain from a time string its starting position in an output day
+        Called by: read_file()
+        :param time_str: a time expressed as 'HH:MM'
+        :return: int: the starting position
+        """
+        if time_str:
+            m = re.search(r'(\d{1,2}):(\d{2})', time_str)  # TODO: compile this
+            assert bool(m)
+            return (int(m.group(1)) * 4 +  # 4 chunks per hour
+                    int(m.group(2)) // 15) % QS_IN_DAY  # m.group(2) is base 60
+        return 0
+
+
+
 
     def compile_date_re(self):
         """
