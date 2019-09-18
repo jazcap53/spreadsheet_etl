@@ -37,12 +37,6 @@ class Chart:
         self.quarters_carried = 0
         self.sleep_state = NO_DATA  # TODO: was AWAKE
         self.spaces_left = QS_IN_DAY
-        # self.prev_line = ''
-        # self.header_seen = False
-        # self.input_date = ''
-        # self.prev_date_read = None
-        # self.date_advanced = 0
-        # self.date_in = None
 
     def read_file(self):
         """
@@ -80,7 +74,6 @@ class Chart:
 
     def parse_input_line(self):
         """
-        # TODO: use self.handle_action_line() instead of this (?)
         :return: a Triple holding
                      a start position, (start)
                      a count of quarter hours, (length)
@@ -106,37 +99,34 @@ class Chart:
 
     def handle_action_line(self, line):
         """
-        Note: don't return the date (as of 2019-09-13)
-        If a complete Triple is not yet available, return the date just read and a
+        If a complete Triple is not yet available, return a
         Triple with values (-1, -1, -1).
-        If a complete Triple is available, return None for the date (use previous date)
-        and the complete Triple.
+        If a complete Triple is available, return the complete Triple.
 
-         :return: a date, and a Triple holding
+        :param line:
+        :return: a Triple holding
                      a start position,
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
-        :param line:
-        :return:
         """
         if line.startswith('action: b'):
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
-            if self.sleep_state != NO_DATA:
-                self.sleep_state = ASLEEP
+            # if self.sleep_state != NO_DATA:
+            self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
-        elif line.startswith('action: s'):  # TODO: this is the same as for `action: b`
+        elif line.startswith('action: s'):  # TODO: this is the same as for `action: b` and `action: Y`
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
-            if self.sleep_state != NO_DATA:
-                self.sleep_state = ASLEEP
+            # if self.sleep_state != NO_DATA:
+            self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
         elif line.startswith('action: w'):
             wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks(duration)
-            if self.sleep_state != NO_DATA:
-                self.sleep_state = AWAKE
+            # if self.sleep_state != NO_DATA:
+            self.sleep_state = AWAKE
             t = Triple(self.last_start_posn, length, ASLEEP)
             return t
         elif line.startswith('action: N'):
@@ -190,7 +180,6 @@ class Chart:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        # TODO: (perhaps) make quarter_hour_to_decimal() a method of Chart
         duration += Chart.quarter_hour_to_decimal(dur_list[1])
         return duration
 
@@ -396,7 +385,7 @@ class Chart:
 
 
 def main():
-    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
+    chart = Chart('/home/andrew/python_projects/spreadsheet_etl/' +
                   'xtraneous/transform_input_2019-09-01_v3.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
