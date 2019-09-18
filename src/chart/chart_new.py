@@ -317,31 +317,6 @@ class Chart:
         return row_out
 
 
-    def write_leading_blanks(self, curr_triple, row_out):
-        """
-        Write blanks onto row_out from current posn to start of curr_triple.
-        :param curr_triple:
-        :param row_out:
-        :return:
-        Called by: make_output()
-        """
-        curr_posn = QS_IN_DAY - self.spaces_left
-        if curr_posn < curr_triple.start:
-            triple_to_insert = Triple(curr_posn,
-                                      curr_triple.start - curr_posn, AWAKE)
-            row_out = self.insert_to_row_out(triple_to_insert, row_out)
-        else:
-            triple_to_insert = Triple(curr_posn,
-                                      QS_IN_DAY - curr_posn, AWAKE)
-            row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            # self.write_output(row_out)  # TODO: ADVANCES self.output_date (not any more 2019-09-13)
-            row_out = self.output_row[:]
-            self.spaces_left = QS_IN_DAY
-            if curr_triple.start > 0:
-                triple_to_insert = Triple(0, curr_triple.start, AWAKE)
-                row_out = self.insert_to_row_out(triple_to_insert, row_out)
-        return row_out
-
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
                 Triple(0, self.quarters_carried, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
