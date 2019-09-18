@@ -280,6 +280,10 @@ class Chart:
             # spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
             if curr_triple.length >= self.spaces_left:
+                # TODO: write_output() below will work to output ASLEEP chars,
+                #       outputting chars up to end of row and assigning the count of any
+                #       left over chars to self.quarters_carried.
+                #       This code does not correctly handle AWAKE chars.
                 self.write_output(row_out)  # TODO: ADVANCES self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
@@ -341,6 +345,7 @@ class Chart:
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
                 Triple(0, self.quarters_carried, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
+                # Triple(0, self.quarters_carried, self.sleep_state), curr_output_row)  # todo: NO! BAD OUTPUT!
         self.quarters_carried = 0
         return curr_output_row
 
