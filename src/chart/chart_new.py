@@ -11,11 +11,12 @@ from collections import namedtuple
 
 DEBUG = True
 
-Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
 QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
 ASLEEP = 'x' if DEBUG else u'\u2588'  # the printed color (black ink)
 AWAKE = 'o' if DEBUG else u'\u0020'  # the background color (white paper)
 NO_DATA = '-' if DEBUG else u'\u2591'  # no data
+Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
+QuartersCarried = namedtuple('QuartersCarried', ['length', 'symbol'], defaults=[0, NO_DATA])
 
 
 class Chart:
@@ -94,34 +95,14 @@ class Chart:
             else:
                 if self.sleep_state == NO_DATA:
                     quarters_to_output = QS_IN_DAY - self.last_start_posn
-                    # self.last_start_posn = 0
-                    # self.last_date_read = self.curr_line
                     t = Triple(self.last_start_posn, quarters_to_output,
-                                  NO_DATA)
+                               self.sleep_state)
                     return t
                 else:
                     self.last_date_read = self.curr_line
                     return Triple(-1, -1, -1)
         else:
             return self.handle_action_line(self.curr_line)
-
-            # TODO: duration must come from line_array[2] of subsequent line, or from
-            #       a wake:sleep interval
-            # duration = 0
-            # action = line_array[0][-1]
-            # act_time = self.get_time_part_from(self.curr_line)
-            # start = self.get_num_chunks(line_array[1])  # TODO: get start posn from line_array[1]
-            # if len(line_array) > 2:
-            #     duration = self.get_num_chunks(line_array[2])
-
-        # TODO: write a self.set_symbol(line_array) function -- call it
-        #       wherever a symbol must be output (???) OR call it below only (???)
-
-            # symbol = ASLEEP
-            # print(self.date_in, Triple(self.last_date_read, 8, symbol))
-            #return '2019-09-12', Triple(0, 4, symbol)
-            # return Triple(0, 16, symbol)
-
 
     def handle_action_line(self, line):
         """
@@ -252,10 +233,6 @@ class Chart:
             closest_quarter = 45
         return closest_quarter
 
-
-
-
-
     def make_output(self, read_file_iterator):
         """
 
@@ -280,8 +257,8 @@ class Chart:
             # spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
             if curr_triple.length >= self.spaces_left:
-                # TODO: write_output() below will work to output ASLEEP chars,
-                #       outputting chars up to end of row and assigning the count of any
+                # TODO: self.insert_to_row_out() will work to output ASLEEP chars,
+                #       inserting chars up to end of row and assigning the count of any
                 #       left over chars to self.quarters_carried.
                 #       This code does not correctly handle AWAKE chars.
                 self.write_output(row_out)  # TODO: ADVANCES self.output_date
@@ -398,9 +375,6 @@ class Chart:
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
                     int(m.group(2)) // 15) % QS_IN_DAY  # m.group(2) is base 60
         return 0
-
-
-
 
     def compile_date_re(self):
         """
