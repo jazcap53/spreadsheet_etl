@@ -120,19 +120,19 @@ class Chart:
         :return:
         """
         if line.startswith('action: b'):
-            self.last_sleep_time = self.get_time_part_from(line)
+            self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             if self.sleep_state != NO_DATA:
                 self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
         elif line.startswith('action: s'):  # TODO: this is the same as for `action: b`
-            self.last_sleep_time = self.get_time_part_from(line)
+            self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             if self.sleep_state != NO_DATA:
                 self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
         elif line.startswith('action: w'):
-            wake_time = self.get_time_part_from(line)
+            wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks(duration)
             if self.sleep_state != NO_DATA:
@@ -140,18 +140,18 @@ class Chart:
             t = Triple(self.last_start_posn, length, ASLEEP)
             return t
         elif line.startswith('action: N'):
-            self.last_sleep_time = self.get_time_part_from(line)
+            self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = NO_DATA
             return Triple(-1, -1, -1)
         elif line.startswith('action: Y'):
-            self.last_sleep_time = self.get_time_part_from(line)
+            self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
 
     @staticmethod
-    def get_time_part_from(cur_l):
+    def get_time_part(cur_l):
         """
         Extract and return the time part of its string argument.
 
@@ -253,7 +253,7 @@ class Chart:
             except StopIteration:
                 return
 
-            row_out = self.write_leading_sleep_states(curr_triple, row_out)
+            row_out = self.insert_leading_sleep_states(curr_triple, row_out)
             # spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)
             if curr_triple.length >= self.spaces_left:
@@ -267,7 +267,7 @@ class Chart:
             if self.quarters_carried:
                 row_out = self.handle_quarters_carried(row_out)
 
-    def write_leading_sleep_states(self, curr_triple, row_out):
+    def insert_leading_sleep_states(self, curr_triple, row_out):
         """
                 Write sleep states onto row_out from current posn to start of curr_triple.
                 :param curr_triple:
