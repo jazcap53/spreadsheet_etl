@@ -34,7 +34,7 @@ class Chart:
         self.last_start_posn = None
         self.output_date = '2016-12-04'
         self.output_row = [NO_DATA] * QS_IN_DAY
-        self.quarters_carried = 0
+        self.quarters_carried = QuartersCarried(0, NO_DATA)
         self.sleep_state = NO_DATA  # TODO: was AWAKE
         self.spaces_left = QS_IN_DAY
 
@@ -253,7 +253,7 @@ class Chart:
                 self.write_output(row_out)  # TODO: ADVANCES self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
-            if self.quarters_carried:
+            if self.quarters_carried.length:
                 row_out = self.handle_quarters_carried(row_out)
 
     def insert_leading_sleep_states(self, curr_triple, row_out):
@@ -285,16 +285,16 @@ class Chart:
 
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
-                Triple(0, self.quarters_carried, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
+                Triple(0, self.quarters_carried.length, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
                 # Triple(0, self.quarters_carried, self.sleep_state), curr_output_row)  # todo: NO! BAD OUTPUT!
-        self.quarters_carried = 0
+        self.quarters_carried = self.quarters_carried._replace(length=0)
         return curr_output_row
 
     def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
-            self.quarters_carried = finish - QS_IN_DAY
-            triple = triple._replace(length=triple.length - self.quarters_carried)
+            self.quarters_carried = self.quarters_carried._replace(length=finish - QS_IN_DAY)
+            triple = triple._replace(length=triple.length - self.quarters_carried.length)
         for i in range(triple.start, triple.start + triple.length):
             if DEBUG is True:
                 if not i % 4:
