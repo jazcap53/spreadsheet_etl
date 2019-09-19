@@ -108,17 +108,11 @@ class Chart:
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         """
-        # if line.startswith('action: b'):
         if line.startswith('action: ') and line[8] in 'bsY':
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
-        # elif line.startswith('action: s'):  # TODO: this is the same as for `action: b` and `action: Y`
-        #     self.last_sleep_time = self.get_time_part(line)
-        #     self.last_start_posn = self.get_start_posn(line)
-        #     self.sleep_state = ASLEEP
-        #     return Triple(-1, -1, -1)
         elif line.startswith('action: w'):
             wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
@@ -131,11 +125,6 @@ class Chart:
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = NO_DATA
             return Triple(-1, -1, -1)
-        # elif line.startswith('action: Y'):
-        #     self.last_sleep_time = self.get_time_part(line)
-        #     self.last_start_posn = self.get_start_posn(line)
-        #     self.sleep_state = ASLEEP
-        #     return Triple(-1, -1, -1)
 
     @staticmethod
     def get_time_part(cur_l):
@@ -240,16 +229,9 @@ class Chart:
                 return
 
             row_out = self.insert_leading_sleep_states(curr_triple, row_out)
-            # spaces_left_now = self.spaces_left
             row_out = self.insert_to_row_out(curr_triple, row_out)  # sets self.quarters_carried.length
-            # if curr_triple.length >= self.spaces_left:  # TODO: error this line -- test is bad
-                                                        #   curr_triple.length is length of triple just written
             if not self.spaces_left:
-                # TODO: self.insert_to_row_out() will work to output ASLEEP chars,
-                #       inserting chars up to end of row and assigning the count of any
-                #       left over chars to self.quarters_carried.
-                #       This code does not correctly handle AWAKE chars.
-                self.write_output(row_out)  # TODO: ADVANCES self.output_date
+                self.write_output(row_out)  # advances self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = QS_IN_DAY
             if self.quarters_carried.length:
@@ -273,7 +255,7 @@ class Chart:
                                       QS_IN_DAY - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
             if not row_out.count(NO_DATA):  # row out is complete
-                self.write_output(row_out)  # TODO: ??? comment back in ???
+                self.write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
             if curr_triple.start > 0:
@@ -283,7 +265,6 @@ class Chart:
 
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
-                # Triple(0, self.quarters_carried.length, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
                 Triple(0, self.quarters_carried.length, self.quarters_carried.symbol), curr_output_row)
         self.quarters_carried = self.quarters_carried._replace(length=0)
         return curr_output_row
@@ -291,7 +272,6 @@ class Chart:
     def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
-            # self.quarters_carried = self.quarters_carried._replace(length=finish - QS_IN_DAY)
             self.quarters_carried = QuartersCarried(finish - QS_IN_DAY, triple.symbol)
             triple = triple._replace(length=triple.length - self.quarters_carried.length)
         for i in range(triple.start, triple.start + triple.length):
@@ -320,7 +300,6 @@ class Chart:
             extended_output_row.append(val)
         print(f'{self.output_date} |{"".join(extended_output_row)}|')
         self.output_date = self.advance_output_date(self.output_date)
-        # print(f'{self.last_date_read} |{"".join(extended_output_row)}|')
 
     def advance_date(self, my_date, make_ruler=False):
         date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
