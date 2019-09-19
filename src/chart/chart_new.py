@@ -244,8 +244,10 @@ class Chart:
 
             row_out = self.insert_leading_sleep_states(curr_triple, row_out)
             # spaces_left_now = self.spaces_left
-            row_out = self.insert_to_row_out(curr_triple, row_out)
-            if curr_triple.length >= self.spaces_left:
+            row_out = self.insert_to_row_out(curr_triple, row_out)  # sets self.quarters_carried.length
+            # if curr_triple.length >= self.spaces_left:  # TODO: error this line -- test is bad
+                                                        #   curr_triple.length is length of triple just written
+            if not self.spaces_left:
                 # TODO: self.insert_to_row_out() will work to output ASLEEP chars,
                 #       inserting chars up to end of row and assigning the count of any
                 #       left over chars to self.quarters_carried.
@@ -282,7 +284,6 @@ class Chart:
                 row_out = self.insert_to_row_out(triple_to_insert, row_out)
         return row_out
 
-
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
                 Triple(0, self.quarters_carried.length, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
@@ -293,7 +294,8 @@ class Chart:
     def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > QS_IN_DAY:
-            self.quarters_carried = self.quarters_carried._replace(length=finish - QS_IN_DAY)
+            # self.quarters_carried = self.quarters_carried._replace(length=finish - QS_IN_DAY)
+            self.quarters_carried = QuartersCarried(finish - QS_IN_DAY, triple.symbol)
             triple = triple._replace(length=triple.length - self.quarters_carried.length)
         for i in range(triple.start, triple.start + triple.length):
             if DEBUG is True:
