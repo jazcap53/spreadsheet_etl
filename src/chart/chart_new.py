@@ -49,7 +49,6 @@ class Chart:
         with open(self.filename) as self.infile:
             ctr = 0
             while self.get_a_line() and ctr < 100:
-                # self.input_date, parsed_input_line = self.parse_input_line()
                 parsed_input_line = self.parse_input_line()
                 if parsed_input_line.start == -1:
                     continue
@@ -109,23 +108,21 @@ class Chart:
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         """
-        if line.startswith('action: b'):
+        # if line.startswith('action: b'):
+        if line.startswith('action: ') and line[8] in 'bsY':
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
-            # if self.sleep_state != NO_DATA:
             self.sleep_state = ASLEEP
             return Triple(-1, -1, -1)
-        elif line.startswith('action: s'):  # TODO: this is the same as for `action: b` and `action: Y`
-            self.last_sleep_time = self.get_time_part(line)
-            self.last_start_posn = self.get_start_posn(line)
-            # if self.sleep_state != NO_DATA:
-            self.sleep_state = ASLEEP
-            return Triple(-1, -1, -1)
+        # elif line.startswith('action: s'):  # TODO: this is the same as for `action: b` and `action: Y`
+        #     self.last_sleep_time = self.get_time_part(line)
+        #     self.last_start_posn = self.get_start_posn(line)
+        #     self.sleep_state = ASLEEP
+        #     return Triple(-1, -1, -1)
         elif line.startswith('action: w'):
             wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks(duration)
-            # if self.sleep_state != NO_DATA:
             self.sleep_state = AWAKE
             t = Triple(self.last_start_posn, length, ASLEEP)
             return t
@@ -134,11 +131,11 @@ class Chart:
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = NO_DATA
             return Triple(-1, -1, -1)
-        elif line.startswith('action: Y'):
-            self.last_sleep_time = self.get_time_part(line)
-            self.last_start_posn = self.get_start_posn(line)
-            self.sleep_state = ASLEEP
-            return Triple(-1, -1, -1)
+        # elif line.startswith('action: Y'):
+        #     self.last_sleep_time = self.get_time_part(line)
+        #     self.last_start_posn = self.get_start_posn(line)
+        #     self.sleep_state = ASLEEP
+        #     return Triple(-1, -1, -1)
 
     @staticmethod
     def get_time_part(cur_l):
