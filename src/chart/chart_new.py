@@ -286,8 +286,8 @@ class Chart:
 
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
-                Triple(0, self.quarters_carried.length, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
-                # Triple(0, self.quarters_carried, self.sleep_state), curr_output_row)  # todo: NO! BAD OUTPUT!
+                # Triple(0, self.quarters_carried.length, ASLEEP), curr_output_row)  # TODO: is this always ASLEEP ?
+                Triple(0, self.quarters_carried.length, self.quarters_carried.symbol), curr_output_row)
         self.quarters_carried = self.quarters_carried._replace(length=0)
         return curr_output_row
 
@@ -387,7 +387,7 @@ class Chart:
 
 
 def main():
-    chart = Chart('/home/andrew/python_projects/spreadsheet_etl/' +
+    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
                   'xtraneous/transform_input_2019-09-01_v3.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
