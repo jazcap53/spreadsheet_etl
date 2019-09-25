@@ -47,13 +47,11 @@ class Chart:
         Called by: main()
         """
         with open(self.filename) as self.infile:
-            ctr = 0
-            while self.get_a_line() and ctr < 100:
+            while self.get_a_line():
                 parsed_input_line = self.parse_input_line()
                 if parsed_input_line.start == -1:
                     continue
                 yield parsed_input_line  # parsed_input_line is a Triple
-                ctr += 1
 
     def get_a_line(self):
         """
