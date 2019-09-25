@@ -37,7 +37,6 @@ class Chart:
         self.quarters_carried = QuartersCarried(0, NO_DATA)
         self.sleep_state = NO_DATA  # TODO: was AWAKE
         self.spaces_left = QS_IN_DAY
-        self.last_symbol_written = None
 
     def read_file(self):
         """
@@ -48,13 +47,13 @@ class Chart:
         Called by: main()
         """
         with open(self.filename) as self.infile:
-            # ctr = 0
-            while self.get_a_line():  # and ctr < 100:
+            ctr = 0
+            while self.get_a_line() and ctr < 100:
                 parsed_input_line = self.parse_input_line()
                 if parsed_input_line.start == -1:
                     continue
                 yield parsed_input_line  # parsed_input_line is a Triple
-                # ctr += 1
+                ctr += 1
 
     def get_a_line(self):
         """
@@ -246,25 +245,21 @@ class Chart:
                 :return:
                 Called by: make_output()
                 """
-        if self.last_symbol_written == NO_DATA:
-            local_sleep_state = NO_DATA
-        else:
-            local_sleep_state = self.sleep_state
         curr_posn = QS_IN_DAY - self.spaces_left
         if curr_posn < curr_triple.start:
             triple_to_insert = Triple(curr_posn,
-                                      curr_triple.start - curr_posn, local_sleep_state)
+                                      curr_triple.start - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
         else:
             triple_to_insert = Triple(curr_posn,
-                                      QS_IN_DAY - curr_posn, local_sleep_state)
+                                      QS_IN_DAY - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
             if not row_out.count(NO_DATA):  # row out is complete
                 self.write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
             if curr_triple.start > 0:
-                triple_to_insert = Triple(0, curr_triple.start, local_sleep_state)
+                triple_to_insert = Triple(0, curr_triple.start, self.sleep_state)
                 row_out = self.insert_to_row_out(triple_to_insert, row_out)
         return row_out
 
@@ -304,7 +299,6 @@ class Chart:
         for ix, val in enumerate(my_output_row):
             extended_output_row.append(val)
         print(f'{self.output_date} |{"".join(extended_output_row)}|')
-        self.last_symbol_written = extended_output_row[-1]
         self.output_date = self.advance_output_date(self.output_date)
 
     def advance_date(self, my_date, make_ruler=False):
