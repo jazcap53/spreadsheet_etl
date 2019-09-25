@@ -32,7 +32,7 @@ class Chart:
         self.last_date_read = None
         self.last_sleep_time = None
         self.last_start_posn = None
-        self.output_date = '2016-12-04'
+        self.output_date = '2019-05-12'
         self.output_row = [NO_DATA] * QS_IN_DAY
         self.quarters_carried = QuartersCarried(0, NO_DATA)
         self.sleep_state = NO_DATA  # TODO: was AWAKE
@@ -364,7 +364,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/transform_input_2019-09-01_v3.txt')
+                  'xtraneous/transform_input_sheet_040_after_5_16.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
