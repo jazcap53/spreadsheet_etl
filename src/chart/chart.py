@@ -33,7 +33,7 @@ class Chart:
         self.header_seen = False
         self.spaces_left = QS_IN_DAY
         self.input_date = ''
-        self.output_date = '2016-12-06'
+        self.output_date = '2016-12-04'
         self.date_advanced = 0
 
     def read_file(self):
@@ -228,7 +228,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/chart_raw_data_2019-09-09.txt')
+                  'xtraneous/transform_input_sheet_041_v001.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()

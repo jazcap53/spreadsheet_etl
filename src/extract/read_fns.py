@@ -133,6 +133,9 @@ class Extract:
         out_buffer = []
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
+            self.line_as_list = (
+                    self.line_as_list[:1] + [item.strip() for item in
+                                             self.line_as_list[1:]])
             date_match_obj = self._re_match_date(self.line_as_list[0])
             if not in_week:
                 self.new_week = None
@@ -206,7 +209,7 @@ class Extract:
         """
         have_events = False
         if any(self.line_as_list):
-            have_events = self._get_events()
+            have_events = self._get_events()  # adds events to Week
         else:  # we saw a blank line: our week has ended
             self._manage_output_buffer(out_buffer)
         return have_events
@@ -247,8 +250,10 @@ class Extract:
         for ix in range(7):
             # a segment is a list of 3 consecutive fields from the .csv file
             segment = shorter_line[3 * ix: 3 * ix + 3]
+            segment = [seg.strip() for seg in segment]
             if validate_segment(segment):
                 an_event = Event(*segment)
+            # elif [seg.strip() for seg in segment] == ['', '', '']:
             elif segment == ['', '', '']:
                 an_event = None
             else:
