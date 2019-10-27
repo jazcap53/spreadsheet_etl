@@ -300,6 +300,13 @@ class Chart:
         self.output_date = self.advance_output_date(self.output_date)
 
     def advance_date(self, my_date, make_ruler=False):
+        """
+
+        :param my_date:
+        :param make_ruler:
+        :return:
+        Called by: advance_input_date(), advance_output_date()
+        """
         date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
         if make_ruler and date_as_datetime.date().weekday() == 5:
             print(self.create_ruler())
@@ -362,7 +369,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/transform_input_2019-09-01_v3.txt')
+                  'xtraneous/transform_input_sheet_042.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
