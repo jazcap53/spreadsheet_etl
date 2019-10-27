@@ -248,6 +248,8 @@ class Chart:
             triple_to_insert = Triple(curr_posn,
                                       curr_triple.start - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
+        elif curr_posn == curr_triple.start:
+            pass  # insert no leading sleep states
         else:
             triple_to_insert = Triple(curr_posn,
                                       QS_IN_DAY - curr_posn, self.sleep_state)
