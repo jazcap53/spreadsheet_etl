@@ -374,12 +374,11 @@ class Extract:
         :return:
         Called by: _discard_incomplete_night()
         """
-        line_in = out_buffer.pop(buf_ix)
-        line_in = line_in.replace('b', 'N', 1)
-        line_as_list = line_in.split(',')
-        line_as_list[1] = line_in[11:22]  # time
-        line_as_list[2] = 'hours: 0.00'  # duration
-        return ', '.join(line_as_list)
+        line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
+        if line.count(',') == 2:
+            pos = line.rfind(',')
+            line = line[:pos]
+        return line
 
     @staticmethod
     def _match_event_line(line: str) -> re.match:

@@ -254,7 +254,7 @@ class Chart:
             triple_to_insert = Triple(curr_posn,
                                       QS_IN_DAY - curr_posn, self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            if not row_out.count(NO_DATA):  # row out is complete
+            if not row_out.count(NO_DATA) or curr_triple.symbol == NO_DATA:  # row out is complete
                 self.write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = QS_IN_DAY
@@ -371,7 +371,7 @@ class Chart:
 
 def main():
     chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/transform_input_sheet_042.txt')
+                  'xtraneous/transform_input_sheet_043b.txt')
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
