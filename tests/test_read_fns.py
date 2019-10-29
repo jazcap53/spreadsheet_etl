@@ -311,7 +311,7 @@ def test_discard_incomplete_night(extract, capfd):
     outfile = sys.stdout
     extract._discard_incomplete_night(out_buffer, outfile)
     fd1, fd2 = capfd.readouterr()
-    assert fd1 == 'action: N, time: 23:00, hours: 0.00\n'
+    assert fd1 == 'action: N, time: 23:00\n'
     assert fd2 == ''
 
 
