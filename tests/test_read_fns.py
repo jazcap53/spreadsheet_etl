@@ -63,6 +63,7 @@ def test_init_with_good_argument_succeeds():
     for line in extr.infile:
         line += 'x'
         break
+    assert isinstance(extr, Extract)
 
 
 def test_lines_in_weeks_out(infile_wrapper, capfd):
