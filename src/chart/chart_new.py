@@ -105,6 +105,7 @@ class Chart:
                      a start position,
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
+        Called by: parse_input_line()
         """
         if line.startswith('action: ') and line[8] in 'bsY':
             self.last_sleep_time = self.get_time_part(line)
