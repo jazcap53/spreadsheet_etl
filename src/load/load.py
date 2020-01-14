@@ -32,7 +32,7 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def read_nights_naps(engine, infile_name=sys.stdin):
+def read_nights_naps(engine, infile_name):
     """
     Read NIGHT and NAP data from infile_name;
     call function to load that data into database.
