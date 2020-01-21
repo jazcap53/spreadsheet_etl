@@ -371,8 +371,10 @@ class Chart:
 
 
 def main():
-    chart = Chart('/home/jazcap53/python_projects/spreadsheet_etl/' +
-                  'xtraneous/transform_input_sheet_044.txt')
+    if len(sys.argv) != 2:
+        print('usage: program_name <input_file_name>')
+        sys.exit(0)
+    chart = Chart(sys.argv[1])
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
