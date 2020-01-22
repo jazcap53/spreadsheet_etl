@@ -11,41 +11,36 @@ from datetime import datetime, timedelta
 from collections import namedtuple
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('infile', help='the input file name')
-parser.add_argument('-d', '--debug', help=("output X, o, - instead of "
-                                           "'\u2588', '\u0020', "
-                                           "'\u2591'"), action='store_true')
-args = parser.parse_args()
-
-DEBUG = args.debug
-
-QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
-ASLEEP = 'x' if DEBUG else u'\u2588'  # the printed color (black ink)
-AWAKE = 'o' if DEBUG else u'\u0020'  # the background color (white paper)
-NO_DATA = '-' if DEBUG else u'\u2591'  # no data
-Triple = namedtuple('Triple', ['start', 'length', 'symbol'], defaults=[0, 0, 0])
-QuartersCarried = namedtuple('QuartersCarried', ['length', 'symbol'], defaults=[0, NO_DATA])
-
-
 class Chart:
     """
     Create a sleep chart from input data
     """
-    def __init__(self, filename):
+    def __init__(self, args):
+        self.DEBUG = args.debug
+        self.QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
+        # the printed color (black ink)
+        self.ASLEEP = 'x' if self.DEBUG else u'\u2588'
+        # the background color (white paper)
+        self.AWAKE = 'o' if self.DEBUG else u'\u0020'
+        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # no data
+        self.Triple = namedtuple('Triple', ['start', 'length', 'symbol'],
+                                 defaults=[0, 0, 0])
+        self.QuartersCarried = namedtuple('QuartersCarried',
+                                          ['length', 'symbol'],
+                                          defaults=[0, self.NO_DATA])
         self.curr_line = ''
         self.curr_sunday = ''
         self.date_re = None
-        self.filename = filename
+        self.filename = args.filename
         self.infile = None
         self.last_date_read = None
         self.last_sleep_time = None
         self.last_start_posn = None
         self.output_date = '2016-12-04'
-        self.output_row = [NO_DATA] * QS_IN_DAY
-        self.quarters_carried = QuartersCarried(0, NO_DATA)
-        self.sleep_state = NO_DATA  # TODO: was AWAKE
-        self.spaces_left = QS_IN_DAY
+        self.output_row = [self.NO_DATA] * self.QS_IN_DAY
+        self.quarters_carried = self.QuartersCarried(0, self.NO_DATA)
+        self.sleep_state = self.NO_DATA  # TODO: was AWAKE
+        self.spaces_left = self.QS_IN_DAY
 
     def read_file(self):
         """
@@ -90,16 +85,16 @@ class Chart:
             if self.last_date_read is None:
                 self.last_start_posn = 0
                 self.last_date_read = self.curr_line
-                return Triple(-1, -1, -1)
+                return self.Triple(-1, -1, -1)
             else:
-                if self.sleep_state == NO_DATA:
-                    quarters_to_output = QS_IN_DAY - self.last_start_posn
-                    t = Triple(self.last_start_posn, quarters_to_output,
-                               self.sleep_state)
+                if self.sleep_state == self.NO_DATA:
+                    quarters_to_output = self.QS_IN_DAY - self.last_start_posn
+                    t = self.Triple(self.last_start_posn, quarters_to_output,
+                                    self.sleep_state)
                     return t
                 else:
                     self.last_date_read = self.curr_line
-                    return Triple(-1, -1, -1)
+                    return self.Triple(-1, -1, -1)
         else:
             return self.handle_action_line(self.curr_line)
 
@@ -119,20 +114,20 @@ class Chart:
         if line.startswith('action: ') and line[8] in 'bsY':
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
-            self.sleep_state = ASLEEP
-            return Triple(-1, -1, -1)
+            self.sleep_state = self.ASLEEP
+            return self.Triple(-1, -1, -1)
         elif line.startswith('action: w'):
             wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks(duration)
-            self.sleep_state = AWAKE
-            t = Triple(self.last_start_posn, length, ASLEEP)
+            self.sleep_state = self.AWAKE
+            t = self.Triple(self.last_start_posn, length, self.ASLEEP)
             return t
         elif line.startswith('action: N'):
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
-            self.sleep_state = NO_DATA
-            return Triple(-1, -1, -1)
+            self.sleep_state = self.NO_DATA
+            return self.Triple(-1, -1, -1)
 
     @staticmethod
     def get_time_part(cur_l):
@@ -149,8 +144,7 @@ class Chart:
             out_time = '0' + out_time
         return out_time
 
-    @staticmethod
-    def get_duration(w_time, s_time):
+    def get_duration(self, w_time, s_time):
         """
         Calculate the interval between w_time and s_time.
 
@@ -174,11 +168,10 @@ class Chart:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        duration += Chart.quarter_hour_to_decimal(dur_list[1])
+        duration += self.quarter_hour_to_decimal(dur_list[1])
         return duration
 
-    @staticmethod
-    def quarter_hour_to_decimal(quarter):
+    def quarter_hour_to_decimal(self, quarter):
         """
         Convert an integer number of minutes into a decimal string
 
@@ -191,7 +184,7 @@ class Chart:
         """
         valid_quarters = (0, 15, 30, 45)
         if quarter not in valid_quarters:
-            quarter = Chart.get_closest_quarter(quarter)
+            quarter = self.get_closest_quarter(quarter)
 
         decimal_quarter = None
         if quarter == 15:
@@ -226,8 +219,8 @@ class Chart:
         Called by: main()
         """
         row_out = self.output_row[:]
-        self.spaces_left = QS_IN_DAY
-        
+        self.spaces_left = self.QS_IN_DAY
+
         while True:
             try:
                 curr_triple = next(read_file_iterator)
@@ -237,11 +230,12 @@ class Chart:
                 return
 
             row_out = self.insert_leading_sleep_states(curr_triple, row_out)
-            row_out = self.insert_to_row_out(curr_triple, row_out)  # sets self.quarters_carried.length
+            # the next line sets self.quarters_carried.length
+            row_out = self.insert_to_row_out(curr_triple, row_out)
             if not self.spaces_left:
                 self.write_output(row_out)  # advances self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
-                self.spaces_left = QS_IN_DAY
+                self.spaces_left = self.QS_IN_DAY
             if self.quarters_carried.length:
                 row_out = self.handle_quarters_carried(row_out)
 
@@ -253,39 +247,44 @@ class Chart:
         :return:
         Called by: make_output()
         """
-        curr_posn = QS_IN_DAY - self.spaces_left
+        curr_posn = self.QS_IN_DAY - self.spaces_left
         if curr_posn < curr_triple.start:
-            triple_to_insert = Triple(curr_posn,
-                                      curr_triple.start - curr_posn, self.sleep_state)
+            triple_to_insert = self.Triple(curr_posn,
+                                           curr_triple.start - curr_posn,
+                                           self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
         elif curr_posn == curr_triple.start:
             pass  # insert no leading sleep states
         else:
-            triple_to_insert = Triple(curr_posn,
-                                      QS_IN_DAY - curr_posn, self.sleep_state)
+            triple_to_insert = self.Triple(curr_posn,
+                                           self.QS_IN_DAY - curr_posn,
+                                           self.sleep_state)
             row_out = self.insert_to_row_out(triple_to_insert, row_out)
-            if not row_out.count(NO_DATA) or curr_triple.symbol == NO_DATA:  # row out is complete
+            if not row_out.count(self.NO_DATA) or \
+                    curr_triple.symbol == self.NO_DATA:  # row out is complete
                 self.write_output(row_out)
             row_out = self.output_row[:]
-            self.spaces_left = QS_IN_DAY
+            self.spaces_left = self.QS_IN_DAY
             if curr_triple.start > 0:
-                triple_to_insert = Triple(0, curr_triple.start, self.sleep_state)
+                triple_to_insert = self.Triple(0, curr_triple.start,
+                                               self.sleep_state)
                 row_out = self.insert_to_row_out(triple_to_insert, row_out)
         return row_out
 
     def handle_quarters_carried(self, curr_output_row):
         curr_output_row = self.insert_to_row_out(
-                Triple(0, self.quarters_carried.length, self.quarters_carried.symbol), curr_output_row)
+            self.Triple(0, self.quarters_carried.length,
+                        self.quarters_carried.symbol), curr_output_row)
         self.quarters_carried = self.quarters_carried._replace(length=0)
         return curr_output_row
 
     def insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
-        if finish > QS_IN_DAY:
-            self.quarters_carried = QuartersCarried(finish - QS_IN_DAY, triple.symbol)
+        if finish > self.QS_IN_DAY:
+            self.quarters_carried = self.QuartersCarried(finish - self.QS_IN_DAY, triple.symbol)
             triple = triple._replace(length=triple.length - self.quarters_carried.length)
         for i in range(triple.start, triple.start + triple.length):
-            if DEBUG is True:
+            if self.DEBUG is True:
                 if not i % 4:
                     output_row[i] = triple.symbol.upper()
                 else:
@@ -296,7 +295,7 @@ class Chart:
         return output_row
 
     def get_curr_posn(self):
-        return QS_IN_DAY - self.spaces_left
+        return self.QS_IN_DAY - self.spaces_left
 
     def write_output(self, my_output_row):
         """
@@ -331,8 +330,7 @@ class Chart:
     def advance_output_date(self, my_output_date):
         return self.advance_date(my_output_date, True)
 
-    @staticmethod
-    def get_num_chunks(my_str):
+    def get_num_chunks(self, my_str):
         """
         Obtain from an interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
@@ -342,11 +340,10 @@ class Chart:
             m = re.search(r'(\d{1,2})\.(\d{2})', my_str)  # TODO: compile this
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
-                    int(m.group(2)) // 25) % QS_IN_DAY  # m.group(2) is decimal
+                    int(m.group(2)) // 25) % self.QS_IN_DAY  # m.group(2) is decimal
         return 0
 
-    @staticmethod
-    def get_start_posn(time_str):
+    def get_start_posn(self, time_str):
         """
         Obtain from a time string its starting position in an output day
         Called by: read_file()
@@ -357,7 +354,7 @@ class Chart:
             m = re.search(r'(\d{1,2}):(\d{2})', time_str)  # TODO: compile this
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
-                    int(m.group(2)) // 15) % QS_IN_DAY  # m.group(2) is base 60
+                    int(m.group(2)) // 15) % self.QS_IN_DAY  # m.group(2) is base 60
         return 0
 
     def compile_date_re(self):
@@ -380,7 +377,13 @@ class Chart:
 
 
 def main():
-    chart = Chart(args.infile)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', help='the input file name')
+    parser.add_argument('-d', '--debug',
+                        help=("output X, o, - instead of '\u2588', '\u0020', "
+                              "'\u2591'"), action='store_true')
+    args = parser.parse_args()
+    chart = Chart(args)
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
