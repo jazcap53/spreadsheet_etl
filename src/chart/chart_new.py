@@ -3,12 +3,12 @@
 # 10/2018
 
 
-from tests.file_access_wrappers import FileReadAccessWrapper
-import sys
 import re
 import argparse
 from datetime import datetime, timedelta
 from collections import namedtuple
+
+from tests.file_access_wrappers import FileReadAccessWrapper
 
 
 class Chart:
@@ -363,11 +363,11 @@ class Chart:
     @staticmethod
     def create_ruler():
         ruler = list(str(x) for x in range(12)) * 2
-        for ix, val in enumerate(ruler):
-            if ix == 0:
-                ruler[ix] = '12a'
-            elif ix == 12:
-                ruler[ix] = '12p'
+        for i, _ in enumerate(ruler):
+            if i == 0:
+                ruler[i] = '12a'
+            elif i == 12:
+                ruler[i] = '12p'
         ruler_line = ' ' * 12 + ''.join(v.ljust(4, ' ') for v in ruler)
         return ruler_line
 
