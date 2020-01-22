@@ -4,12 +4,21 @@
 
 
 from tests.file_access_wrappers import FileReadAccessWrapper
-import sys  # temporary: for sys.exit()
+import sys
 import re
+import argparse
 from datetime import datetime, timedelta
 from collections import namedtuple
 
-DEBUG = True
+
+parser = argparse.ArgumentParser()
+parser.add_argument('infile', help='the input file name')
+parser.add_argument('-d', '--debug', help=("output X, o, - instead of "
+                                           "'\u2588', '\u0020', "
+                                           "'\u2591'"), action='store_true')
+args = parser.parse_args()
+
+DEBUG = args.debug
 
 QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
 ASLEEP = 'x' if DEBUG else u'\u2588'  # the printed color (black ink)
@@ -238,12 +247,12 @@ class Chart:
 
     def insert_leading_sleep_states(self, curr_triple, row_out):
         """
-                Write sleep states onto row_out from current posn to start of curr_triple.
-                :param curr_triple:
-                :param row_out:
-                :return:
-                Called by: make_output()
-                """
+        Write sleep states onto row_out from current posn to start of curr_triple.
+        :param curr_triple:
+        :param row_out:
+        :return:
+        Called by: make_output()
+        """
         curr_posn = QS_IN_DAY - self.spaces_left
         if curr_posn < curr_triple.start:
             triple_to_insert = Triple(curr_posn,
@@ -371,10 +380,7 @@ class Chart:
 
 
 def main():
-    if len(sys.argv) != 2:
-        print('usage: program_name <input_file_name>')
-        sys.exit(0)
-    chart = Chart(sys.argv[1])
+    chart = Chart(args.infile)
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
