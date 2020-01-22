@@ -86,17 +86,13 @@ class Chart:
                 self.last_start_posn = 0
                 self.last_date_read = self.curr_line
                 return self.Triple(-1, -1, -1)
-            else:
-                if self.sleep_state == self.NO_DATA:
-                    quarters_to_output = self.QS_IN_DAY - self.last_start_posn
-                    t = self.Triple(self.last_start_posn, quarters_to_output,
-                                    self.sleep_state)
-                    return t
-                else:
-                    self.last_date_read = self.curr_line
-                    return self.Triple(-1, -1, -1)
-        else:
-            return self.handle_action_line(self.curr_line)
+            if self.sleep_state == self.NO_DATA:
+                quarters_to_output = self.QS_IN_DAY - self.last_start_posn
+                return self.Triple(self.last_start_posn, quarters_to_output,
+                                   self.sleep_state)
+            self.last_date_read = self.curr_line
+            return self.Triple(-1, -1, -1)
+        return self.handle_action_line(self.curr_line)
 
     def handle_action_line(self, line):
         """
@@ -116,18 +112,18 @@ class Chart:
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = self.ASLEEP
             return self.Triple(-1, -1, -1)
-        elif line.startswith('action: w'):
+        if line.startswith('action: w'):
             wake_time = self.get_time_part(line)
             duration = self.get_duration(wake_time, self.last_sleep_time)
             length = self.get_num_chunks(duration)
             self.sleep_state = self.AWAKE
-            t = self.Triple(self.last_start_posn, length, self.ASLEEP)
-            return t
-        elif line.startswith('action: N'):
+            return self.Triple(self.last_start_posn, length, self.ASLEEP)
+        if line.startswith('action: N'):
             self.last_sleep_time = self.get_time_part(line)
             self.last_start_posn = self.get_start_posn(line)
             self.sleep_state = self.NO_DATA
             return self.Triple(-1, -1, -1)
+        raise ValueError(f"Bad 'action: ' value in line {line}")
 
     @staticmethod
     def get_time_part(cur_l):
@@ -305,7 +301,7 @@ class Chart:
         Called by: make_output()
         """
         extended_output_row = []
-        for ix, val in enumerate(my_output_row):
+        for _, val in enumerate(my_output_row):
             extended_output_row.append(val)
         print(f'{self.output_date} |{"".join(extended_output_row)}|')
         self.output_date = self.advance_output_date(self.output_date)
