@@ -249,7 +249,6 @@ action: w, time: 20:15, hours: 1.00
         left over quarters.
 
         :param: read_file_iterator over parsed input lines (Triples)
-
         :return: None
         Called by: main()
         """
@@ -260,6 +259,8 @@ action: w, time: 20:15, hours: 1.00
             try:
                 curr_triple = next(read_file_iterator)
             except StopIteration:
+                if row_out != self.output_row:
+                    self._write_output(row_out)
                 return
 
             row_out = self._insert_leading_sleep_states(curr_triple, row_out)
