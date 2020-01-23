@@ -225,24 +225,32 @@ action: w, time: 20:15, hours: 1.00
         return decimal_quarter
 
     @staticmethod
-    def _get_closest_quarter(q):
+    def _get_closest_quarter(q: int):
+        """
+        Coerce a number of minutes q to the nearest quarter hour.
+
+        :return: an integer in {0, 15, 30, 45}
+        """
         if q < 8:
             closest_quarter = 0
         elif 8 <= q < 23:
             closest_quarter = 15
         elif 23 <= q < 37:
             closest_quarter = 30
-        else:
+        elif q < 60:
             closest_quarter = 45
+        else:
+            raise ValueError(f'q must be < 60 in {__name__}')  # TODO test this
         return closest_quarter
 
     def make_output(self, read_file_iterator):
         """
+        Fill a new day (output) row. Start the row with any
+        left over quarters.
 
-        Make new day (output) row.
-        Insert any left over quarters to new day row.
+        :param: read_file_iterator over parsed input lines (Triples)
 
-        :return:
+        :return: None
         Called by: main()
         """
         row_out = self.output_row[:]
@@ -251,24 +259,23 @@ action: w, time: 20:15, hours: 1.00
         while True:
             try:
                 curr_triple = next(read_file_iterator)
-                if curr_triple.start is None:  # reached end of input
-                    return
             except StopIteration:
                 return
 
-            row_out = self.insert_leading_sleep_states(curr_triple, row_out)
+            row_out = self._insert_leading_sleep_states(curr_triple, row_out)
             # the next line sets self.quarters_carried.length
-            row_out = self.insert_to_row_out(curr_triple, row_out)
+            row_out = self._insert_to_row_out(curr_triple, row_out)
             if not self.spaces_left:
-                self.write_output(row_out)  # advances self.output_date
+                self._write_output(row_out)  # advances self.output_date
                 row_out = self.output_row[:]  # get fresh copy of row to output
                 self.spaces_left = self.QS_IN_DAY
             if self.quarters_carried.length:
-                row_out = self.handle_quarters_carried(row_out)
+                row_out = self._handle_quarters_carried(row_out)
 
-    def insert_leading_sleep_states(self, curr_triple, row_out):
+    def _insert_leading_sleep_states(self, curr_triple, row_out):
         """
-        Write sleep states onto row_out from current posn to start of curr_triple.
+        Write sleep states onto row_out from current position to start
+        of curr_triple.
         :param curr_triple:
         :param row_out:
         :return:
@@ -279,33 +286,33 @@ action: w, time: 20:15, hours: 1.00
             triple_to_insert = self.Triple(curr_posn,
                                            curr_triple.start - curr_posn,
                                            self.sleep_state)
-            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+            row_out = self._insert_to_row_out(triple_to_insert, row_out)
         elif curr_posn == curr_triple.start:
             pass  # insert no leading sleep states
         else:
             triple_to_insert = self.Triple(curr_posn,
                                            self.QS_IN_DAY - curr_posn,
                                            self.sleep_state)
-            row_out = self.insert_to_row_out(triple_to_insert, row_out)
+            row_out = self._insert_to_row_out(triple_to_insert, row_out)
             if not row_out.count(self.NO_DATA) or \
                     curr_triple.symbol == self.NO_DATA:  # row out is complete
-                self.write_output(row_out)
+                self._write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = self.QS_IN_DAY
             if curr_triple.start > 0:
                 triple_to_insert = self.Triple(0, curr_triple.start,
                                                self.sleep_state)
-                row_out = self.insert_to_row_out(triple_to_insert, row_out)
+                row_out = self._insert_to_row_out(triple_to_insert, row_out)
         return row_out
 
-    def handle_quarters_carried(self, curr_output_row):
-        curr_output_row = self.insert_to_row_out(
+    def _handle_quarters_carried(self, curr_output_row):
+        curr_output_row = self._insert_to_row_out(
             self.Triple(0, self.quarters_carried.length,
                         self.quarters_carried.symbol), curr_output_row)
         self.quarters_carried = self.quarters_carried._replace(length=0)
         return curr_output_row
 
-    def insert_to_row_out(self, triple, output_row):
+    def _insert_to_row_out(self, triple, output_row):
         finish = triple.start + triple.length
         if finish > self.QS_IN_DAY:
             self.quarters_carried = self.QuartersCarried(finish - self.QS_IN_DAY, triple.symbol)
@@ -324,7 +331,7 @@ action: w, time: 20:15, hours: 1.00
     def get_curr_posn(self):
         return self.QS_IN_DAY - self.spaces_left
 
-    def write_output(self, my_output_row):
+    def _write_output(self, my_output_row):
         """
 
         :param my_output_row:
