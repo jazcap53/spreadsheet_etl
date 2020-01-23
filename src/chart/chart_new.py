@@ -13,16 +13,46 @@ from tests.file_access_wrappers import FileReadAccessWrapper
 
 class Chart:
     """
-    Create a sleep chart from input data
+    Create a sleep chart from input data.
+
+    Sample input (from file named as c.l.a.):
+
+        2016-12-10
+action: b, time: 0:00, hours: 9.00
+action: w, time: 5:15, hours: 5.25
+action: s, time: 10:30
+action: w, time: 11:30, hours: 1.00
+action: s, time: 16:00
+action: w, time: 17:00, hours: 1.00
+action: b, time: 22:30, hours: 7.25
+
+Week of Sunday, 2016-12-11:
+==========================
+    2016-12-11
+action: w, time: 0:15, hours: 1.75
+action: s, time: 2:30
+action: w, time: 5:15, hours: 2.75
+action: s, time: 11:00
+action: w, time: 12:00, hours: 1.00
+action: s, time: 17:15
+action: w, time: 18:00, hours: 0.75
+action: s, time: 19:15
+action: w, time: 20:15, hours: 1.00
+
+    Corresponding output (to stdout):
+
+2016-12-10 |█████████████████████                     ████                  ████                      ██████|
+            12a 1   2   3   4   5   6   7   8   9   10  11  12p 1   2   3   4   5   6   7   8   9   10  11
+2016-12-11 |█         ███████████                       ████                     ███     ████               |
     """
     def __init__(self, args):
         self.DEBUG = args.debug
         self.QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
-        # the printed color (black ink)
+        # next line, the printed color (black ink)
         self.ASLEEP = 'x' if self.DEBUG else u'\u2588'
-        # the background color (white paper)
+        # next line, the background color (white paper)
         self.AWAKE = 'o' if self.DEBUG else u'\u0020'
-        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # no data
+        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # this line, no data
         self.Triple = namedtuple('Triple', ['start', 'length', 'symbol'],
                                  defaults=[0, 0, 0])
         self.QuartersCarried = namedtuple('QuartersCarried',
@@ -46,22 +76,23 @@ class Chart:
         """
         Send each line of file to parser.
 
-        :yield: a parsed input line
-        :return: None
+        :yield: a parsed input line (a Triple namedtuple)
+        :return: None  # TODO: check on this
         Called by: main()
         """
         with open(self.filename) as self.infile:
-            while self.get_a_line():
-                parsed_input_line = self.parse_input_line()
+            while self._get_a_line():
+                parsed_input_line = self._parse_input_line()
                 if parsed_input_line.start == -1:
                     continue
-                yield parsed_input_line  # parsed_input_line is a Triple
+                yield parsed_input_line
 
-    def get_a_line(self):
+    def _get_a_line(self):
         """
         Get next input line, discarding blank lines and '======'s
 
-        :return: bool
+        :return: True if a line was retrieved
+                 False otherwise (i.e., at eof or on bad input)
         Called by: read_file()
         """
         self.curr_line = self.infile.readline().strip()
@@ -73,12 +104,12 @@ class Chart:
             self.curr_line = self.infile.readline().strip()
         return self.curr_line != ''
 
-    def parse_input_line(self):
+    def _parse_input_line(self):
         """
-        :return: a Triple holding
+        :return: a 'Triple' named tuple holding
                      a start position, (start)
                      a count of quarter hours, (length)
-                     a unicode character (ASLEEP, AWAKE, NO_DATA) (symbol)
+                     a unicode character (ASLEEP, AWAKE, or NO_DATA) (symbol)
         Called by: read_file()
         """
         if self.curr_line and re.match(r'\d{4}-\d{2}-\d{2}$', self.curr_line):
@@ -92,46 +123,46 @@ class Chart:
                                    self.sleep_state)
             self.last_date_read = self.curr_line
             return self.Triple(-1, -1, -1)
-        return self.handle_action_line(self.curr_line)
+        return self._handle_action_line(self.curr_line)
 
-    def handle_action_line(self, line):
+    def _handle_action_line(self, line):
         """
         If a complete Triple is not yet available, return a
         Triple with values (-1, -1, -1).
-        If a complete Triple is available, return the complete Triple.
+        Otherwise, return the complete Triple.
 
         :param line:
-        :return: a Triple holding
+        :return: a Triple (a namedtuple) holding
                      a start position,
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         Called by: parse_input_line()
         """
         if line.startswith('action: ') and line[8] in 'bsY':
-            self.last_sleep_time = self.get_time_part(line)
-            self.last_start_posn = self.get_start_posn(line)
+            self.last_sleep_time = self._get_time_part(line)
+            self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.ASLEEP
             return self.Triple(-1, -1, -1)
         if line.startswith('action: w'):
-            wake_time = self.get_time_part(line)
-            duration = self.get_duration(wake_time, self.last_sleep_time)
-            length = self.get_num_chunks(duration)
+            wake_time = self._get_time_part(line)
+            duration = self._get_duration(wake_time, self.last_sleep_time)
+            length = self._get_num_chunks(duration)
             self.sleep_state = self.AWAKE
             return self.Triple(self.last_start_posn, length, self.ASLEEP)
         if line.startswith('action: N'):
-            self.last_sleep_time = self.get_time_part(line)
-            self.last_start_posn = self.get_start_posn(line)
+            self.last_sleep_time = self._get_time_part(line)
+            self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.NO_DATA
             return self.Triple(-1, -1, -1)
         raise ValueError(f"Bad 'action: ' value in line {line}")
 
     @staticmethod
-    def get_time_part(cur_l):
+    def _get_time_part(cur_l):
         """
         Extract and return the time part of its string argument.
 
         Input time may be in 'h:mm' or 'hh:mm' format.
-        Called by: process_curr().
+        Called by: _process_curr().
         Returns: Extracted time as a string in 'hh:mm' format.
         """
         end_pos = cur_l.rfind(', hours: ')
@@ -140,7 +171,7 @@ class Chart:
             out_time = '0' + out_time
         return out_time
 
-    def get_duration(self, w_time, s_time):
+    def _get_duration(self, w_time, s_time):
         """
         Calculate the interval between w_time and s_time.
 
@@ -148,7 +179,7 @@ class Chart:
         get_duration() calculates the interval between them as a
         string in decimal format e.g.,
             04.25 for 4 1/4 hours
-        Called by: process_curr()
+        Called by: _process_curr()
         Returns: the calculated interval, whose value will be
                 non-negative.
         """
@@ -164,10 +195,10 @@ class Chart:
         duration = str(dur_list[0])
         if len(duration) == 1:  # change hour from '1' to '01', e.g.
             duration = '0' + duration
-        duration += self.quarter_hour_to_decimal(dur_list[1])
+        duration += self._quarter_hour_to_decimal(dur_list[1])
         return duration
 
-    def quarter_hour_to_decimal(self, quarter):
+    def _quarter_hour_to_decimal(self, quarter):
         """
         Convert an integer number of minutes into a decimal string
 
@@ -180,7 +211,7 @@ class Chart:
         """
         valid_quarters = (0, 15, 30, 45)
         if quarter not in valid_quarters:
-            quarter = self.get_closest_quarter(quarter)
+            quarter = self._get_closest_quarter(quarter)
 
         decimal_quarter = None
         if quarter == 15:
@@ -194,7 +225,7 @@ class Chart:
         return decimal_quarter
 
     @staticmethod
-    def get_closest_quarter(q):
+    def _get_closest_quarter(q):
         if q < 8:
             closest_quarter = 0
         elif 8 <= q < 23:
@@ -208,7 +239,7 @@ class Chart:
     def make_output(self, read_file_iterator):
         """
 
-        Make new day row.
+        Make new day (output) row.
         Insert any left over quarters to new day row.
 
         :return:
@@ -326,7 +357,7 @@ class Chart:
     def advance_output_date(self, my_output_date):
         return self.advance_date(my_output_date, True)
 
-    def get_num_chunks(self, my_str):
+    def _get_num_chunks(self, my_str):
         """
         Obtain from an interval the number of 15-minute chunks it contains
         :return: int: the number of chunks
@@ -339,9 +370,10 @@ class Chart:
                     int(m.group(2)) // 25) % self.QS_IN_DAY  # m.group(2) is decimal
         return 0
 
-    def get_start_posn(self, time_str):
+    def _get_start_posn(self, time_str):
         """
-        Obtain from a time string its starting position in an output day
+        Obtain, from a time string, its starting position in a line of output.
+
         Called by: read_file()
         :param time_str: a time expressed as 'HH:MM'
         :return: int: the starting position
@@ -349,8 +381,8 @@ class Chart:
         if time_str:
             m = re.search(r'(\d{1,2}):(\d{2})', time_str)  # TODO: compile this
             assert bool(m)
-            return (int(m.group(1)) * 4 +  # 4 chunks per hour
-                    int(m.group(2)) // 15) % self.QS_IN_DAY  # m.group(2) is base 60
+            return (int(m.group(1)) * 4 +  # 4 output chars per hour
+                    int(m.group(2)) // 15) % self.QS_IN_DAY
         return 0
 
     def compile_date_re(self):
@@ -373,18 +405,28 @@ class Chart:
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filename', help='the input file name')
-    parser.add_argument('-d', '--debug',
-                        help=("output X, o, - instead of '\u2588', '\u0020', "
-                              "'\u2591'"), action='store_true')
-    args = parser.parse_args()
+    args = get_parse_args()
     chart = Chart(args)
     chart.compile_date_re()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
     print(ruler_line)
     chart.make_output(read_file_iterator)
+
+
+def get_parse_args():
+    """
+    Parse and return the c.l.a.'s
+
+    Called by: main()
+    """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', help='the input file name')
+    parser.add_argument('-d', '--debug',
+                        help=("output X, o, - instead of '\u2588', '\u0020', "
+                              "'\u2591'"), action='store_true')
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
