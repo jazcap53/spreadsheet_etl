@@ -248,7 +248,7 @@ action: w, time: 20:15, hours: 1.00
         Fill a new day (output) row. Start the row with any
         left over quarters.
 
-        :param: read_file_iterator over parsed input lines (Triples)
+        :param: read_file_iterator yields parsed input lines (Triples)
         :return: None
         Called by: main()
         """
@@ -264,7 +264,7 @@ action: w, time: 20:15, hours: 1.00
                 return
 
             row_out = self._insert_leading_sleep_states(curr_triple, row_out)
-            # the next line sets self.quarters_carried.length
+            # the next line may update self.quarters_carried.length
             row_out = self._insert_to_row_out(curr_triple, row_out)
             if not self.spaces_left:
                 self._write_output(row_out)  # advances self.output_date
