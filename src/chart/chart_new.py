@@ -113,24 +113,39 @@ action: w, time: 20:15, hours: 1.00
                      a unicode character (ASLEEP, AWAKE, or NO_DATA) (symbol)
         Called by: read_file()
         """
-        if self.curr_line and re.match(r'\d{4}-\d{2}-\d{2}$', self.curr_line):
-            if self.last_date_read is None:
-                self.last_start_posn = 0
-                self.last_date_read = self.curr_line
-                return self.Triple(-1, -1, -1)
-            if self.sleep_state == self.NO_DATA:
-                quarters_to_output = self.QS_IN_DAY - self.last_start_posn
-                return self.Triple(self.last_start_posn, quarters_to_output,
-                                   self.sleep_state)
-            self.last_date_read = self.curr_line
-            return self.Triple(-1, -1, -1)
+        if not self.curr_line:
+            raise ValueError('self.curr_line is empty in _parse_input_line()')
+        if re.match(r'\d{4}-\d{2}-\d{2}$', self.curr_line):
+            return self._handle_date_line(self.curr_line)
         return self._handle_action_line(self.curr_line)
+
+    def _handle_date_line(self, line):
+        """
+
+        :pre: line is non-empty
+
+        :param line:
+        :return:
+        Called by _parse_input_line()
+        """
+        if self.last_date_read is None:
+            self.last_start_posn = 0
+            self.last_date_read = line
+            return self.Triple(-1, -1, -1)
+        if self.sleep_state == self.NO_DATA:
+            quarters_to_output = self.QS_IN_DAY - self.last_start_posn
+            return self.Triple(self.last_start_posn, quarters_to_output,
+                               self.sleep_state)
+        self.last_date_read = line
+        return self.Triple(-1, -1, -1)
 
     def _handle_action_line(self, line):
         """
         If a complete Triple is not yet available, return a
         Triple with values (-1, -1, -1).
         Otherwise, return the complete Triple.
+
+        :pre: line starts with 'action: '
 
         :param line:
         :return: a Triple (a namedtuple) holding
@@ -139,18 +154,18 @@ action: w, time: 20:15, hours: 1.00
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
         Called by: _parse_input_line()
         """
-        if line.startswith('action: ') and line[8] in 'bsY':
+        if line[8] in 'bsY':
             self.last_sleep_time = self._get_time_part(line)
             self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.ASLEEP
             return self.Triple(-1, -1, -1)
-        if line.startswith('action: w'):
+        if line[8] == 'w':
             wake_time = self._get_time_part(line)
             duration = self._get_duration(wake_time, self.last_sleep_time)
             length = self._get_num_chunks(duration)
             self.sleep_state = self.AWAKE
             return self.Triple(self.last_start_posn, length, self.ASLEEP)
-        if line.startswith('action: N'):
+        if line[8] == 'N':
             self.last_sleep_time = self._get_time_part(line)
             self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.NO_DATA
