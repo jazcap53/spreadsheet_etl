@@ -48,11 +48,11 @@ action: w, time: 20:15, hours: 1.00
     def __init__(self, args):
         self.DEBUG = args.debug
         self.QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
-        # next line, the printed color (black ink)
+        # the printed color (black ink)
         self.ASLEEP = 'x' if self.DEBUG else u'\u2588'
-        # next line, the background color (white paper)
+        # the background color (white paper)
         self.AWAKE = 'o' if self.DEBUG else u'\u0020'
-        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # this line, no data
+        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # gray
         self.Triple = namedtuple('Triple', ['start', 'length', 'symbol'],
                                  defaults=[0, 0, 0])
         self.QuartersCarried = namedtuple('QuartersCarried',
@@ -106,7 +106,8 @@ action: w, time: 20:15, hours: 1.00
 
     def _parse_input_line(self):
         """
-        :return: a 'Triple' named tuple holding
+        
+        :return: a 'Triple' namedtuple holding
                      a start position, (start)
                      a count of quarter hours, (length)
                      a unicode character (ASLEEP, AWAKE, or NO_DATA) (symbol)
@@ -136,7 +137,7 @@ action: w, time: 20:15, hours: 1.00
                      a start position,
                      a count of quarter hours,
                      a unicode character (ASLEEP, AWAKE, NO_DATA)
-        Called by: parse_input_line()
+        Called by: _parse_input_line()
         """
         if line.startswith('action: ') and line[8] in 'bsY':
             self.last_sleep_time = self._get_time_part(line)
