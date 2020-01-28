@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from collections import namedtuple
 
 from tests.file_access_wrappers import FileReadAccessWrapper
+BLACK_INK = u'\u2588'
+WHITE_PAPER = u'\u0020'
+GRAY = u'\u2591'
 
 
 class Chart:
@@ -48,11 +51,9 @@ action: w, time: 20:15, hours: 1.00
     def __init__(self, args):
         self.DEBUG = args.debug
         self.QS_IN_DAY = 96  # 24 * 4 quarter hours in a day
-        # the printed color (black ink)
-        self.ASLEEP = 'x' if self.DEBUG else u'\u2588'
-        # the background color (white paper)
-        self.AWAKE = 'o' if self.DEBUG else u'\u0020'
-        self.NO_DATA = '-' if self.DEBUG else u'\u2591'  # gray
+        self.ASLEEP = 'x' if self.DEBUG else BLACK_INK
+        self.AWAKE = 'o' if self.DEBUG else WHITE_PAPER
+        self.NO_DATA = '-' if self.DEBUG else GRAY
         self.Triple = namedtuple('Triple', ['start', 'length', 'symbol'],
                                  defaults=[0, 0, 0])
         self.QuartersCarried = namedtuple('QuartersCarried',
