@@ -8,7 +8,8 @@ import argparse
 from datetime import datetime, timedelta
 from collections import namedtuple
 
-from tests.file_access_wrappers import FileReadAccessWrapper
+# from tests.file_access_wrappers import FileReadAccessWrapper
+
 BLACK_INK = u'\u2588'
 WHITE_PAPER = u'\u0020'
 GRAY = u'\u2591'
