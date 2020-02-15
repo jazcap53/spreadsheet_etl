@@ -64,7 +64,6 @@ action: w, time: 20:15, hours: 1.00
                                           defaults=[0, self.NO_DATA])
         self.curr_line = ''
         self.curr_sunday = ''
-        self.date_re = None
         self.filename = args.filename
         self.infile = None
         self.last_date_read = None
@@ -73,6 +72,9 @@ action: w, time: 20:15, hours: 1.00
         self.output_date = '2016-12-04'
         self.output_row = [self.NO_DATA] * self.QS_IN_DAY
         self.quarters_carried = self.QuartersCarried(0, self.NO_DATA)
+        self.re_decimal_hour = None
+        self.re_hr_min_time = None
+        self.re_iso_date = None
         self.sleep_state = self.NO_DATA
         self.spaces_left = self.QS_IN_DAY
 
@@ -383,7 +385,7 @@ action: w, time: 20:15, hours: 1.00
         Called by: read_file()
         """
         if my_str:
-            m = re.search(r'(\d{1,2})\.(\d{2})', my_str)  # TODO: compile this
+            m = re.search(self.re_decimal_hour, my_str)
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 chunks per hour
                     int(m.group(2)) // 25) % self.QS_IN_DAY  # m.group(2) is decimal
@@ -398,18 +400,32 @@ action: w, time: 20:15, hours: 1.00
         :return: int: the starting position
         """
         if time_str:
-            m = re.search(r'(\d{1,2}):(\d{2})', time_str)  # TODO: compile this
+            m = re.search(self.re_hr_min_time, time_str)
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 output chars per hour
                     int(m.group(2)) // 15) % self.QS_IN_DAY
         return 0
 
-    def compile_date_re(self):
+    def compile_iso_date(self):
         """
         :return: None
         Called by: main()
         """
-        self.date_re = re.compile(r' \d{4}-\d{2}-\d{2} \|')
+        self.re_iso_date = re.compile(r' \d{4}-\d{2}-\d{2} \|')
+
+    def compile_decimal_hour(self):
+        """
+        :return: None
+        Called by: main()
+        """
+        self.re_decimal_hour = re.compile(r'(\d{1,2})\.(\d{2})')
+
+    def compile_hr_min_time(self):
+        """
+        :return:
+        Called by: main()
+        """
+        self.re_hr_min_time = re.compile(r'(\d{1,2}):(\d{2})')
 
     @staticmethod
     def create_ruler():
@@ -426,7 +442,9 @@ action: w, time: 20:15, hours: 1.00
 def main():
     args = get_parse_args()
     chart = Chart(args)
-    chart.compile_date_re()
+    chart.compile_decimal_hour()
+    chart.compile_hr_min_time()
+    chart.compile_iso_date()
     read_file_iterator = chart.read_file()
     ruler_line = chart.create_ruler()
     print(ruler_line)
@@ -439,7 +457,6 @@ def get_parse_args():
 
     Called by: main()
     """
-
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='the input file name')
     parser.add_argument('-d', '--debug',

@@ -121,7 +121,7 @@ class Extract:
         # self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
-        self.in_missing_data = False  # TODO: new 2019-09-03
+        self.in_missing_data = False
 
     def lines_in_weeks_out(self) -> None:
         """
