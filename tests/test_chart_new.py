@@ -1,11 +1,10 @@
 # file: test_chart_new.py
 # andrew jarcho
 # 10/2018
-
-
 import pytest
 from unittest.mock import Mock
-from src.chart.chart_new import Chart, get_parse_args  # , ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
+from src.chart.chart_new import Chart  # , get_parse_args, ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
+from argparse import Namespace
 
 
 def my_side_effect(q):
@@ -14,23 +13,18 @@ def my_side_effect(q):
     return q
 
 
-
-
-
 @pytest.fixture("module")
-def make_chart():
-    return Chart(get_parse_args())
+def chart():
+    return Chart(Namespace(debug=False,
+                           filename='/home/jazcap53/python_projects'
+                                    '/spreadsheet_etl/tests'
+                                    '/test_chart_new.py'))
 
 
-def test_quarter_too_large(make_chart):
+def test_quarter_too_large(chart):
     with pytest.raises(ValueError):
-        chart = make_chart
         q = 60
         chart._get_closest_quarter = Mock(side_effect=my_side_effect(q))
-
-
-
-
 
 
 
