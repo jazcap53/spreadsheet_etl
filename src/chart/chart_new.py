@@ -1,4 +1,4 @@
-# file: chart.py
+# file: chart_new.py
 # andrew jarcho
 # 10/2018
 
@@ -172,7 +172,7 @@ action: w, time: 20:15, hours: 1.00
             self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.NO_DATA
             return self.Triple(-1, -1, -1)
-        raise ValueError(f"Bad 'action: ' value in line {line}")
+        # raise ValueError(f"Bad 'action: ' value in line {line}")
 
     @staticmethod
     def _get_time_part(cur_l):
