@@ -10,6 +10,8 @@ from collections import namedtuple
 
 # from tests.file_access_wrappers import FileReadAccessWrapper
 
+from transform.do_transform import Transform
+
 BLACK_INK = u'\u2588'
 WHITE_PAPER = u'\u0020'
 GRAY = u'\u2591'
@@ -231,16 +233,7 @@ action: w, time: 20:15, hours: 1.00
         if quarter not in valid_quarters:
             quarter = self._get_closest_quarter(quarter)
 
-        decimal_quarter = None
-        if quarter == 15:
-            decimal_quarter = '.25'
-        elif quarter == 30:
-            decimal_quarter = '.50'
-        elif quarter == 45:
-            decimal_quarter = '.75'
-        elif quarter == 0:
-            decimal_quarter = '.00'
-        return decimal_quarter
+        return Transform.quarter_to_decimal(quarter)
 
     @staticmethod
     def _get_closest_quarter(q: int):

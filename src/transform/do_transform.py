@@ -172,7 +172,11 @@ class Transform:
                                      'quarter_hour_to_decimal()'.
                                      format(quarter))
             quarter = Transform.get_closest_quarter(quarter)
+        return Transform.quarter_to_decimal(quarter)
 
+
+    @staticmethod
+    def quarter_to_decimal(quarter):
         decimal_quarter = None
         if quarter == 15:
             decimal_quarter = '.25'
