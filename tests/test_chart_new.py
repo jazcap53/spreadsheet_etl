@@ -1,10 +1,39 @@
-# file: test_chart.py
+# file: test_chart_new.py
 # andrew jarcho
 # 10/2018
 
 
-# import pytest
-# from src.chart.chart_new import Chart  # , ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
+import pytest
+from unittest.mock import Mock
+from src.chart.chart_new import Chart, get_parse_args  # , ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
+
+
+def my_side_effect(q):
+    if not 0 <= q < 60:
+        raise ValueError
+    return q
+
+
+
+
+
+@pytest.fixture("module")
+def make_chart():
+    return Chart(get_parse_args())
+
+
+def test_quarter_too_large(make_chart):
+    with pytest.raises(ValueError):
+        chart = make_chart
+        q = 60
+        chart._get_closest_quarter = Mock(side_effect=my_side_effect(q))
+
+
+
+
+
+
+
 # from collections import namedtuple
 # from tests.file_access_wrappers import FakeFileReadWrapper
 # import _io
@@ -107,3 +136,8 @@
 #     out, err = capsys.readouterr()
 #     assert out == ''
 #     assert err == ''
+
+# def test_get_closest_quarter_with_q_60(chart):
+#     q = 60
+#     with pytest.raises(ValueError):
+#         chart._get_closest_quarter(q)

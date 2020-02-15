@@ -73,7 +73,7 @@ action: w, time: 20:15, hours: 1.00
         self.output_date = '2016-12-04'
         self.output_row = [self.NO_DATA] * self.QS_IN_DAY
         self.quarters_carried = self.QuartersCarried(0, self.NO_DATA)
-        self.sleep_state = self.NO_DATA  # TODO: was AWAKE
+        self.sleep_state = self.NO_DATA
         self.spaces_left = self.QS_IN_DAY
 
     def read_file(self):
@@ -81,7 +81,7 @@ action: w, time: 20:15, hours: 1.00
         Send each line of file to parser.
 
         :yield: a parsed input line (a Triple namedtuple)
-        :return: None  # TODO: check on this
+        :return: None
         Called by: main()
         """
         with open(self.filename) as self.infile:
@@ -251,7 +251,7 @@ action: w, time: 20:15, hours: 1.00
         elif q < 60:
             closest_quarter = 45
         else:
-            raise ValueError(f'q must be < 60 in {__name__}')  # TODO test this
+            raise ValueError(f'q must be < 60 in {__name__}')
         return closest_quarter
 
     def make_output(self, read_file_iterator):
