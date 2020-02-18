@@ -2,14 +2,11 @@
 # andrew jarcho
 # 2017-01-25
 
-
-# TODO: rewrite read_fns.py docstring
 """
 SUMMARY:
 =======
-Class Extract in read_fns.py reads the raw input, extracts and formats
-the data of interest, discards incomplete data, and writes the remaining data
-of interest to stdout.
+Class Extract reads the raw input, extracts and formats the data of
+interest, discards incomplete data, and writes the remaining data to stdout.
 
 DETAIL:
 ======
@@ -267,7 +264,6 @@ class Extract:
                 have_events = True
         return have_events
 
-    # TODO: explain
     def _manage_output_buffer(self, out_buffer: list) -> None:
         """
         Convert the Events in self.new_week into strings, place the strings
@@ -328,13 +324,13 @@ class Extract:
             -> None:
         """
         Write a complete night from output buffer to outfile
-        # TODO: break this into 2 functions (?)  CHECK LINE THAT CAUSES ERROR
+        # TODO: break this into 2 functions (?)  CHECK `line.replace()` LINE
         Called by: _write_or_discard_night()
         """
         for line in out_buffer:
             if self.in_missing_data:
                 if line.startswith('action: b'):
-                    line = line.replace('b', 'Y', 1)  # TODO: CHECK THIS !!!
+                    line = line.replace('b', 'Y', 1)
                     self.in_missing_data = False
             print(line, file=outfile)
         out_buffer.clear()
