@@ -8,7 +8,6 @@
 import logging
 import logging.handlers
 import fileinput
-# TODO: eliminate need for sqlalchemy
 from sqlalchemy import create_engine, func
 import os
 import sys
