@@ -277,10 +277,10 @@ class Extract:
             for day in self.new_week:
                 out_buffer.append(self._get_day_header(day))
                 for event in day.events:
-                    event_str = 'action: {}, time: {}'.format(event.action,
-                                                              event.mil_time)
+                    event_str = (f'action: {event.action}, '
+                                 f'time: {event.mil_time}')
                     if event.hours:
-                        event_str += ', hours: {:.2f}'.format(float(event.hours))
+                        event_str += f', hours: {float(event.hours):.2f}'
                     if event.action == 'b':
                         self._write_or_discard_night(event, day.dt_date, out_buffer)
                     out_buffer.append(event_str)
@@ -310,7 +310,7 @@ class Extract:
         Write (only) complete nights from out_buffer to outfile.
 
         action_b_event is the first Event for some night. It will have an
-        'hours' field iff we have complete data for the preceding night.
+        'hours' field iff we have complete data for the *preceding* night.
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
@@ -320,11 +320,10 @@ class Extract:
                              format(datetime_date))
             self._discard_incomplete_night(out_buffer, outfile)
 
-    def _write_complete_night(self, out_buffer: list, outfile: TextIOWrapper) \
-            -> None:
+    def _write_complete_night(self, out_buffer: list,
+                              outfile: TextIOWrapper) -> None:
         """
         Write a complete night from output buffer to outfile
-        # TODO: break this into 2 functions (?)  CHECK `line.replace()` LINE
         Called by: _write_or_discard_night()
         """
         for line in out_buffer:
@@ -338,13 +337,12 @@ class Extract:
     def _discard_incomplete_night(self, out_buffer: list,
                                   outfile: TextIOWrapper) -> None:
         """
-
         Called by: _write_or_discard_night()
         """
-        # pop incomplete data from end of output buffer
+        # pop incomplete data from output buffer
         for buf_ix in range(len(out_buffer) - 1, -1, -1):
             this_line = out_buffer[buf_ix]
-            # if we see a 3-element 'b' event, there's good data before it
+            # if we see a 3-element 'b' event, there's good data *before* it
             if self._match_complete_b_event_line(this_line):
                 no_data_line = self._get_no_data_line(out_buffer, buf_ix)
                 print(no_data_line, file=outfile)
@@ -360,14 +358,11 @@ class Extract:
         return re.match(r'action: b, time: \d{1,2}:\d{2},'
                         r' hours: \d{1,2}\.\d{2}$', line)
 
-    # TODO: fix docstring
     @staticmethod
     def _get_no_data_line(out_buffer: list, buf_ix: int) -> str:
         """
-
-        :param out_buffer:
-        :param buf_ix:
-        :return:
+        Extract and update the next 'no data' line from buffer
+        :return: the updated line
         Called by: _discard_incomplete_night()
         """
         line = out_buffer.pop(buf_ix).replace('b', 'N', 1)
