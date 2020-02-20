@@ -14,9 +14,6 @@ from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
 
-# TODO: fail if pytest is not called with -s switch
-# TODO: change assertions on fns which return None
-
 
 @pytest.fixture
 def infile_wrapper():
@@ -51,9 +48,7 @@ def test_init_with_bad_argument_fails():
     filename = None
     extr = Extract(filename)
     with pytest.raises(AttributeError):
-        for line in extr.infile.getline():
-            line += 'x'
-            break
+        _ = extr.infile.getline()
 
 
 def test_init_with_good_argument_succeeds():
