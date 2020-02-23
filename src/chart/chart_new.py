@@ -10,8 +10,6 @@ from collections import namedtuple
 
 # from tests.file_access_wrappers import FileReadAccessWrapper
 
-from transform.do_transform import Transform
-
 BLACK_INK = u'\u2588'
 WHITE_PAPER = u'\u0020'
 GRAY = u'\u2591'
@@ -228,14 +226,23 @@ action: w, time: 20:15, hours: 1.00
         is a quarter-hour, convert it to a decimal quarter represented
         as a string.
 
-        Called by: get_duration()
+        Called by: _get_duration()
         Returns: a number of minutes represented as a decimal fraction
         """
         valid_quarters = (0, 15, 30, 45)
         if quarter not in valid_quarters:
             quarter = self._get_closest_quarter(quarter)
+        return Chart._quarter_to_decimal(quarter)
 
-        return Transform.quarter_to_decimal(quarter)
+    @staticmethod
+    def _quarter_to_decimal(quarter):
+        """
+        0 => '.00', 15 => '.25', 30 => '.50', 45 => '.75'
+
+        "pre: quarter % 15 == 0"
+        Called by: _quarter_hour_to_decimal()
+        """
+        return '.' + str(quarter // 3 * 5).zfill(2)
 
     @staticmethod
     def _get_closest_quarter(q: int):
