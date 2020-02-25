@@ -174,19 +174,15 @@ class Transform:
             quarter = Transform.get_closest_quarter(quarter)
         return Transform.quarter_to_decimal(quarter)
 
-
     @staticmethod
     def quarter_to_decimal(quarter):
-        decimal_quarter = None
-        if quarter == 15:
-            decimal_quarter = '.25'
-        elif quarter == 30:
-            decimal_quarter = '.50'
-        elif quarter == 45:
-            decimal_quarter = '.75'
-        elif quarter == 0:
-            decimal_quarter = '.00'
-        return decimal_quarter
+        """
+        0 => '.00', 15 => '.25', 30 => '.50', 45 => '.75'
+
+        "pre: quarter % 15 == 0"
+        Called by: _quarter_hour_to_decimal()
+        """
+        return '.' + str(quarter // 3 * 5).zfill(2)
 
     @staticmethod
     def get_closest_quarter(q):
