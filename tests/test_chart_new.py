@@ -13,7 +13,7 @@ def my_side_effect(q):
     return q
 
 
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def chart():
     return Chart(Namespace(debug=False,
                            filename='/home/jazcap53/python_projects'
