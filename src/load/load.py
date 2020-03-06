@@ -88,17 +88,37 @@ def store_nights_naps(connection, my_line):
     return success
 
 
-def connect(url):
+def connect():
     """
     Connect to the PostgreSQL db server;
     invoke read_nights_naps() to load data from input to db_s_etl.
 
-    :param url: the db url
-    :return: None
+    :return: a db engine
     Called by: client code
     """
-    engine = create_engine(url)
+    if 'pytest' in sys.argv[0]:
+        try:
+            url = 'postgresql://{}:{}@127.0.0.1/sleep_test'.format(
+                os.environ['DB_TEST_USERNAME'],
+                os.environ['DB_TEST_PASSWORD'])
+        except EnvironmentError:
+            print('Please set the environment variables DB_TEST_USERNAME and '
+                  'DB_TEST_PASSWORD')
+            sys.exit(1)
+    else:
+        try:
+            url = 'postgresql://{}:{}@127.0.0.1/sleep'.format(
+                os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
+        except KeyError:
+            print('Please set the environment variables DB_USERNAME and '
+                  'DB_PASSWORD')
+            sys.exit(1)
 
+    eng = create_engine(url)
+    return eng
+
+
+def update_db(eng):
     try:
         # if 'True' is a c.l. arg:
         #     if a file name is also a c.l. arg:
@@ -107,7 +127,7 @@ def connect(url):
         #         read from stdin
         sys.argv.remove('True')
         infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
-        read_nights_naps(engine, infile_name)
+        read_nights_naps(eng, infile_name)
     except ValueError:
         pass  # don't touch the db
 
@@ -161,12 +181,13 @@ def setup_load_logger():
 if __name__ == '__main__':
     load_logger = main()
     logging.info('load start')
-    try:
-        url = 'postgresql://{}:{}@127.0.0.1/sleep'.format(
-                os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
-    except KeyError:
-        print('Please set the environment variables DB_USERNAME and '
-              'DB_PASSWORD')
-        sys.exit(1)
-    connect(url)  # only c.l.a. will be 'True' or 'False'
+    # try:
+    #     url = 'postgresql://{}:{}@127.0.0.1/sleep'.format(
+    #             os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
+    # except KeyError:
+    #     print('Please set the environment variables DB_USERNAME and '
+    #           'DB_PASSWORD')
+    #     sys.exit(1)
+    engine = connect()  # only c.l.a. will be 'True' or 'False'
+    update_db(engine)
     logging.info('load finish')

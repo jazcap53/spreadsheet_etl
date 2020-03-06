@@ -5,29 +5,20 @@ import sys
 
 from sqlalchemy import create_engine, text
 
-from src.load.load import decimal_to_interval
+from src.load.load import connect, decimal_to_interval
 
 
 @pytest.fixture(scope="module")
-def my_setup():
-    try:
-        url = 'postgresql://{}:{}@localhost/sleep_test'.format(
-                os.environ['DB_TEST_USERNAME'], os.environ['DB_TEST_PASSWORD'])
-    except KeyError:
-        print('Please set the environment variables DB_TEST_USERNAME and '
-              'DB_TEST_PASSWORD')
-        sys.exit(1)
-    engine = create_engine(url)
-    return engine
+def engine():
+    return connect()
 
 
-def test_inserting_a_night_adds_one_to_night_count(my_setup):
+def test_inserting_a_night_adds_one_to_night_count(engine):
     date_time_now = datetime.now()
     date_today = date_time_now.date().isoformat()
     time_now = date_time_now.time().isoformat()
     last_colon_at = time_now.rfind(':')
     time_now = time_now[:last_colon_at] + ':00'
-    engine = my_setup
     connection = engine.connect()
     result = connection.execute("SELECT count(night_id) FROM slt_night")
     orig_ct = result.fetchone()[0]
@@ -40,10 +31,9 @@ def test_inserting_a_night_adds_one_to_night_count(my_setup):
     assert orig_ct + 1 == new_ct
 
 
-def test_inserting_a_nap_adds_one_to_nap_count(my_setup):
+def test_inserting_a_nap_adds_one_to_nap_count(engine):
     start_time_now = datetime.now().time()
     duration = '02:45'
-    engine = my_setup
     connection = engine.connect()
     night_id_result = connection.execute("SELECT max(night_id) FROM slt_night")
     night_id = night_id_result.fetchone()[0]
