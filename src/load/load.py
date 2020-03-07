@@ -90,8 +90,8 @@ def store_nights_naps(connection, my_line):
 
 def connect():
     """
-    Connect to the PostgreSQL db server;
-    invoke read_nights_naps() to load data from input to db_s_etl.
+    Connect to the PostgreSQL server -- to the test db if invoked
+    by pytest, otherwise to the development db.
 
     :return: a db engine
     Called by: client code
@@ -101,7 +101,7 @@ def connect():
             url = 'postgresql://{}:{}@127.0.0.1/sleep_test'.format(
                 os.environ['DB_TEST_USERNAME'],
                 os.environ['DB_TEST_PASSWORD'])
-        except EnvironmentError:
+        except KeyError:
             print('Please set the environment variables DB_TEST_USERNAME and '
                   'DB_TEST_PASSWORD')
             sys.exit(1)
@@ -119,6 +119,11 @@ def connect():
 
 
 def update_db(eng):
+    """
+    Invoke read_nights_naps() to load data from input into db.
+    :param eng: the db engine
+    :return: None
+    """
     try:
         # if 'True' is a c.l. arg:
         #     if a file name is also a c.l. arg:
@@ -181,13 +186,6 @@ def setup_load_logger():
 if __name__ == '__main__':
     load_logger = main()
     logging.info('load start')
-    # try:
-    #     url = 'postgresql://{}:{}@127.0.0.1/sleep'.format(
-    #             os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
-    # except KeyError:
-    #     print('Please set the environment variables DB_USERNAME and '
-    #           'DB_PASSWORD')
-    #     sys.exit(1)
     engine = connect()  # only c.l.a. will be 'True' or 'False'
     update_db(engine)
     logging.info('load finish')
