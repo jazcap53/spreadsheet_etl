@@ -97,25 +97,27 @@ def connect():
     Called by: client code
     """
     if 'pytest' in sys.argv[0]:
-        try:
-            url = 'postgresql://{}:{}@127.0.0.1/sleep_test'.format(
-                os.environ['DB_TEST_USERNAME'],
-                os.environ['DB_TEST_PASSWORD'])
-        except KeyError:
-            print('Please set the environment variables DB_TEST_USERNAME and '
-                  'DB_TEST_PASSWORD')
-            sys.exit(1)
+        url = get_db_url('sleep_test', ('DB_TEST_USERNAME',
+                                        'DB_TEST_PASSWORD'))
     else:
-        try:
-            url = 'postgresql://{}:{}@127.0.0.1/sleep'.format(
-                os.environ['DB_USERNAME'], os.environ['DB_PASSWORD'])
-        except KeyError:
-            print('Please set the environment variables DB_USERNAME and '
-                  'DB_PASSWORD')
-            sys.exit(1)
+        url = get_db_url('sleep', ('DB_USERNAME', 'DB_PASSWORD'))
 
     eng = create_engine(url)
     return eng
+
+
+def get_db_url(db_name, env_vars):
+    try:
+        url = 'postgresql://{}:{}@127.0.0.1/{}'.format(
+            os.environ[env_vars[0]],
+            os.environ[env_vars[1]],
+            db_name
+        )
+    except KeyError:
+        print('Please set the environment variables {} and '
+              '{}'.format(env_vars[0], env_vars[1]))
+        sys.exit(1)
+    return url
 
 
 def update_db(eng):
