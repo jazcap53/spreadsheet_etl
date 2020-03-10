@@ -96,28 +96,16 @@ def connect():
     :return: a db engine
     Called by: client code
     """
-    if 'pytest' in sys.argv[0]:
-        url = get_db_url('sleep_test', ('DB_TEST_USERNAME',
-                                        'DB_TEST_PASSWORD'))
-    else:
-        url = get_db_url('sleep', ('DB_USERNAME', 'DB_PASSWORD'))
-
+    try:
+        if 'pytest' in sys.argv[0]:
+            url = os.environ['DB_URL_TEST']
+        else:
+            url = os.environ['DB_URL']
+    except KeyError:
+        print('Please set environment variable DB_URL(_TEST)')
+        sys.exit(1)
     eng = create_engine(url)
     return eng
-
-
-def get_db_url(db_name, env_vars):
-    try:
-        url = 'postgresql://{}:{}@127.0.0.1/{}'.format(
-            os.environ[env_vars[0]],
-            os.environ[env_vars[1]],
-            db_name
-        )
-    except KeyError:
-        print('Please set the environment variables {} and '
-              '{}'.format(env_vars[0], env_vars[1]))
-        sys.exit(1)
-    return url
 
 
 def update_db(eng):
