@@ -1,10 +1,12 @@
 # file: test_chart_new.py
 # andrew jarcho
 # 10/2018
+import os.path
 import pytest
 from unittest.mock import Mock
 from src.chart.chart_new import Chart  # , get_parse_args, ASLEEP, AWAKE, NO_DATA, QS_IN_DAY, Triple
 from argparse import Namespace
+from definitions import ROOT_DIR
 
 
 def my_side_effect(q):
@@ -16,9 +18,9 @@ def my_side_effect(q):
 @pytest.fixture(scope="module")
 def chart():
     return Chart(Namespace(debug=False,
-                           filename='/home/jazcap53/python_projects'
-                                    '/spreadsheet_etl/tests'
-                                    '/test_chart_new.py'))
+                           filename=os.path.join(ROOT_DIR,
+                                                 'tests/',
+                                                 'test_chart_new.py')))
 
 
 def test_quarter_too_large(chart):
