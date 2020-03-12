@@ -9,7 +9,7 @@ from configparser import ConfigParser
 
 
 def config(filename='db_test/database.ini', section='postgresql'):
-    """Read the configuration file for the db_s_etl connection."""
+    """Read the configuration file for the db_test connection."""
     parser = ConfigParser()
     parser.read(filename)
     db = {}
