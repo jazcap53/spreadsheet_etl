@@ -264,9 +264,7 @@ def test_write_or_discard_night_3_element_b_event_flushes_buffer(extract):
     out_buffer = ['bongo', 'Hello World']
     extract._write_or_discard_night(Event(action='b', mil_time='8:15',
                                           hours='4.25'),
-                                    datetime.date(2017, 10, 12), out_buffer,
-                                    output)
-    assert output.getvalue() == 'bongo\nHello World\n'
+                                    datetime.date(2017, 10, 12), out_buffer)
     assert out_buffer == []
 
 
@@ -275,8 +273,7 @@ def test_write_or_discard_night_2_elem_b_event_no_output_pop_actions(extract):
     out_buffer = ['bongobongo', 'action: s, time: 19:00']
     extract._write_or_discard_night(Event(action='b', mil_time='10:00',
                                           hours=''),
-                                    datetime.date(2017, 5, 17), out_buffer,
-                                    output)
+                                    datetime.date(2017, 5, 17), out_buffer)
     assert output.getvalue() == ''
     assert out_buffer == ['bongobongo']
 
@@ -286,16 +283,14 @@ def test_write_or_discard_night_2_elem_b_event_long_b_str_in_buffer(extract):
     out_buffer = ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'action: s, time: 17:00']
     extract._write_or_discard_night(Event(action='b', mil_time='23:15',
                                           hours=''),
-                                    datetime.date(2017, 3, 19), out_buffer,
-                                    output)
+                                    datetime.date(2017, 3, 19), out_buffer)
     assert output.getvalue() == ''
     assert out_buffer == ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']
 
 
 def test_write_complete_night(extract, capfd):
     extract.out_buffer = ['hello', 'there']
-    extract.outfile = sys.stdout
-    extract._write_complete_night(extract.out_buffer, extract.outfile)
+    extract._write_complete_night(extract.out_buffer)
     fd1, fd2 = capfd.readouterr()
     assert fd1 == 'hello\nthere\n'
     assert fd2 == ''
@@ -307,8 +302,7 @@ def test_discard_incomplete_night(extract, capfd):
     out_buffer = ['action: b, time: 23:00, hours: 7.00',
                   '\nWeek of Sunday, 2017-01-01:\n==========================',
                   '    2017-01-01', '    2017-01-02', '    2017-01-03']
-    outfile = sys.stdout
-    extract._discard_incomplete_night(out_buffer, outfile)
+    extract._discard_incomplete_night(out_buffer)
     fd1, fd2 = capfd.readouterr()
     assert fd1 == 'action: N, time: 23:00\n'
     assert fd2 == ''

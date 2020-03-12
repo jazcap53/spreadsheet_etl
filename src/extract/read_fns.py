@@ -112,7 +112,7 @@ class Extract:
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
-    def __init__(self, infile: TextIOWrapper) -> None:
+    def __init__(self, infile) -> None:
         """infile: open for read"""
         self.infile = infile
         # self.sunday_date = None
@@ -304,8 +304,7 @@ class Extract:
 
     def _write_or_discard_night(self, action_b_event: Event,
                                 datetime_date: date,
-                                out_buffer: list,
-                                outfile: TextIOWrapper = sys.stdout) -> None:
+                                out_buffer: list) -> None:
         """
         Write (only) complete nights from out_buffer to outfile.
 
@@ -314,14 +313,13 @@ class Extract:
         Called by: _manage_output_buffer()
         """
         if action_b_event.hours:  # we have complete data for preceding night
-            self._write_complete_night(out_buffer, outfile)
+            self._write_complete_night(out_buffer)
         else:
             read_logger.info('Incomplete night(s) before {}'.
                              format(datetime_date))
-            self._discard_incomplete_night(out_buffer, outfile)
+            self._discard_incomplete_night(out_buffer)
 
-    def _write_complete_night(self, out_buffer: list,
-                              outfile: TextIOWrapper) -> None:
+    def _write_complete_night(self, out_buffer: list) -> None:
         """
         Write a complete night from output buffer to outfile
         Called by: _write_or_discard_night()
@@ -331,11 +329,10 @@ class Extract:
                 if line.startswith('action: b'):
                     line = line.replace('b', 'Y', 1)
                     self.in_missing_data = False
-            print(line, file=outfile)
+            print(line)
         out_buffer.clear()
 
-    def _discard_incomplete_night(self, out_buffer: list,
-                                  outfile: TextIOWrapper) -> None:
+    def _discard_incomplete_night(self, out_buffer: list) -> None:
         """
         Called by: _write_or_discard_night()
         """
@@ -345,7 +342,7 @@ class Extract:
             # if we see a 3-element 'b' event, there's good data *before* it
             if self._match_complete_b_event_line(this_line):
                 no_data_line = self._get_no_data_line(out_buffer, buf_ix)
-                print(no_data_line, file=outfile)
+                print(no_data_line)
             elif self._match_event_line(this_line):  # pop only Event lines
                 out_buffer.pop(buf_ix)  # leave headers in buffer
         self.in_missing_data = True
