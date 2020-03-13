@@ -1,4 +1,4 @@
--- file: db/create_procedures.sql
+-- file: db_test/create_procedures_plpgsql.sql
 -- andrew jarcho
 -- 2017-04-05
 

@@ -1,4 +1,4 @@
--- file: db/create_procedures.sql
+-- file: db_s_etl/create_procedures.sql
 -- andrew jarcho
 -- 2017-04-05
 

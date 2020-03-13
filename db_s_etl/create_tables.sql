@@ -1,4 +1,4 @@
--- file: db/create_tables.sql
+-- file: db_s_etl/create_tables.sql
 -- andrew jarcho
 -- 2017-02-16
 
