@@ -1,11 +1,9 @@
 import pytest
 from datetime import datetime
-import os
-import sys
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
-from src.load.load import connect, decimal_to_interval
+from src.load.load import connect
 
 
 @pytest.fixture(scope="module")
@@ -47,8 +45,3 @@ def test_inserting_a_nap_adds_one_to_nap_count(engine):
     result = connection.execute("SELECT count(nap_id) FROM slt_nap")
     new_ct = result.fetchone()[0]
     assert orig_ct + 1 == new_ct
-
-
-def test_good_interval_returns_good_output_on_good_input():
-    good_input = '3.25'
-    assert decimal_to_interval(good_input) == '3:15'
