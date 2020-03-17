@@ -3,6 +3,13 @@
 ## To run this app locally:
 
 * Create a virtual env
+    * Edit the new virtualenv's <your_venv>/bin/activate by inserting:
+    ``` 
+    DB_URL_TEST='postgresql://sp_etl:<your_secret>@localhost:5432/sleep_test'
+    export DB_URL_TEST
+    ```
+
+    
 * Set up PostgreSQL
     * Create the db user `sp_etl`
     ```
@@ -30,12 +37,12 @@
     ```
     $ python src/mk_processes.py src/current_sheet.csv -s
     ```  
-    Note the -s switch; without this `spreadsheet_etl` will not write to the db  
+    Note the -s switch; without this `spreadsheet_etl` will not write to the `sleep` db  
 The `sleep` db is now ready to be queried.  
 
 * Run the tests  
     ```
     $ pytest
     ```  
-Note: at present, each run of the tests adds one line to each of the two tables in `sleep_test`.
+Note: at present, each run of the tests adds one line to each of the two tables in the `sleep_test` db.
       
