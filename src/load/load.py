@@ -91,19 +91,15 @@ def store_nights_naps(connection, my_line):
 
 def connect():
     """
-    Connect to the PostgreSQL server -- to the test db if invoked
-    by pytest, otherwise to the development db.
+    Connect to the PostgreSQL server
 
     :return: a db engine
     Called by: client code
     """
     try:
-        if 'pytest' in sys.argv[0]:
-            url = os.environ['DB_URL_TEST']
-        else:
-            url = os.environ['DB_URL']
+        url = os.environ['DB_URL']
     except KeyError:
-        print('Please set environment variable DB_URL(_TEST)')
+        print('Please set environment variable DB_URL')
         sys.exit(1)
     eng = create_engine(url)
     return eng
