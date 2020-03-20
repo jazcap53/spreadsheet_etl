@@ -33,6 +33,7 @@ def set_up_loggers():
     # don't bother with a formatter, since a socket handler sends the event as
     # an unformatted pickle
     root_logger.addHandler(socket_handler)
+    # end cookbook code
 
     # read_logger will need a formatter since it is writing to file
     read_logger = logging.getLogger('extract.read_fns')
