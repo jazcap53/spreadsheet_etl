@@ -17,11 +17,12 @@ class FileReadAccessWrapper:
 
 
 class FakeFileReadWrapper:
-    def __init__(self, text, debug=False, filename=None):
+    def __init__(self, text, debug=False, infilename=None, outfilename=None):
         self.text = text
         self.start_ix = 0
         self.debug = debug
-        self.filename=filename
+        self.infilename=infilename
+        self.outfilename=outfilename
 
     def open(self):
         return io.StringIO(self.text)
