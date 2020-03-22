@@ -4,6 +4,7 @@
 
 
 import re
+import sys
 import argparse
 from datetime import datetime, timedelta
 from collections import namedtuple
@@ -65,7 +66,7 @@ action: w, time: 20:15, hours: 1.00
         self.infilename = args.infilename
         self.outfilename = args.outfilename
         self.infile = None
-        self.outfile = None
+        self.outfile = open(self.outfilename, 'w') if self.outfilename else None
         self.last_date_read = None
         self.last_sleep_time = None
         self.last_start_posn = None
@@ -452,15 +453,15 @@ action: w, time: 20:15, hours: 1.00
 def main():
     args = get_parse_args()
     chart = Chart(args)
-    with open(chart.outfilename, 'w') as chart.outfile:
-        chart.compile_decimal_hour()
-        chart.compile_hr_min_time()
-        chart.compile_iso_date()
-        read_file_iterator = chart.read_file()
-        ruler_line = chart.create_ruler()
-        print(ruler_line, file=chart.outfile)
-        chart.make_output(read_file_iterator)
-
+    chart.compile_decimal_hour()
+    chart.compile_hr_min_time()
+    chart.compile_iso_date()
+    read_file_iterator = chart.read_file()
+    ruler_line = chart.create_ruler()
+    print(ruler_line, file=chart.outfile)
+    chart.make_output(read_file_iterator)
+    if chart.outfile:
+        del chart.outfile
 
 def get_parse_args():
     """
@@ -469,8 +470,10 @@ def get_parse_args():
     Called by: main()
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('infilename', help='the input file name')
-    parser.add_argument('outfilename', help='the output file name')
+    parser.add_argument('-i', '--infilename', default=None,
+                        help='the input file name')
+    parser.add_argument('-o', '--outfilename', default=None,
+                        help='the output file name')
     parser.add_argument('-d', '--debug',
                         help=("output X, o, - instead of '\u2588', '\u0020', "
                               "'\u2591'"), action='store_true')
