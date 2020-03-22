@@ -62,8 +62,10 @@ action: w, time: 20:15, hours: 1.00
                                           defaults=[0, self.NO_DATA])
         self.curr_line = ''
         self.curr_sunday = ''
-        self.filename = args.filename
+        self.infilename = args.infilename
+        self.outfilename = args.outfilename
         self.infile = None
+        self.outfile = None
         self.last_date_read = None
         self.last_sleep_time = None
         self.last_start_posn = None
@@ -84,7 +86,7 @@ action: w, time: 20:15, hours: 1.00
         :return: None
         Called by: main()
         """
-        with open(self.filename) as self.infile:
+        with open(self.infilename) as self.infile:
             while self._get_a_line():
                 parsed_input_line = self._parse_input_line()
                 if parsed_input_line.start == -1:
@@ -362,7 +364,8 @@ action: w, time: 20:15, hours: 1.00
         extended_output_row = []
         for _, val in enumerate(my_output_row):
             extended_output_row.append(val)
-        print(f'{self.output_date} |{"".join(extended_output_row)}|')
+        print(f'{self.output_date} |{"".join(extended_output_row)}|',
+              file=self.outfile)
         self.output_date = self.advance_output_date(self.output_date)
 
     def advance_date(self, my_date, make_ruler=False):
@@ -375,7 +378,7 @@ action: w, time: 20:15, hours: 1.00
         """
         date_as_datetime = datetime.strptime(my_date, '%Y-%m-%d')
         if make_ruler and date_as_datetime.date().weekday() == 5:
-            print(self.create_ruler())
+            print(self.create_ruler(), file=self.outfile)
         date_as_datetime += timedelta(days=1)
         return date_as_datetime.strftime('%Y-%m-%d')
 
@@ -449,13 +452,14 @@ action: w, time: 20:15, hours: 1.00
 def main():
     args = get_parse_args()
     chart = Chart(args)
-    chart.compile_decimal_hour()
-    chart.compile_hr_min_time()
-    chart.compile_iso_date()
-    read_file_iterator = chart.read_file()
-    ruler_line = chart.create_ruler()
-    print(ruler_line)
-    chart.make_output(read_file_iterator)
+    with open(chart.outfilename, 'w') as chart.outfile:
+        chart.compile_decimal_hour()
+        chart.compile_hr_min_time()
+        chart.compile_iso_date()
+        read_file_iterator = chart.read_file()
+        ruler_line = chart.create_ruler()
+        print(ruler_line, file=chart.outfile)
+        chart.make_output(read_file_iterator)
 
 
 def get_parse_args():
@@ -465,7 +469,8 @@ def get_parse_args():
     Called by: main()
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', help='the input file name')
+    parser.add_argument('infilename', help='the input file name')
+    parser.add_argument('outfilename', help='the output file name')
     parser.add_argument('-d', '--debug',
                         help=("output X, o, - instead of '\u2588', '\u0020', "
                               "'\u2591'"), action='store_true')
