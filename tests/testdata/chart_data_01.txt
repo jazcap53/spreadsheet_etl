@@ -1,0 +1,33 @@
+
+Week of Sunday, 2016-12-04:
+==========================
+    2016-12-04
+    2016-12-05
+    2016-12-06
+    2016-12-07
+action: Y, time: 23:45
+    2016-12-08
+action: w, time: 3:45, hours: 4.00
+action: s, time: 4:45
+action: w, time: 6:15, hours: 1.50
+action: s, time: 11:30
+action: w, time: 12:15, hours: 0.75
+action: s, time: 16:45
+action: w, time: 17:30, hours: 0.75
+action: s, time: 21:00
+action: w, time: 21:30, hours: 0.50
+action: b, time: 23:15, hours: 7.50
+    2016-12-09
+action: w, time: 2:00, hours: 2.75
+action: s, time: 3:30
+action: w, time: 8:45, hours: 5.25
+action: s, time: 19:30
+action: w, time: 20:30, hours: 1.00
+    2016-12-10
+action: b, time: 0:00, hours: 9.00
+action: w, time: 5:15, hours: 5.25
+action: s, time: 10:30
+action: w, time: 11:30, hours: 1.00
+action: s, time: 16:00
+action: w, time: 17:00, hours: 1.00
+action: b, time: 22:30, hours: 7.25
