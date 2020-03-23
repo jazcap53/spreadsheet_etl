@@ -64,10 +64,10 @@ def test_get_an_action_line(chart):
     assert chart.curr_line == 'action: Y, time: 23:45'
 
 
-# def test_read_file_returns_iterator(chart):
-#     chart.compile_iso_date()
-#     read_file_iterator = chart.read_file()
-#     assert isinstance(next(read_file_iterator), chart.Triple)
+def test_read_file_returns_iterator(chart):
+    chart.compile_iso_date()
+    read_file_iterator = chart.read_file()
+    assert isinstance(next(read_file_iterator), chart.Triple)
 
 
 def test_advance_date(chart):
@@ -112,3 +112,34 @@ def test_handle_date_line_if_last_date_read_is_none(chart):
     assert chart.last_start_posn == 0
     assert chart.last_date_read == 'bongo'
     assert retval == chart.Triple(-1, -1, -1)
+
+
+def test_handle_date_line_if_sleep_state_is_no_data(chart):
+    chart.last_date_read = '2016-12-04'
+    chart.sleep_state = chart.NO_DATA
+    chart.last_start_posn = 0
+    assert chart._handle_date_line('bongo') == chart.Triple(0,
+                                                            24 * 4,
+                                                            chart.NO_DATA)
+
+
+def test_handle_date_line_if_sleep_state_has_data_and_last_date_read(chart):
+    chart.last_date_read = '2016-12-04'
+    chart.sleep_state = chart.ASLEEP
+    assert chart._handle_date_line('bongo') == chart.Triple(-1, -1, -1)
+
+
+def test_handle_action_line_with_b_action(chart):
+    line = 'action: b, time: 23:15, hours: 7.50'
+    chart._get_start_posn = Mock(return_value=0)
+    assert chart._handle_action_line(line) == chart.Triple(-1, -1, -1)
+
+
+def test_handle_action_line_with_w_action(chart):
+    line = 'action: w, time: 3:45, hours: 4.00'
+    chart.last_sleep_time = '23:45'
+    chart.last_start_posn = 95
+    chart._get_num_chunks = Mock(return_value=16)
+    assert chart._handle_action_line(line) == (
+        chart.Triple(chart.last_start_posn, 16, chart.ASLEEP)
+    )
