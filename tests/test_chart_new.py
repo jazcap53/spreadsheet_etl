@@ -98,3 +98,17 @@ def test_get_closest_quarter_with_q_60(chart):
 def test_compile_iso_date(chart):
     chart.compile_iso_date()
     assert isinstance(chart.re_iso_date, type(re.compile('Hello')))
+
+
+def test_parse_input_line_raises_on_empty_input_line(chart):
+    chart.curr_line = ''
+    with pytest.raises(ValueError):
+        chart._parse_input_line()
+
+
+def test_handle_date_line_if_last_date_read_is_none(chart):
+    chart.last_date_read = None
+    retval = chart._handle_date_line('bongo')
+    assert chart.last_start_posn == 0
+    assert chart.last_date_read == 'bongo'
+    assert retval == chart.Triple(-1, -1, -1)
