@@ -9,7 +9,7 @@ from src.chart.chart_new import Chart  # , get_parse_args, ASLEEP, AWAKE, NO_DAT
 from argparse import Namespace
 from definitions import ROOT_DIR
 
-from tests.file_access_wrappers import FakeFileReadWrapper
+# from tests.file_access_wrappers import FakeFileReadWrapper
 
 
 def my_side_effect(q):
@@ -21,56 +21,11 @@ def my_side_effect(q):
 @pytest.fixture(scope="module")
 def chart():
     return Chart(Namespace(debug=False,
-                           filename=os.path.join(ROOT_DIR,
-                                                 'tests/',
-                                                 'test_chart_new.py')))
-
-
-@pytest.fixture()
-def chart():
-    return Chart(FakeFileReadWrapper('''
-
-Week of Sunday, 2016-12-04:
-==========================
-    2016-12-04
-    2016-12-05
-    2016-12-06
-    2016-12-07
-action: Y, time: 23:45
-    2016-12-08
-action: w, time: 3:45, hours: 4.00
-action: s, time: 4:45
-action: w, time: 6:15, hours: 1.50
-action: s, time: 11:30
-action: w, time: 12:15, hours: 0.75
-action: s, time: 16:45
-action: w, time: 17:30, hours: 0.75
-action: s, time: 21:00
-action: w, time: 21:30, hours: 0.50
-action: b, time: 23:15, hours: 7.50
-    2016-12-09
-action: w, time: 2:00, hours: 2.75
-action: s, time: 3:30
-action: w, time: 8:45, hours: 5.25
-action: s, time: 19:30
-action: w, time: 20:30, hours: 1.00
-    2016-12-10
-action: b, time: 0:00, hours: 9.00
-action: w, time: 5:15, hours: 5.25
-action: s, time: 10:30
-action: w, time: 11:30, hours: 1.00
-action: s, time: 16:00
-action: w, time: 17:00, hours: 1.00
-action: b, time: 22:30, hours: 7.25
-    '''))
-
-
-@pytest.fixture()
-def open_input_file(filename='/home/jazcap53/python_projects/'
-                             'spreadsheet_etl/xtraneous/'
-                             'transform_input_sheet_045.txt'):
-    infile = open(filename)
-    return infile
+                           infilename=os.path.join(ROOT_DIR,
+                                                   'tests/',
+                                                   'testdata/',
+                                                   'chart_data_01.txt'),
+                           outfilename=None))
 
 
 def test_quarter_too_large(chart):
@@ -85,35 +40,28 @@ def test_constants_have_good_values(chart):
     assert chart.NO_DATA == u'\u2591'  # gray
     assert chart.QS_IN_DAY == 96  # 24 * 4
     assert issubclass(chart.Triple, tuple)
+    assert chart.infilename == os.path.join(ROOT_DIR, 'tests/',
+                                            'testdata/', 'chart_data_01.txt')
+    assert chart.outfilename is None
 
 
-# def test_ctor_creates_instance_vars(chart):
-#     assert chart.filename is not None
-#     assert chart.curr_line is ''
-
-
-def test_get_a_line(open_input_file, chart):
+def test_get_a_line(chart):
     """Get first input line that starts with a date"""
-    chart.infile = open_input_file
+    chart.infile = open(chart.infilename)
     chart.compile_iso_date()
     ret = chart._get_a_line()
     assert chart.curr_line == '2016-12-04'
     assert ret
 
-# def test_get_a_line_again(open_input_file, make_chart):
-#     """Get second input line that starts with a date"""
-#     make_chart.infile = open_input_file
-#     make_chart.compile_iso_date()
-#     make_chart.get_a_line()
-#     make_chart.get_a_line()
-#     assert make_chart.curr_line == ' 2016-12-07 | 04:45:00 | 01:30:00 |      2'
 
-
-# def test_ctor_makes_a_chart(open_input_file):  # ='/home/jazcap53/python_projects/' +
-#                                        # 'spreadsheet_etl/xtraneous/' +
-#                                        # 'transform_input_sheet_045.txt'):
-#     my_chart = Chart(open_input_file)
-#     assert isinstance(my_chart, Chart)
+def test_get_an_action_line(chart):
+    """Get second input line that starts with a date"""
+    chart.infile = open(chart.infilename)
+    chart.compile_iso_date()
+    chart._get_a_line()
+    while len(chart.curr_line) == 10:  # len of an ISO date
+        chart._get_a_line()
+    assert chart.curr_line == 'action: Y, time: 23:45'
 
 
 # def test_read_file_returns_iterator(chart):
