@@ -38,15 +38,13 @@ extract_process = subprocess.Popen(
     stdout=subprocess.PIPE,
 )
 
-# time.sleep(5)
-
 transform_process = subprocess.Popen(
     ['./src/transform/do_transform.py'],
     stdin=extract_process.stdout,
     stdout=subprocess.PIPE,
 )
 
-time.sleep(2)  # was 6
+time.sleep(2)
 
 load_process = subprocess.Popen(
     ['./src/load/load.py', store_in_db],
