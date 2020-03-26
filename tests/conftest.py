@@ -2,6 +2,9 @@ import pytest
 import os
 import sys
 from sqlalchemy import create_engine
+from sqlalchemy.orm.session import sessionmaker
+
+Session = sessionmaker(autoflush=False)
 
 
 @pytest.fixture(scope='module')
@@ -15,15 +18,11 @@ def url():
 
 
 @pytest.fixture(scope='module')
-def cnxn(url):
+def session(url):
     engine = create_engine(url)
     cnxn = engine.connect()
-    yield cnxn
+    Session.configure(bind=cnxn)
+    sess = Session()
+    yield sess
+    sess.rollback()
     cnxn.close()
-
-
-@pytest.fixture
-def cursor(cnxn):
-    cursor = cnxn.cursor()
-    yield cursor
-    cnxn.rollback()
