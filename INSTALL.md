@@ -60,5 +60,4 @@
 * Run the tests:  
     ```
     $ pytest
-    ```  
-    Each run of the tests adds one line to each of the two tables in the `sleep_test` db.
+    ```
