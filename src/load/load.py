@@ -176,4 +176,5 @@ if __name__ == '__main__':
     logging.info('load start')
     engine = connect()  # only c.l.a. will be 'True' or 'False'
     update_db(engine)
+    engine.dispose()
     logging.info('load finish')
