@@ -101,8 +101,9 @@ def connect():
     except KeyError:
         print('Please set environment variable DB_URL')
         sys.exit(1)
-    eng = create_engine(url)
-    return eng
+    else:
+        eng = create_engine(url)
+        return eng
 
 
 def update_db(eng):
