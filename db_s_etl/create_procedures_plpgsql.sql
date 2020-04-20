@@ -36,9 +36,16 @@ CREATE OR REPLACE FUNCTION sl_insert_nap(new_start_time time without time zone,
                                          RETURNS text AS $$
 
 DECLARE
+    sl_nap_row sl_nap%ROWTYPE
     fk_night_id INTEGER;
 
 BEGIN
+    SELECT * INTO sl_nap_row FROM sl_nap WHERE start_time = new_start_time AND
+                                               duration = new_duration;
+    IF FOUND THEN
+        RETURN 'sl_insert_nap() failed: row already in table';
+    END IF;
+
     SELECT currval('sl_night_night_id_seq') INTO fk_night_id;
 
     INSERT INTO sl_nap (nap_id, start_time, duration, night_id)
