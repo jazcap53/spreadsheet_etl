@@ -143,3 +143,12 @@ def test_handle_action_line_with_w_action(chart):
     assert chart._handle_action_line(line) == (
         chart.Triple(chart.last_start_posn, 16, chart.ASLEEP)
     )
+
+
+def test_action_line_with_N_action(chart):
+    line = 'action: N, time: 23:00'
+    ret_triple = chart._handle_action_line(line)
+    assert chart.last_sleep_time == '23:00'
+    assert chart.last_start_posn == 0
+    assert chart.sleep_state == chart.NO_DATA
+    assert ret_triple == chart.Triple(-1, -1, -1)
