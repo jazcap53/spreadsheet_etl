@@ -143,3 +143,4 @@ def test_handle_action_line_with_w_action(chart):
     assert chart._handle_action_line(line) == (
         chart.Triple(chart.last_start_posn, 16, chart.ASLEEP)
     )
+
