@@ -28,6 +28,10 @@ def test_extra_space_in_item_0_returns_true(seg=['b ', '22:45', '7.50']):
     assert validate_segment(seg)
 
 
+def test_bad_time_in_item_1_returns_false(seg=['b ', '25:00', '7.50']):
+    assert not validate_segment(seg)
+
+
 def test_item_0_is_s_and_item_2_is_not_blank_returns_false(
         seg=['s', '10:00', '1.00']):
     assert not validate_segment(seg)
@@ -77,6 +81,16 @@ def test_Event_ctor_creates_valid_Event_with_valid_hours_empty_input_segment():
 @pytest.fixture
 def make_day():
     return Day(date(2017, 1, 9), [])
+
+
+def test_Day_ctor_raises_TypeError_on_non_date_first_arg():
+    with pytest.raises(TypeError):
+        Day('2020-08-08', [])
+
+
+def test_Day_ctor_raises_TypeError_on_non_list_second_arg():
+    with pytest.raises(TypeError):
+        Day(date.today(), ())
 
 
 def test_Day_has_a_datetime_dt_date_member(make_day):

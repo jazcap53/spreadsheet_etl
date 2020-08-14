@@ -19,7 +19,7 @@ def validate_segment(segment):
     """
     if not any(segment) or not all(segment[0:2]):
         return False
-    if not re.match(r'[012]?\d:\d{2}', segment[1]):
+    if not re.match(r'[01]?\d:[0-5]\d|2[0-3]:[0-5]\d', segment[1]):
         return False
     if segment[2] and not re.match(r'[12]?\d\.\d{2}', segment[2]):
         return False
