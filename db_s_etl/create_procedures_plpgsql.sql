@@ -36,7 +36,7 @@ CREATE OR REPLACE FUNCTION sl_insert_nap(new_start_time time without time zone,
                                          RETURNS text AS $$
 
 DECLARE
-    sl_nap_row sl_nap%ROWTYPE
+    sl_nap_row sl_nap%ROWTYPE;
     fk_night_id INTEGER;
 
 BEGIN
