@@ -13,7 +13,6 @@ The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
 
-import sys
 import fileinput
 import logging
 import logging.handlers
@@ -195,6 +194,7 @@ class Transform:
         else:
             closest_quarter = 45
         return closest_quarter
+
 
 def main():
     # from: https://docs.python.org/3/howto/
