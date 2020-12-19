@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # from: https://docs.python.org/3/howto/logging-cookbook.html#network-logging
 
