@@ -32,7 +32,8 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION sl_insert_nap(new_start_time time without time zone,
-                                         new_duration interval hour to minute)
+                                         new_duration interval hour to minute,
+                                         new_night_id integer)
                                          RETURNS text AS $$
 
 DECLARE
@@ -41,7 +42,9 @@ DECLARE
 
 BEGIN
     SELECT * INTO sl_nap_row FROM sl_nap WHERE start_time = new_start_time AND
-                                               duration = new_duration;
+                                               duration = new_duration AND
+                                               night_id = new_night_id;
+
     IF FOUND THEN
         RETURN 'sl_insert_nap() failed: row already in table';
     END IF;

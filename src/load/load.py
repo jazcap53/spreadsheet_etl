@@ -13,6 +13,13 @@ import os
 import sys
 
 
+temp_read_night_ctr = 0
+temp_read_nap_ctr = 0
+
+temp_store_night_ctr = 0
+temp_store_nap_ctr = 0
+
+
 def decimal_to_interval(dec_str):
     """
     Convert duration from a decimal string to an interval string
@@ -32,18 +39,21 @@ def decimal_to_interval(dec_str):
     return interval_str
 
 
-def read_nights_naps(engine, infile_name):
+def read_nights_naps(my_engine, infile_name):
     """
     Read NIGHT and NAP data from infile_name;
     call function to load that data into database.
 
-    :param engine: the db engine
+    :param my_engine: the db engine
     :param infile_name: read data from file or stdin
     :return: None
     Called by: connect()
     """
+    global temp_store_night_ctr
+    global temp_store_nap_ctr
+
     with fileinput.input(infile_name) as data_source:
-        connection = engine.connect()
+        connection = my_engine.connect()
         trans = connection.begin()
         try:
             keep_going = True
@@ -70,21 +80,29 @@ def store_nights_naps(connection, my_line):
     :return: True if the line was inserted, else False
     Called by read_nights_naps()
     """
+    global temp_store_night_ctr
+    global temp_store_nap_ctr
+
     success = False
     line_list = my_line.rstrip().split(', ')
     if line_list[0] == 'NIGHT':
+        temp_store_night_ctr += 1
         result = connection.execute(
             func.sl_insert_night(*line_list[1:])
         )
-        load_logger.debug(result)
+        for row in result:
+            load_logger.debug(row)
         success = True
     elif line_list[0] == 'NAP':
+        temp_store_nap_ctr += 1
         result = connection.execute(
             func.sl_insert_nap(line_list[1],
-                               decimal_to_interval(line_list[2])
+                               decimal_to_interval(line_list[2]),
+                               temp_store_night_ctr
                                )
         )
-        load_logger.debug(result)
+        for row in result:
+            load_logger.debug(row)
         success = True
     return success
 
