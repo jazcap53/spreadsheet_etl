@@ -5,11 +5,11 @@
 # 2017-02-20
 
 
+import fileinput
 import logging
 import logging.handlers
-import fileinput
-from sqlalchemy import create_engine, func
 import os
+from sqlalchemy import create_engine, func
 import sys
 
 

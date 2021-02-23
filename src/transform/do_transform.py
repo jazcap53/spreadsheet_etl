@@ -12,7 +12,6 @@ Read lines from stdin, transform to a db-friendly format, and write to stdout.
 The output will be usable by the database with a minimum of further
 processing, and will hold all relevant data from the input.
 """
-
 import fileinput
 import logging
 import logging.handlers

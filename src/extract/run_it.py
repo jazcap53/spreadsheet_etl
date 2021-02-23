@@ -11,13 +11,10 @@ Run the extract phase of the pipeline.
 
 read_fns() reads raw data from the spreadsheet, and groups it by day and week.
 """
-
-# import sys
 import argparse
 import logging
 import logging.handlers
 
-# import container_objs
 import read_fns
 from tests.file_access_wrappers import FileReadAccessWrapper
 

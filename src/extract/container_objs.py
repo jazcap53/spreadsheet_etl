@@ -2,12 +2,10 @@
 # andrew jarcho
 # 2017-01-21
 
-# python: 3.5
 
-
+from collections import namedtuple
 import datetime
 import re
-from collections import namedtuple
 
 
 def validate_segment(segment):

@@ -10,10 +10,9 @@ and load stages.
 logging_process runs the network logging receiver that allows all 3 stages
 to log to the same file.
 """
-
+import argparse
 import subprocess
 import time
-import argparse
 
 note = 'Runs in debug mode unless -s switch is given.'
 parser = argparse.ArgumentParser(description=note)
@@ -38,20 +37,22 @@ extract_process = subprocess.Popen(
     stdout=subprocess.PIPE,
 )
 
+time.sleep(2)
+
 transform_process = subprocess.Popen(
     ['./src/transform/do_transform.py'],
     stdin=extract_process.stdout,
     stdout=subprocess.PIPE,
 )
 
-time.sleep(2)
+time.sleep(3)
 
 load_process = subprocess.Popen(
     ['./src/load/load.py', store_in_db],
     stdin=transform_process.stdout,
 )
 
-time.sleep(5)
+time.sleep(7)
 
 extract_process.terminate()
 transform_process.terminate()

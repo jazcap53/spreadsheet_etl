@@ -84,14 +84,12 @@ Event strings not discarded, along with header strings for each calendar
 week and day, are written to sys.stdout by default.
 """
 import datetime
-import re
-import logging
-import sys
-from typing import Tuple, Optional, Union, List
 from datetime import date
+import logging
+import re
+from typing import Optional, Union
 
 from container_objs import validate_segment, Week, Day, Event
-# from tests.file_access_wrappers import FileReadAccessWrapper
 from io import TextIOWrapper
 
 
@@ -115,7 +113,6 @@ class Extract:
     def __init__(self, infile) -> None:
         """infile: open for read"""
         self.infile = infile
-        # self.sunday_date = None
         self.new_week = None
         self.line_as_list = []
         self.in_missing_data = False
@@ -181,7 +178,7 @@ class Extract:
         return dt_date.weekday() == Extract.SUNDAY if dt_date else False
 
     @staticmethod
-    def _make_day_list(sunday_date: date) -> List[Day]:
+    def _make_day_list(sunday_date: date) -> list[Day]:
         """
         Make a week's worth of Day objects
 
@@ -250,7 +247,6 @@ class Extract:
             segment = [seg.strip() for seg in segment]
             if validate_segment(segment):
                 an_event = Event(*segment)
-            # elif [seg.strip() for seg in segment] == ['', '', '']:
             elif segment == ['', '', '']:
                 an_event = None
             else:
