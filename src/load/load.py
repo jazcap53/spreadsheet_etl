@@ -9,15 +9,16 @@ import fileinput
 import logging
 import logging.handlers
 import os
-from sqlalchemy import create_engine, func
 import sys
 
+from sqlalchemy import create_engine, func
 
-temp_read_night_ctr = 0
-temp_read_nap_ctr = 0
 
-temp_store_night_ctr = 0
-temp_store_nap_ctr = 0
+TEMP_READ_NIGHT_CTR = 0
+TEMP_READ_NAP_CTR = 0
+
+TEMP_STORE_NIGHT_CTR = 0
+TEMP_STORE_NAP_CTR = 0
 
 
 def decimal_to_interval(dec_str):
@@ -28,32 +29,31 @@ def decimal_to_interval(dec_str):
     """
     dec_mins_to_mins = {'00': '00', '25': '15', '50': '30', '75': '45'}
     hrs, dec_mins = dec_str.split('.')
-    mins = None
     try:
         mins = dec_mins_to_mins[dec_mins]
     except KeyError:
-        logging.error('Value for dec_mins {} not found in '
-                      'decimal_to_interval()'.format(dec_mins))
+        logging.error('Value for dec_mins %d not found in '
+                      'decimal_to_interval()', dec_mins)
         raise
     interval_str = '{}:{}'.format(hrs, mins)
     return interval_str
 
 
-def read_nights_naps(my_engine, infile_name):
+def read_nights_naps(eng, infile_name):
     """
     Read NIGHT and NAP data from infile_name;
     call function to load that data into database.
 
-    :param my_engine: the db engine
+    :param eng: the db engine
     :param infile_name: read data from file or stdin
     :return: None
     Called by: connect()
     """
-    global temp_store_night_ctr
-    global temp_store_nap_ctr
+    global TEMP_STORE_NIGHT_CTR
+    global TEMP_STORE_NAP_CTR
 
     with fileinput.input(infile_name) as data_source:
-        connection = my_engine.connect()
+        connection = eng.connect()
         trans = connection.begin()
         try:
             keep_going = True
@@ -66,7 +66,7 @@ def read_nights_naps(my_engine, infile_name):
             raise
 
 
-def store_nights_naps(connection, my_line):
+def store_nights_naps(connection, line):
     """
     Insert a line of data into the db
 
@@ -76,33 +76,37 @@ def store_nights_naps(connection, my_line):
         insert a nap into sl_nap
 
     :param connection: an open db connection
-    :param my_line: a line of data from the transform stage
+    :param line: a line of data from the transform stage
     :return: True if the line was inserted, else False
     Called by read_nights_naps()
     """
-    global temp_store_night_ctr
-    global temp_store_nap_ctr
+    global TEMP_STORE_NIGHT_CTR
+    global TEMP_STORE_NAP_CTR
 
     success = False
-    line_list = my_line.rstrip().split(', ')
+    line_list = line.rstrip().split(', ')
     if line_list[0] == 'NIGHT':
-        temp_store_night_ctr += 1
+        TEMP_STORE_NIGHT_CTR += 1
         result = connection.execute(
             func.sl_insert_night(*line_list[1:])
         )
         for row in result:
-            load_logger.debug(row)
+            mesg = ', '.join(line_list)
+            ld_logger.debug(row)
+            ld_logger.debug(mesg)
         success = True
     elif line_list[0] == 'NAP':
-        temp_store_nap_ctr += 1
+        TEMP_STORE_NAP_CTR += 1
         result = connection.execute(
             func.sl_insert_nap(line_list[1],
                                decimal_to_interval(line_list[2]),
-                               temp_store_night_ctr
+                               TEMP_STORE_NIGHT_CTR
                                )
         )
         for row in result:
-            load_logger.debug(row)
+            mesg = ', '.join(line_list)
+            ld_logger.debug(row)
+            ld_logger.debug(mesg)
         success = True
     return success
 
@@ -176,7 +180,7 @@ def setup_load_logger():
     :return: the load logger
     Called by: main()
     """
-    # load_logger will need a formatter since it is writing to file
+    # ld_logger will need a formatter since it is writing to file
     load_logger = logging.getLogger('load.load')
     load_logger.setLevel(logging.DEBUG)
     file_handler = logging.FileHandler('src/load/load.log', mode='w')
@@ -190,7 +194,7 @@ def setup_load_logger():
 
 
 if __name__ == '__main__':
-    load_logger = main()
+    ld_logger = main()
     logging.info('load start')
     engine = connect()  # only c.l.a. will be 'True' or 'False'
     update_db(engine)
