@@ -86,8 +86,8 @@ def store_nights_naps(connection, line):
         )
         for row in result:
             mesg = ', '.join(line_list)
-            night_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
-            night_log(row)
+            # night_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
+            night_nap_log(row, mesg)
         success = True
     elif line_list[0] == 'NAP':
         result = connection.execute(
@@ -98,10 +98,15 @@ def store_nights_naps(connection, line):
         )
         for row in result:
             mesg = ', '.join(line_list)
-            nap_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
-            nap_log(row)
+            # nap_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
+            night_nap_log(row, mesg)
+            # nap_log(row)
         success = True
     return success
+
+
+def night_nap_log(row, mesg):
+    ld_logger.debug(row, extra={"mesg": mesg})
 
 
 def connect():
