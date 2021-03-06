@@ -14,11 +14,7 @@ import sys
 from sqlalchemy import create_engine, func
 
 
-TEMP_READ_NIGHT_CTR = 0
-TEMP_READ_NAP_CTR = 0
-
 TEMP_STORE_NIGHT_CTR = 0
-TEMP_STORE_NAP_CTR = 0
 
 
 def decimal_to_interval(dec_str):
@@ -50,7 +46,6 @@ def read_nights_naps(eng, infile_name):
     Called by: connect()
     """
     global TEMP_STORE_NIGHT_CTR
-    global TEMP_STORE_NAP_CTR
 
     with fileinput.input(infile_name) as data_source:
         connection = eng.connect()
@@ -81,7 +76,6 @@ def store_nights_naps(connection, line):
     Called by read_nights_naps()
     """
     global TEMP_STORE_NIGHT_CTR
-    global TEMP_STORE_NAP_CTR
 
     success = False
     line_list = line.rstrip().split(', ')
@@ -92,11 +86,10 @@ def store_nights_naps(connection, line):
         )
         for row in result:
             mesg = ', '.join(line_list)
-            ld_logger.debug(row)
-            ld_logger.debug(mesg)
+            night_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
+            night_log(row)
         success = True
     elif line_list[0] == 'NAP':
-        TEMP_STORE_NAP_CTR += 1
         result = connection.execute(
             func.sl_insert_nap(line_list[1],
                                decimal_to_interval(line_list[2]),
@@ -105,8 +98,8 @@ def store_nights_naps(connection, line):
         )
         for row in result:
             mesg = ', '.join(line_list)
-            ld_logger.debug(row)
-            ld_logger.debug(mesg)
+            nap_log = lambda r: ld_logger.debug(r, extra={"mesg": mesg})
+            nap_log(row)
         success = True
     return success
 
@@ -185,7 +178,7 @@ def setup_load_logger():
     load_logger.setLevel(logging.DEBUG)
     file_handler = logging.FileHandler('src/load/load.log', mode='w')
     formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s - %(mesg)s')
     file_handler.setFormatter(formatter)
     load_logger.addHandler(file_handler)
     load_logger.propagate = False
