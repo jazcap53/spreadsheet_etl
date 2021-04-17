@@ -28,7 +28,7 @@ def decimal_to_interval(dec_str):
     try:
         mins = dec_mins_to_mins[dec_mins]
     except KeyError:
-        logging.error('Value for dec_mins %d not found in '
+        logging.error('Value for dec_mins %s not found in '
                       'decimal_to_interval()', dec_mins)
         raise
     interval_str = '{}:{}'.format(hrs, mins)
