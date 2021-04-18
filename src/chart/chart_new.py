@@ -1,7 +1,9 @@
 # file: chart_new.py
 # andrew jarcho
 # 10/2018
-
+"""
+Create a Timeline Chart from the input data.
+"""
 
 import re
 import argparse
@@ -11,6 +13,7 @@ from collections import namedtuple
 BLACK_INK = u'\u2588'
 WHITE_PAPER = u'\u0020'
 GRAY = u'\u2591'
+
 
 class Chart:
     """
@@ -109,7 +112,6 @@ action: w, time: 20:15, hours: 1.00
 
     def _parse_input_line(self):
         """
-        
         :return: a 'Triple' namedtuple holding
                      a start position, (start)
                      a count of quarter hours, (length)
@@ -174,7 +176,7 @@ action: w, time: 20:15, hours: 1.00
             self.sleep_state = self.NO_DATA
             return self.Triple(-1, -1, -1)
         # raise ValueError(f"Bad 'action: ' value in line {line}")   DON'T DO THIS!
-
+        return None
 
     @staticmethod
     def _get_time_part(cur_l):
@@ -459,6 +461,7 @@ def main():
     chart.make_output(read_file_iterator)
     if chart.outfile:
         del chart.outfile
+
 
 def get_parse_args():
     """
