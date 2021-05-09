@@ -56,7 +56,7 @@ action: w, time: 20:15, hours: 1.00
         self.AWAKE = 'o' if self.DEBUG else WHITE_PAPER
         self.NO_DATA = '-' if self.DEBUG else GRAY
         self.Triple = namedtuple('Triple', ['start', 'length', 'symbol'],
-                                 defaults=[0, 0, 0])
+                                 defaults=[0, 0, self.NO_DATA])
         self.QuartersCarried = namedtuple('QuartersCarried',
                                           ['length', 'symbol'],
                                           defaults=[0, self.NO_DATA])
@@ -136,13 +136,13 @@ action: w, time: 20:15, hours: 1.00
         if self.last_date_read is None:
             self.last_start_posn = 0
             self.last_date_read = line
-            return self.Triple(-1, -1, -1)
+            return self.Triple(-1, -1, -1)  # get more input
         if self.sleep_state == self.NO_DATA:
             quarters_to_output = self.QS_IN_DAY - self.last_start_posn
             return self.Triple(self.last_start_posn, quarters_to_output,
                                self.sleep_state)
         self.last_date_read = line
-        return self.Triple(-1, -1, -1)
+        return self.Triple(-1, -1, -1)  # get more input
 
     def _handle_action_line(self, line):
         """
@@ -163,7 +163,7 @@ action: w, time: 20:15, hours: 1.00
             self.last_sleep_time = self._get_time_part(line)
             self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.ASLEEP
-            return self.Triple(-1, -1, -1)
+            return self.Triple(-1, -1, -1)  # get more input
         if line[8] == 'w':
             wake_time = self._get_time_part(line)
             duration = self._get_duration(wake_time, self.last_sleep_time)
@@ -174,7 +174,7 @@ action: w, time: 20:15, hours: 1.00
             self.last_sleep_time = self._get_time_part(line)
             self.last_start_posn = self._get_start_posn(line)
             self.sleep_state = self.NO_DATA
-            return self.Triple(-1, -1, -1)
+            return self.Triple(-1, -1, -1)  # get more input
         # raise ValueError(f"Bad 'action: ' value in line {line}")   DON'T DO THIS!
         return None
 
