@@ -67,6 +67,7 @@ action: w, time: 20:15, hours: 1.00
         self.infile = None
         self.outfile = open(self.outfilename, 'w') if self.outfilename else None
         self.last_date_read = None
+        self.last_sleep_state = self.NO_DATA
         self.last_sleep_time = None
         self.last_start_posn = None
         self.output_date = '2016-12-04'
@@ -308,17 +309,19 @@ action: w, time: 20:15, hours: 1.00
         if curr_posn < curr_triple.start:
             triple_to_insert = self.Triple(curr_posn,
                                            curr_triple.start - curr_posn,
-                                           self.sleep_state)
+                                           self.last_sleep_state)
             row_out = self._insert_to_row_out(triple_to_insert, row_out)
         elif curr_posn == curr_triple.start:
             pass  # insert no leading sleep states
         else:
             triple_to_insert = self.Triple(curr_posn,
                                            self.QS_IN_DAY - curr_posn,
-                                           self.sleep_state)
+                                           self.last_sleep_state)
             row_out = self._insert_to_row_out(triple_to_insert, row_out)
             if not row_out.count(self.NO_DATA) or \
-                    curr_triple.symbol == self.NO_DATA:  # row out is complete
+                    curr_triple.symbol == self.NO_DATA or \
+                    triple_to_insert.start + triple_to_insert.length >= \
+                    self.QS_IN_DAY:  # row out is complete
                 self._write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = self.QS_IN_DAY
@@ -326,6 +329,7 @@ action: w, time: 20:15, hours: 1.00
                 triple_to_insert = self.Triple(0, curr_triple.start,
                                                self.sleep_state)
                 row_out = self._insert_to_row_out(triple_to_insert, row_out)
+        self.last_sleep_state = self.sleep_state
         return row_out
 
     def _handle_quarters_carried(self, curr_output_row):
