@@ -307,20 +307,15 @@ action: w, time: 20:15, hours: 1.00
         """
         curr_posn = self.QS_IN_DAY - self.spaces_left
         if curr_posn < curr_triple.start:
-            triple_to_insert = self.Triple(curr_posn,
-                                           curr_triple.start - curr_posn,
-                                           self.last_sleep_state)
-            row_out = self._insert_to_row_out(triple_to_insert, row_out)
+            row_out = self._fill_gap(curr_posn, curr_triple, row_out)
         elif curr_posn == curr_triple.start:
-            pass  # insert no leading sleep states
+            pass  # no gap
         else:
             triple_to_insert = self.Triple(curr_posn,
                                            self.QS_IN_DAY - curr_posn,
                                            self.last_sleep_state)
             row_out = self._insert_to_row_out(triple_to_insert, row_out)
-            if not row_out.count(self.NO_DATA) or \
-                    triple_to_insert.start + triple_to_insert.length == \
-                    self.QS_IN_DAY:  # row out is complete
+            if self._is_complete(triple_to_insert, row_out):
                 self._write_output(row_out)
             row_out = self.output_row[:]
             self.spaces_left = self.QS_IN_DAY
@@ -330,6 +325,19 @@ action: w, time: 20:15, hours: 1.00
                 row_out = self._insert_to_row_out(triple_to_insert, row_out)
         self.last_sleep_state = self.sleep_state
         return row_out
+
+    def _fill_gap(self, curr_posn, curr_triple, row_out):
+        triple_to_insert = self.Triple(curr_posn,
+                                       curr_triple.start - curr_posn,
+                                       self.last_sleep_state)
+        return self._insert_to_row_out(triple_to_insert, row_out)
+
+    def _is_complete(self, triple_to_insert, row_out):
+        if not row_out.count(self.NO_DATA) or \
+                triple_to_insert.start + triple_to_insert.length == \
+                self.QS_IN_DAY:
+            return True
+        return False
 
     def _handle_quarters_carried(self, curr_output_row):
         curr_output_row = self._insert_to_row_out(
