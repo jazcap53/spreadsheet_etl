@@ -319,8 +319,7 @@ action: w, time: 20:15, hours: 1.00
                                            self.last_sleep_state)
             row_out = self._insert_to_row_out(triple_to_insert, row_out)
             if not row_out.count(self.NO_DATA) or \
-                    curr_triple.symbol == self.NO_DATA or \
-                    triple_to_insert.start + triple_to_insert.length >= \
+                    triple_to_insert.start + triple_to_insert.length == \
                     self.QS_IN_DAY:  # row out is complete
                 self._write_output(row_out)
             row_out = self.output_row[:]
