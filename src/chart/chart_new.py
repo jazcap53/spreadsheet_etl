@@ -311,18 +311,22 @@ action: w, time: 20:15, hours: 1.00
         elif curr_posn == curr_triple.start:
             pass  # no gap
         else:
-            triple_to_insert = self.Triple(curr_posn,
-                                           self.QS_IN_DAY - curr_posn,
-                                           self.last_sleep_state)
-            row_out = self._insert_to_row_out(triple_to_insert, row_out)
-            if self._is_complete(triple_to_insert, row_out):
-                self._write_output(row_out)
-            row_out = self._reset_row()  # this outdent is correct
+            row_out = self._finish_row(curr_posn, row_out)
             if curr_triple.start > 0:
                 triple_to_insert = self.Triple(0, curr_triple.start,
                                                self.sleep_state)
                 row_out = self._insert_to_row_out(triple_to_insert, row_out)
         self.last_sleep_state = self.sleep_state
+        return row_out
+
+    def _finish_row(self, curr_posn, row_out):
+        triple_to_insert = self.Triple(curr_posn,
+                                       self.QS_IN_DAY - curr_posn,
+                                       self.last_sleep_state)
+        row_out = self._insert_to_row_out(triple_to_insert, row_out)
+        if self._is_complete(triple_to_insert, row_out):
+            self._write_output(row_out)
+        row_out = self._reset_row()
         return row_out
 
     def _fill_gap(self, curr_posn, curr_triple, row_out):
