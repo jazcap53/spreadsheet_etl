@@ -317,8 +317,7 @@ action: w, time: 20:15, hours: 1.00
             row_out = self._insert_to_row_out(triple_to_insert, row_out)
             if self._is_complete(triple_to_insert, row_out):
                 self._write_output(row_out)
-            row_out = self.output_row[:]
-            self.spaces_left = self.QS_IN_DAY
+            row_out = self._reset_row()  # this outdent is correct
             if curr_triple.start > 0:
                 triple_to_insert = self.Triple(0, curr_triple.start,
                                                self.sleep_state)
@@ -338,6 +337,10 @@ action: w, time: 20:15, hours: 1.00
                 self.QS_IN_DAY:
             return True
         return False
+
+    def _reset_row(self):
+        self.spaces_left = self.QS_IN_DAY
+        return self.output_row[:]
 
     def _handle_quarters_carried(self, curr_output_row):
         curr_output_row = self._insert_to_row_out(
