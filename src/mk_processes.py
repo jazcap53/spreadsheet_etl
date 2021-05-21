@@ -19,6 +19,12 @@ parser = argparse.ArgumentParser(description=note)
 parser.add_argument('infile_name', help='The name of a .csv file to read')
 parser.add_argument('-s', '--store', help='Store output in database',
                     action='store_true')
+chart = parser.add_mutually_exclusive_group()
+
+chart.add_argument('-c', '--chart', help='Output a sleep chart',
+                   action='store_true')
+chart.add_argument('-d', '--debug-chart', help='Output a sleep chart'
+                   ' in debug mode', action='store_true')
 args = parser.parse_args()
 
 # remove the --store argument from the args Namespace, if present
