@@ -17,7 +17,8 @@ import time
 
 def pop_cla_as_str(args_as_dict, arg_str):
     """Remove the arg_str argument from args_as_dict, if present"""
-    return str(args_as_dict.pop(arg_str, False))
+    ret = str(args_as_dict.pop(arg_str, False))
+    return ret
 
 
 note = 'Runs in debug mode unless -s switch is given.'
@@ -37,7 +38,8 @@ args_dict = args.__dict__
 # these cla's will be converted to str(True) or str(False)
 store_in_db = pop_cla_as_str(args_dict, 'store')
 print_chart = pop_cla_as_str(args_dict, 'chart')
-print_debug_chart = pop_cla_as_str(args_dict, 'debug-chart')
+# debug-chart is converted to debug_chart by ArgumentParser()
+print_debug_chart = pop_cla_as_str(args_dict, 'debug_chart')
 
 logging_process = subprocess.Popen(
     ['./src/logging/receiver.py'],
