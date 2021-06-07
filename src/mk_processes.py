@@ -68,9 +68,17 @@ load_process = subprocess.Popen(
 
 time.sleep(7)
 
-if print_chart == 'True' or print_debug_chart == 'True':
+chart_input_filename = '/home/jazcap53/python_projects/spreadsheet_etl/xtraneous/transform_input_sheet_047.txt'
+if print_chart == 'True':  # or print_debug_chart == 'True':
     chart_process = subprocess.Popen(
-        ['.src/chart/chart_new.py', print_chart, print_debug_chart],
+        ['./src/chart/chart_new.py',
+         '-i', chart_input_filename],
+    )
+elif print_debug_chart == 'True':
+    chart_process = subprocess.Popen(
+        ['./src/chart/chart_new.py',
+         '-i', chart_input_filename,
+         '-d'],
     )
 else:
     chart_process = None

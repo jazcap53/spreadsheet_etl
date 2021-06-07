@@ -1,14 +1,19 @@
+#!/usr/bin/env python3
+
+
 # file: chart_new.py
 # andrew jarcho
 # 10/2018
 """
 Create a Timeline Chart from the input data.
 """
-
-import re
 import argparse
 from datetime import datetime, timedelta
 from collections import namedtuple
+import logging
+import logging.handlers
+import re
+
 
 BLACK_INK = u'\u2588'
 WHITE_PAPER = u'\u0020'
@@ -467,7 +472,33 @@ action: w, time: 20:15, hours: 1.00
         return ruler_line
 
 
+def set_up_loggers():
+    # from: https://docs.python.org/3/howto/
+    # logging-cookbook.html#network-logging
+    root_logger = logging.getLogger('')
+    root_logger.setLevel(logging.INFO)
+    socket_handler = logging.handlers.SocketHandler('localhost',
+                                                    logging.handlers.
+                                                    DEFAULT_TCP_LOGGING_PORT)
+    # don't bother with a formatter, since a socket handler sends the event as
+    # an unformatted pickle
+    root_logger.addHandler(socket_handler)
+    # end cookbook code
+
+    # read_logger will need a formatter since it is writing to file
+    chart_logger = logging.getLogger('extract.read_fns')
+    chart_logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler('src/extract/read_fns.log', mode='w')
+    formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    chart_logger.addHandler(file_handler)
+    chart_logger.propagate = False
+
+
 def main():
+    set_up_loggers()
+    logging.info('chart start')
     args = get_parse_args()
     chart = Chart(args)
     chart.compile_decimal_hour()
@@ -479,6 +510,7 @@ def main():
     chart.make_output(read_file_iterator)
     if chart.outfile:
         del chart.outfile
+    logging.info('chart finish')
 
 
 def get_parse_args():
