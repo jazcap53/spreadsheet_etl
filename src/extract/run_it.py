@@ -48,6 +48,8 @@ if __name__ == '__main__':
     logging.info('extract start')
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
+    parser.add_argument('print_chart', help='str(True) to print a chart')
+    parser.add_argument('print_debug_chart', help="'True' for a debug chart")
     args = parser.parse_args()
     infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
     extract = read_fns.Extract(infile)

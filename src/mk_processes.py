@@ -14,6 +14,12 @@ import argparse
 import subprocess
 import time
 
+
+def pop_cla_as_str(args_as_dict, arg_str):
+    """Remove the arg_str argument from args_as_dict, if present"""
+    return str(args_as_dict.pop(arg_str, False))
+
+
 note = 'Runs in debug mode unless -s switch is given.'
 parser = argparse.ArgumentParser(description=note)
 parser.add_argument('infile_name', help='The name of a .csv file to read')
@@ -27,10 +33,11 @@ chart.add_argument('-d', '--debug-chart', help='Output a sleep chart'
                    ' in debug mode', action='store_true')
 args = parser.parse_args()
 
-# remove the --store argument from the args Namespace, if present
 args_dict = args.__dict__
-# args_dict[store] has been set to True if present
-store_in_db = str(args_dict.pop('store', False))
+# these cla's will be converted to str(True) or str(False)
+store_in_db = pop_cla_as_str(args_dict, 'store')
+print_chart = pop_cla_as_str(args_dict, 'chart')
+print_debug_chart = pop_cla_as_str(args_dict, 'debug-chart')
 
 logging_process = subprocess.Popen(
     ['./src/logging/receiver.py'],
@@ -39,7 +46,8 @@ logging_process = subprocess.Popen(
 time.sleep(1)
 
 extract_process = subprocess.Popen(
-    ['./src/extract/run_it.py', args.infile_name],
+    ['./src/extract/run_it.py', args.infile_name, print_chart,
+     print_debug_chart],
     stdout=subprocess.PIPE,
 )
 
