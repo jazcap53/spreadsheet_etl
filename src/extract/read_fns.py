@@ -128,8 +128,9 @@ class Extract:
         for line in self.infile:
             self.line_as_list = line.strip().split(',')[:22]
             self.line_as_list = (
-                    self.line_as_list[:1] + [item.strip() for item in
-                                             self.line_as_list[1:]])
+                    self.line_as_list[:1] +
+                    [item.strip() for item in self.line_as_list[1:]]
+            )
             date_match_obj = self._re_match_date(self.line_as_list[0])
             if not in_week:
                 self.new_week = None

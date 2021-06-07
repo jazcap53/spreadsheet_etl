@@ -68,7 +68,18 @@ load_process = subprocess.Popen(
 
 time.sleep(7)
 
+if print_chart == 'True' or print_debug_chart == 'True':
+    chart_process = subprocess.Popen(
+        ['.src/chart/chart_new.py', print_chart, print_debug_chart],
+    )
+else:
+    chart_process = None
+
+time.sleep(5)
+
 extract_process.terminate()
 transform_process.terminate()
 load_process.terminate()
+if chart_process:
+    chart_process.terminate()
 logging_process.terminate()
