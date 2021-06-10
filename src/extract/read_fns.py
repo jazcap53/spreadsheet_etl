@@ -100,7 +100,8 @@ read_logger.setLevel('DEBUG')
 def open_infile(filename) -> TextIOWrapper:
     """
     Open input file.
-    Left outside class so Extract.__init__() may accept an open file handle
+    Left outside the class so Extract.__init__() can accept an open
+        input file handle.
     Called by: client code
     """
     return filename.open()
@@ -110,12 +111,26 @@ class Extract:
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
-    def __init__(self, infile) -> None:
+    def __init__(self, infile, args) -> None:
         """infile: open for read"""
         self.infile = infile
         self.new_week = None
         self.line_as_list = []
         self.in_missing_data = False
+        self.cl_args = args
+        self.outfile_name = '/tmp/chart_input_bDX03c.txt'
+        self.outfile = None
+
+    def __enter__(self):
+        if self.cl_args.print_chart == 'True' or\
+           self.cl_args.print_debug_chart == 'True' or\
+           self.cl_args.store_in_db == 'True':
+            self.outfile = open(self.outfile_name, 'w')
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.outfile:
+            self.outfile.close()
 
     def lines_in_weeks_out(self) -> None:
         """
@@ -326,7 +341,12 @@ class Extract:
                 if line.startswith('action: b'):
                     line = line.replace('b', 'Y', 1)
                     self.in_missing_data = False
-            print(line)
+            if self.cl_args.store_in_db == 'True' or\
+               self.cl_args.print_chart == 'True' or\
+               self.cl_args.print_debug_chart == 'True':
+                print(line, file=self.outfile)
+            if self.cl_args.store_in_db == 'True':
+                print(line)
         out_buffer.clear()
 
     def _discard_incomplete_night(self, out_buffer: list) -> None:
@@ -339,7 +359,15 @@ class Extract:
             # if we see a 3-element 'b' event, there's good data *before* it
             if self._match_complete_b_event_line(this_line):
                 no_data_line = self._get_no_data_line(out_buffer, buf_ix)
-                print(no_data_line)
+
+                if self.cl_args.store_in_db == 'True' or \
+                   self.cl_args.print_chart == 'True' or \
+                   self.cl_args.print_debug_chart == 'True':
+                    print(no_data_line, file=self.outfile)
+                if self.cl_args.store_in_db == 'True':
+                    print(no_data_line)
+
+                # print(no_data_line, file=self.outfile)
             elif self._match_event_line(this_line):  # pop only Event lines
                 out_buffer.pop(buf_ix)  # leave headers in buffer
         self.in_missing_data = True

@@ -9,11 +9,20 @@ import io
 
 class FileReadAccessWrapper:
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, infilename):
+        self.infilename = infilename
 
     def open(self):
-        return open(self.filename, 'r')
+        return open(self.infilename, 'r')
+
+
+class FileWriteAccessWrapper:  # TODO: not in use
+
+    def __init__(self, outfilename):
+        self.outfilename = outfilename
+
+    def open(self):
+        return open(self.outfilename, 'w')
 
 
 class FakeFileReadWrapper:

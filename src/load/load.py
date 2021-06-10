@@ -138,6 +138,7 @@ def update_db(eng):
         #         read from file name
         #     else:
         #         read from stdin
+
         sys.argv.remove('True')
         infile_name = sys.argv[1] if len(sys.argv) > 1 else '-'
         read_nights_naps(eng, infile_name)

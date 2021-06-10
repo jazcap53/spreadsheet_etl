@@ -21,7 +21,7 @@ def pop_cla_as_str(args_as_dict, arg_str):
     return ret
 
 
-note = 'Runs in debug mode unless -s switch is given.'
+note = 'Does not store to db unless -s switch is given.'
 parser = argparse.ArgumentParser(description=note)
 parser.add_argument('infile_name', help='The name of a .csv file to read')
 parser.add_argument('-s', '--store', help='Store output in database',
@@ -48,8 +48,8 @@ logging_process = subprocess.Popen(
 time.sleep(1)
 
 extract_process = subprocess.Popen(
-    ['./src/extract/run_it.py', args.infile_name, print_chart,
-     print_debug_chart],
+    ['./src/extract/run_it.py', args.infile_name, store_in_db,
+     print_chart, print_debug_chart],
     stdout=subprocess.PIPE,
 )
 
@@ -70,8 +70,8 @@ load_process = subprocess.Popen(
 
 time.sleep(7)
 
-chart_input_filename = '/home/jazcap53/python_projects/spreadsheet_etl/xtraneous/transform_input_sheet_047.txt'
-if print_chart == 'True':  # or print_debug_chart == 'True':
+chart_input_filename = '/tmp/chart_input_bDX03c.txt'
+if print_chart == 'True':
     chart_process = subprocess.Popen(
         ['./src/chart/chart_new.py',
          '-i', chart_input_filename],

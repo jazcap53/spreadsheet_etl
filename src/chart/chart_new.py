@@ -67,7 +67,7 @@ action: w, time: 20:15, hours: 1.00
                                           defaults=[0, self.NO_DATA])
         self.curr_line = ''
         self.curr_sunday = ''
-        self.infilename = args.infilename
+        self.infilename = '/tmp/chart_input_bDX03c.txt'
         self.outfilename = None
         self.infile = None
         self.outfile = None

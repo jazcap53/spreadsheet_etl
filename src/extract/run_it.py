@@ -48,10 +48,16 @@ if __name__ == '__main__':
     logging.info('extract start')
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
-    parser.add_argument('print_chart', help='str(True) to print a chart')
-    parser.add_argument('print_debug_chart', help="'True' for a debug chart")
+    parser.add_argument('store_in_db',
+                        help='str(True) to have load.py write to database')
+    parser.add_argument('print_chart',
+                        help='str(True) to have chart_new.py print a chart')
+    parser.add_argument('print_debug_chart',
+                        help='str(True) to have chart_new.py print a '
+                             'debug chart')
     args = parser.parse_args()
     infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
-    extract = read_fns.Extract(infile)
-    extract.lines_in_weeks_out()
+    with read_fns.Extract(infile, args) as extract:
+        # extract = read_fns.Extract(infile, args)
+        extract.lines_in_weeks_out()
     logging.info('extract finish')
