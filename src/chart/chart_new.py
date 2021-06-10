@@ -68,9 +68,9 @@ action: w, time: 20:15, hours: 1.00
         self.curr_line = ''
         self.curr_sunday = ''
         self.infilename = args.infilename
-        self.outfilename = args.outfilename
+        self.outfilename = None
         self.infile = None
-        self.outfile = open(self.outfilename, 'w') if self.outfilename else None
+        self.outfile = None
         self.last_date_read = None
         self.last_sleep_state = self.NO_DATA
         self.last_sleep_time = None
@@ -388,7 +388,7 @@ action: w, time: 20:15, hours: 1.00
         for _, val in enumerate(my_output_row):
             extended_output_row.append(val)
         print(f'{self.output_date} |{"".join(extended_output_row)}|',
-              file=self.outfile)
+              file=self.outfile)  # set to date-based outfile by main()
         self.output_date = self.advance_output_date(self.output_date)
 
     def advance_date(self, my_date, make_ruler=False):
@@ -460,6 +460,12 @@ action: w, time: 20:15, hours: 1.00
         """
         self.re_hr_min_time = re.compile(r'(\d{1,2}):(\d{2})')
 
+    def create_outfile_name(self):
+        dt = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        outfile_name = f'sleep_chart_{dt}'
+        outfile_name += '_debug' if self.DEBUG else ''
+        return outfile_name + '.txt'
+
     @staticmethod
     def create_ruler():
         ruler = list(str(x) for x in range(12)) * 2
@@ -504,12 +510,14 @@ def main():
     chart.compile_decimal_hour()
     chart.compile_hr_min_time()
     chart.compile_iso_date()
+    chart.outfilename = chart.create_outfile_name()
     read_file_iterator = chart.read_file()
-    ruler_line = chart.create_ruler()
-    print(ruler_line, file=chart.outfile)
-    chart.make_output(read_file_iterator)
-    if chart.outfile:
-        del chart.outfile
+    # TODO: come up with nicer way to do this ?
+    # TODO: (see self._write_output())
+    with open(chart.outfilename, 'w') as chart.outfile:
+        ruler_line = chart.create_ruler()
+        print(ruler_line, file=chart.outfile)
+        chart.make_output(read_file_iterator)
     logging.info('chart finish')
 
 
@@ -522,8 +530,6 @@ def get_parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--infilename', default=None,
                         help='the input file name')
-    parser.add_argument('-o', '--outfilename', default=None,
-                        help='the output file name')
     parser.add_argument('-d', '--debug',
                         help=("output X, o, - instead of '\u2588', '\u0020', "
                               "'\u2591'"), action='store_true')

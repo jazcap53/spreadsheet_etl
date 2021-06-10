@@ -85,7 +85,7 @@ elif print_debug_chart == 'True':
 else:
     chart_process = None
 
-time.sleep(5)
+time.sleep(2)
 
 extract_process.terminate()
 transform_process.terminate()
