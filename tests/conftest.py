@@ -32,5 +32,7 @@ def session(url):
 @pytest.fixture
 def args_d():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--debug_chart')
+    parser.add_argument('-c', '--print_chart', action='store_true')
+    parser.add_argument('-d', '--print_debug_chart', action='store_true')
+    parser.add_argument('-s', '--store_in_db', action='store_true')
     return parser.parse_args()
