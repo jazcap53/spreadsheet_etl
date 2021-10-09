@@ -18,13 +18,11 @@ def my_side_effect(q):
     return q
 
 
-@pytest.fixture(scope="module")
-def chart():
+@pytest.fixture
+def chart(tmpdir):
     return Chart(Namespace(debug=False,
-                           infilename=os.path.join(ROOT_DIR,
-                                                   'tests/',
-                                                   'testdata/',
-                                                   'chart_data_01.txt'),
+                           infilename=os.path.join(tmpdir,
+                                                   'chart_input_bDX03c.txt'),
                            outfilename=None))
 
 
@@ -40,8 +38,7 @@ def test_constants_have_good_values(chart):
     assert chart.NO_DATA == u'\u2591'  # gray
     assert chart.QS_IN_DAY == 96  # 24 * 4
     assert issubclass(chart.Triple, tuple)
-    assert chart.infilename == os.path.join(ROOT_DIR, 'tests/',
-                                            'testdata/', 'chart_data_01.txt')
+    # assert chart.infilename == os.path.join(tmpdir, 'chart_input_bDX03c.txt')
     assert chart.outfilename is None
 
 
@@ -149,7 +146,7 @@ def test_action_line_with_N_action(chart):
     line = 'action: N, time: 23:00'
     ret_triple = chart._handle_action_line(line)
     assert chart.last_sleep_time == '23:00'
-    assert chart.last_start_posn == 0
+    assert chart.last_start_posn == 92
     assert chart.sleep_state == chart.NO_DATA
     assert ret_triple == chart.Triple(-1, -1, -1)
 

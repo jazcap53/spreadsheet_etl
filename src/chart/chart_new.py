@@ -433,6 +433,7 @@ action: w, time: 20:15, hours: 1.00
         :return: int: the starting position
         """
         if time_str:
+            self.compile_hr_min_time()
             m = re.search(self.re_hr_min_time, time_str)
             assert bool(m)
             return (int(m.group(1)) * 4 +  # 4 output chars per hour

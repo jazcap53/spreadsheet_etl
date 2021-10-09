@@ -13,6 +13,7 @@ from tests.file_access_wrappers import FakeFileReadWrapper
 from src.extract.read_fns import open_infile
 from src.extract.read_fns import Extract
 from container_objs import Event, Day, Week
+# from conftest import args_d
 
 
 @pytest.fixture
@@ -35,8 +36,8 @@ def infile_wrapper():
 
 
 @pytest.fixture
-def extract():
-    return Extract(FakeFileReadWrapper(''))
+def extract(args_d):
+    return Extract(FakeFileReadWrapper(''), args_d)
 
 
 def test_open_infile(infile_wrapper):
@@ -44,30 +45,30 @@ def test_open_infile(infile_wrapper):
     assert isinstance(infile, io.StringIO)
 
 
-def test_init_with_bad_argument_fails():
+def test_init_with_bad_argument_fails(args_d):
     filename = None
-    extr = Extract(filename)
+    extr = Extract(filename, args_d)
     with pytest.raises(AttributeError):
         _ = extr.infile.getline()
 
 
-def test_init_with_good_argument_succeeds():
+def test_init_with_good_argument_succeeds(args_d):
     filename = '/dev/null'
     opened_file = open(filename)
-    extr = Extract(opened_file)
+    extr = Extract(opened_file, args_d)
     for line in extr.infile:
         line += 'x'
         break
     assert isinstance(extr, Extract)
 
 
-def test_lines_in_weeks_out(infile_wrapper, capfd):
+def test_lines_in_weeks_out(infile_wrapper, capfd, args_d):
     """
     >==> THIS TEST WILL FAIL UNLESS PYTEST IS RUN WITH -s SWITCH <==<
     (--capture=no)
     """
     infile = open_infile(infile_wrapper)
-    extract = Extract(infile)
+    extract = Extract(infile, args_d)
     extract.lines_in_weeks_out()
     fd1, fd2 = capfd.readouterr()
     assert fd1 == '''
@@ -152,16 +153,16 @@ def test_make_day_list(extract):
                                         for x in range(Extract.DAYS_IN_A_WEEK)]
 
 
-def test_handle_week_works_for_full_week(infile_wrapper):
-    extr = Extract(infile_wrapper)
+def test_handle_week_works_for_full_week(infile_wrapper, args_d):
+    extr = Extract(infile_wrapper, args_d)
     extr.line_as_list = ['12/4/2016', '', '', '', '', '', '', '', '', '',
                          'b', '23:45', '', 'w', '3:45', '4.00', 'w', '2:00',
                          '2.75', 'b', '0:00', '9.00']
     assert not extr._handle_week([])
 
 
-def test_handle_week_works_for_empty_week(infile_wrapper):
-    extr = Extract(infile_wrapper)
+def test_handle_week_works_for_empty_week(infile_wrapper, args_d):
+    extr = Extract(infile_wrapper, args_d)
     extr.line_as_list = [''] * 22
     assert not extr._handle_week([])
 
@@ -260,7 +261,7 @@ def test_get_day_header(day=Day(datetime.date(2018, 10, 14), [])):
 
 
 def test_write_or_discard_night_3_element_b_event_flushes_buffer(extract):
-    output = io.StringIO()
+    # output = io.StringIO()
     out_buffer = ['bongo', 'Hello World']
     extract._write_or_discard_night(Event(action='b', mil_time='8:15',
                                           hours='4.25'),
@@ -298,7 +299,7 @@ def test_write_complete_night(extract, capfd):
 
 
 def test_discard_incomplete_night(extract, capfd):
-    datetime_date = datetime.date(2017, 1, 3)
+    # datetime_date = datetime.date(2017, 1, 3)
     out_buffer = ['action: b, time: 23:00, hours: 7.00',
                   '\nWeek of Sunday, 2017-01-01:\n==========================',
                   '    2017-01-01', '    2017-01-02', '    2017-01-03']

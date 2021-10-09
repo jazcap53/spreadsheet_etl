@@ -1,3 +1,4 @@
+import argparse
 import pytest
 import os
 import sys
@@ -26,3 +27,10 @@ def session(url):
     yield sess
     sess.rollback()
     cnxn.close()
+
+
+@pytest.fixture
+def args_d():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug_chart')
+    return parser.parse_args()
