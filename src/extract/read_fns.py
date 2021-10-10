@@ -185,7 +185,7 @@ class Extract:
         return bool(self.new_week)
 
     @staticmethod
-    def _is_a_sunday(dt_date: Optional[datetime.datetime]) -> Union[int, bool]:
+    def _is_a_sunday(dt_date: Optional[date]) -> Union[int, bool]:
         """
         Tell whether the parameter represents a Sunday
 

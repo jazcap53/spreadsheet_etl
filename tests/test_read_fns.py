@@ -62,10 +62,6 @@ def test_init_with_good_argument_succeeds(args_d):
 
 
 def test_lines_in_weeks_out(infile_wrapper, capfd, args_d):  # TODO: think about
-    """
-    >==> THIS TEST WILL FAIL UNLESS PYTEST IS RUN WITH -s SWITCH <==<
-    (--capture=no)
-    """
     infile = open_infile(infile_wrapper)
     extract = Extract(infile, args_d)
     extract.lines_in_weeks_out()
