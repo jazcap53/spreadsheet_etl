@@ -5,6 +5,7 @@ import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm.session import sessionmaker
 
+
 Session = sessionmaker(autoflush=False)
 
 
@@ -27,12 +28,3 @@ def session(url):
     yield sess
     sess.rollback()
     cnxn.close()
-
-
-@pytest.fixture
-def args_d():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--print_chart', action='store_true')
-    parser.add_argument('-d', '--print_debug_chart', action='store_true')
-    parser.add_argument('-s', '--store_in_db', action='store_true')
-    return parser.parse_args()

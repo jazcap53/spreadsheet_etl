@@ -43,9 +43,7 @@ def set_up_loggers():
     read_logger.propagate = False
 
 
-if __name__ == '__main__':
-    set_up_loggers()
-    logging.info('extract start')
+def set_up_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('infile_name', help='The name of a .csv file to read')
     parser.add_argument('store_in_db',
@@ -55,7 +53,14 @@ if __name__ == '__main__':
     parser.add_argument('print_debug_chart',
                         help='str(True) to have chart_new.py print a '
                              'debug chart')
-    args = parser.parse_args()
+    my_args = parser.parse_args()
+    return my_args
+
+
+if __name__ == '__main__':
+    set_up_loggers()
+    logging.info('extract start')
+    args = set_up_arg_parser()
     infile = read_fns.open_infile(FileReadAccessWrapper(args.infile_name))
     with read_fns.Extract(infile, args) as extract:
         # extract = read_fns.Extract(infile, args)

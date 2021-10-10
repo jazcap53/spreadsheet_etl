@@ -111,13 +111,13 @@ class Extract:
     SUNDAY = 6
     DAYS_IN_A_WEEK = 7
 
-    def __init__(self, infile, args) -> None:
+    def __init__(self, infile, cl_args) -> None:
         """infile: open for read"""
         self.infile = infile
         self.new_week = None
         self.line_as_list = []
         self.in_missing_data = False
-        self.cl_args = args
+        self.cl_args = cl_args
         self.outfile_name = '/tmp/chart_input_bDX03c.txt'
         self.outfile = None
 
