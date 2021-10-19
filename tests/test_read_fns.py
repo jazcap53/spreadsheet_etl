@@ -298,24 +298,26 @@ def test_write_complete_night(extract, capfd):  # TODO: think about
     extract.out_buffer = ['hello', 'there']
     extract._write_complete_night(extract.out_buffer)
     fd1, fd2 = capfd.readouterr()
-    assert fd1 == ''  # 'hello\nthere\n'
+    assert fd1 == ''
     assert fd2 == ''
     assert extract.out_buffer == []
 
 
 @pytest.mark.xfail(reason='pytest thinks Extract.cl_args is a function')
 def test_discard_incomplete_night(extract, capfd):  # TODO: think about
-    # datetime_date = datetime.date(2017, 1, 3)
     extract.out_buffer = ['action: b, time: 23:00, hours: 7.00',
-                  '\nWeek of Sunday, 2017-01-01:\n==========================',
-                  '    2017-01-01', '    2017-01-02', '    2017-01-03']
+                          '\nWeek of Sunday, 2017-01-01:'
+                          '\n==========================',
+                          '    2017-01-01', '    2017-01-02',
+                          '    2017-01-03']
     extract._discard_incomplete_night(extract.out_buffer)
     fd1, fd2 = capfd.readouterr()
     assert fd1 == ''  # 'action: N, time: 23:00\n'
     assert fd2 == ''
-    assert extract.out_buffer == [  # 'action: b, time: 23:00, hours: 7.00',
-                  '\nWeek of Sunday, 2017-01-01:\n==========================',
-                  '    2017-01-01', '    2017-01-02', '    2017-01-03']
+    assert extract.out_buffer == ['\nWeek of Sunday, 2017-01-01:'
+                                  '\n==========================',
+                                  '    2017-01-01', '    2017-01-02',
+                                  '    2017-01-03']
 
 
 def test_match_complete_b_event_line_returns_true_on_complete_b_event_line():
